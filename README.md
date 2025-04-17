@@ -1,7 +1,7 @@
 #  Proyecto Final de Ing. Software II
 
 ## Profesor
-- **Profesor:** Guillermo Enrique Calderon Ruiz
+- Guillermo Enrique Calderon Ruiz
 
 ## Alumnos
 
