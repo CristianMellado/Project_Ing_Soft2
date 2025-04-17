@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Portal de Descargas</title>
+  <link rel="stylesheet" href="../css/estilo.css">
+  <style>
+    .top-bar {
+      display: flex;
+      justify-content: flex-end;
+      padding: 1em;
+      background-color: #f1f1f1;
+    }
+
+    .admin-btn {
+      padding: 0.5em 1em;
+      background-color: #6c63ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .admin-btn:hover {
+      background-color: #5348d6;
+    }
+  </style>
+</head>
+<body>
+    <!-- Botón fijo en la esquina superior derecha -->
+    <a href="admin.html">
+      <button class="admin-btn-fixed">Administrador</button>
+    </a>
+  
+    <div class="container">
+      <h1>Iniciar Sesión</h1>
+      <form id="loginForm">
+        <label for="usuario">Usuario:</label>
+        <input type="text" id="usuario" name="usuario" required>
+  
+        <label for="contrasena">Contraseña:</label>
+        <input type="password" id="contrasena" name="contrasena" required>
+  
+        <button type="submit">Iniciar sesión</button>
+      </form>
+  
+      <p>¿No tienes cuenta? <a href="register.html">Regístrate</a></p>
+    </div>
+  
+    <script src="../js/login.js"></script>
+  </body>
+</html>
