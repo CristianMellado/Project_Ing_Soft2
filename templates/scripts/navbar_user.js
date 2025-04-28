@@ -8,7 +8,7 @@ function generateNavbar() {
     var nav = document.createElement('nav');
     var ul = document.createElement('ul');
 
-    // Opción "YouEz"
+    // Opción "DownEz"
     var liYouEz = document.createElement('li');
     var aYouEz = document.createElement('a');
     aYouEz.href = 'user_view.html';
@@ -21,12 +21,12 @@ function generateNavbar() {
     var searchForm = document.createElement('form');
     searchForm.setAttribute('action', '#'); 
     searchForm.setAttribute('method', 'get');
-    searchForm.setAttribute('class', "search-form")
+    searchForm.setAttribute('class', "search-form");
 
     var searchInput = document.createElement('input');
     searchInput.setAttribute('type', 'text');
     searchInput.setAttribute('name', 'search');
-    searchInput.setAttribute('placeholder', 'Type you preference...');
+    searchInput.setAttribute('placeholder', 'Type your preference...');
     searchForm.appendChild(searchInput);
 
     var searchButton = document.createElement('button');
@@ -45,13 +45,56 @@ function generateNavbar() {
         aInformes.textContent = key;    
         liInformes.appendChild(aInformes);
         ul.appendChild(liInformes);
-    };
+    }
 
     nav.appendChild(ul);
     header.appendChild(nav);
     header.appendChild(stylevar);
-
     document.body.insertBefore(header, document.body.firstChild);
+
+    // Crear contenedor para resultados
+    var resultsContainer = document.createElement('div');
+    resultsContainer.setAttribute('id', 'search-results');
+    document.body.insertBefore(resultsContainer, header.nextSibling);
+
+
+    searchForm.addEventListener('submit', function(event) {
+        event.preventDefault(); 
+        var query = searchInput.value.trim().toLowerCase();
+        if (!query) {
+            resultsContainer.innerHTML = "<p>Ingresa algo para buscar.</p>";
+            return;
+        }
+
+        fetch('/search_content')
+            .then(response => response.json())
+            .then(data => {
+                var allContent = [];
+                for (let type in data) {
+                    allContent = allContent.concat(data[type]);
+                }
+
+                var filtered = allContent.filter(item => 
+                    item.title.toLowerCase().includes(query) || 
+                    item.author.toLowerCase().includes(query)
+                );
+
+                if (filtered.length > 0) {
+                    var html = '<h3>Resultados de búsqueda:</h3><ul>';
+                    filtered.forEach(item => {
+                        html += `<li><a><strong>${item.title}</strong> - ${item.author}</a></li>`;
+                    });
+                    html += '</ul>';
+                    resultsContainer.innerHTML = html;
+                } else {
+                    resultsContainer.innerHTML = "<p>No se encontraron resultados.</p>";
+                }
+            })
+            .catch(error => {
+                console.error('Error buscando:', error);
+                resultsContainer.innerHTML = "<p>Error al buscar.</p>";
+            });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
