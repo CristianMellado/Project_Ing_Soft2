@@ -56,11 +56,35 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 paths_ulr = ["/login.html","/register.html", "/user_view.html", "/admi_view.html","/addContent.html"]
 
+
 class C_Content:
     def get_id(self):
-        return 2
+        return 1
     def registrarContent(self, data):
-        content[data.type].append(data.content)
+        content[data["type"]].append(data["content"])
+
+class Usuario:
+    def __init__(self):
+        self.id = None
+        self.user = None
+        self.saldo = None
+    def loggin(self):
+        self.id, self.user,self.saldo = 1,2,3
+        
+class C_Cliente(Usuario):
+    def __init__(self):
+        super().__init__()
+        self.estado_cuenta = None
+
+class C_Administrador(Usuario):
+    def __init__(self):
+        super().__init__()
+    
+    def agregar_contenido(self, datos):
+        content_manager = C_Content()
+        content_manager.registrarContent(datos)
+
+administrador_manager = C_Administrador()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -106,7 +130,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/main_view_content":
             self._set_headers()
             self.wfile.write(json.dumps(content).encode("utf-8"))
-        
         else:
             self.send_response(404)
             self.end_headers()
@@ -155,7 +178,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
-
+        
+        elif parsed_path.path == "/search_content":
+            self._set_headers()
+            self.wfile.write(json.dumps(content).encode("utf-8"))
+        
         elif parsed_path.path == "/save_content":
             type_data = data.get("typeData")
             src = data.get("src")
@@ -188,7 +215,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             }
 
             if type_data in content:
-                content[type_data].append(new_item)
+                #content[type_data].append(new_item)
+                administrador_manager.agregar_contenido({
+                    "type": type_data,
+                    "content": new_item
+                })
                 response = {"success": True, "message": "Contenido guardado"}
             else:
                 response = {"success": False, "message": "Tipo de contenido inválido"}
