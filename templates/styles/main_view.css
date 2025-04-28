@@ -1,0 +1,38 @@
+.content-buttons, .buy-button {
+    margin-bottom: 20px;
+}
+
+.content-buttons button, .buy-button {
+    padding: 10px 20px;
+    margin: 0 10px;
+    border: none;
+    cursor: pointer;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.content-buttons button:hover, .buy-button:hover  {
+    background-color: #555;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Cada elemento tendrá un ancho mínimo de 300px y se ajustará automáticamente */
+    grid-gap: 20px; /* Espacio entre cada elemento */
+}
+
+.media-item {
+    border: 1px solid #ccc; /* Borde alrededor de cada elemento */
+    padding: 10px; /* Espacio interno */
+}
+
+.media-item img,
+.media-item video,
+.media-item audio {
+    max-width: 100%; /* Asegura que las imágenes y videos no sobrepasen su contenedor */
+}
+
+.info {
+    margin-top: 10px; /* Espacio entre la información y el contenido multimedia */
+}

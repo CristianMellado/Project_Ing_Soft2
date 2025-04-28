@@ -1,0 +1,82 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2;
+}
+
+h1 {
+    text-align: center;
+}
+
+/* Estilos para la barra de navegación */
+header {
+    background-color: #333; /* Color de fondo */
+    padding: 10px; /* Espacio interior */
+}
+
+nav {
+    display: flex; /* Establecer el contenedor de la barra de navegación como un contenedor flex */
+    justify-content: flex-end; /* Alinear todo el contenido a la derecha */
+    align-items: center; /* Centrar verticalmente el contenido */
+}
+
+nav ul {
+    list-style-type: none; /* Quitar viñetas de la lista */
+    margin: 0; /* Eliminar margen */
+    padding: 0; /* Eliminar relleno */
+}
+
+nav ul li {
+    display: inline-block; /* Mostrar elementos de la lista en línea */
+    margin-right: 10px; /* Margen derecho entre elementos */
+}
+
+nav ul li a {
+    color: #fff; /* Color del texto */
+    text-decoration: none; /* Quitar subrayado de los enlaces */
+    padding: 5px 10px; /* Espaciado interno */
+    border-radius: 5px; /* Bordes redondeados */
+    transition: background-color 0.3s; /* Transición de color de fondo */
+}
+
+nav ul li a:hover {
+    background-color: #555; /* Color de fondo al pasar el mouse */
+}
+
+/* Estilos para la barra de búsqueda */
+nav ul li form {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+nav ul li form {
+    display: flex;
+    align-items: center;
+}
+
+nav ul li form input[type="text"],
+nav ul li form button {
+    padding: 5px;
+    border-radius: 5px;
+}
+
+nav ul li form input[type="text"] {
+    margin-right: 5px;
+    border: 1px solid #ccc;
+}
+
+nav ul li form button {
+    background-color: #555;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+nav ul li form button:hover {
+    background-color: #333;
+}
+
+/* Estilo para que los elementos después de la barra estén pegados a la derecha */
+
+

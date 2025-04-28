@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/styles/register.css">
+    <title>YouEz-Register</title>
+    <script src="scripts/navbar.js" defer></script>
+    <script src="/scripts/register.js"></script>
+</head>
+<body>
+    <u><h1>Register</h1></u>
+    <form action="/submit" method="post">
+        <label for="name">User name:</label><br>
+        <input type="text" id="name" name="name"><br>
+
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email"><br>
+
+        <label for="password">Password</Param>:</label><br>
+        <input type="password" id="password" name="password"><br>
+
+        <label for="password">Repeat Password:</label><br>
+        <input type="password" id="repeat-password"><br>
+
+        <div id="error-message" class="error"></div>
+
+        <button type="submit">Send</button>
+        <!--<a href="login.html">Sign in</a>-->
+    </form>
+</body>
