@@ -3,12 +3,11 @@ from urllib.parse import parse_qs, urlparse
 import json
 import os
 
-db = {
-    "users": {
-        "admi": {"pswd": "123", "auth": 1},
-        "alex": {"pswd": "ok", "auth": 0}
-    }
-}
+db = [
+    {"pswd": "123", "auth": 1, "username":"alex","id":2,"saldo":150,"estado":1},
+    {"pswd": "ok", "auth": 0,"username":"admi","id":1, "saldo":-1, "estado":1}
+]
+
 
 content = [{"id":1,
         "type":"video",
@@ -89,15 +88,30 @@ class C_Content:
         return next((item for item in content if item["id"] == content_id), None)
 
 class Usuario:
-    def __init__(self):
-        self.id = None
-        self.user = None
-        self.saldo = None
-    def loggin(self):
-        self.id, self.user,self.saldo = 1,2,3
-        
+    def __init__(self,a=None,b=None,c=None):
+        self.id = a
+        self.user = b
+        self.saldo = c
+
+    def login(self, username, password):
+        for item in db:
+            user = item["username"]
+            if user == username and item["pswd"] == password:
+                self.user = username
+                return item["auth"]  # 1 = Admin, 0 = Cliente
+        return None
+    
+class Cliente(Usuario):
+    def __init__(self, username, id):
+        super().__init__(username,id)
+        self.estado_cuenta = None
+
+class Administrador(Usuario):
+    def __init__(self, username, id):
+        super().__init__(username,id)
+    
 class C_Cliente(Usuario):
-    def __init__(self):
+    def __init__(self, username, id):
         super().__init__()
         self.estado_cuenta = None
     def Buscar(self, query,filters):
@@ -108,15 +122,30 @@ class C_Cliente(Usuario):
         return content_manager.getContent(content_id)
 
 class C_Administrador(Usuario):
-    def __init__(self):
+    def __init__(self, username, id):
         super().__init__()
     
     def agregar_contenido(self, datos):
         content_manager = C_Content()
         content_manager.registrarContent(datos)
 
-administrador_manager = C_Administrador()
-cliente_manager = C_Cliente()
+def autenticar(username, password):
+    temp_user = Usuario()
+    auth = temp_user.login(username, password)
+    
+    if auth == 1:
+        user = C_Administrador()
+    elif auth == 0:
+        user = C_Cliente()
+    else:
+        print("Credenciales incorrectas")
+        return None
+    
+    user.user = temp_user.user
+    user.saldo = temp_user.saldo
+    return user
+
+usuario = None
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -183,11 +212,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             if isinstance(name, list): name = name[0]
             if isinstance(password, list): password = password[0]
-
-            if name in db["users"] and db["users"][name]["pswd"] == password:
-                response = {"success": True, "url": "user_view.html"}
-                if db["users"][name]["auth"]:
+            
+            usuario = autenticar(name, password)
+            if usuario:
+                print(f"Usuario logueado como: {usuario.user}")
+                if isinstance(usuario, C_Administrador):
+                    usuario.agregar_contenido({"titulo": "Nuevo contenido"})
                     response["url"] = "admi_view.html"
+                response = {"success": True, "url": "user_view.html"}
             else:
                 response = {"success": False, "message": "Credenciales inválidas"}
 
@@ -213,7 +245,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
         elif parsed_path.path == "/search_content":
             #print(data, data.get("query"))
-            datos_encontrados = cliente_manager.Buscar(data.get("query"), data.get("filters"))
+            datos_encontrados = usuario.Buscar(data.get("query"), data.get("filters"))
             #print(datos_encontrados)
             self._set_headers()
             self.wfile.write(json.dumps(datos_encontrados).encode("utf-8"))
@@ -227,7 +259,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps({"error": "ID inválido"}).encode("utf-8"))
                 return
 
-            found_item = cliente_manager.seleccionar(content_id)
+            found_item = usuario.seleccionar(content_id)
 
             self._set_headers()
             if found_item:
@@ -268,7 +300,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             if type_data in content:
                 #content[type_data].append(new_item)
-                administrador_manager.agregar_contenido({
+                usuario.agregar_contenido({
                     "type": type_data,
                     "content": new_item
                 })
