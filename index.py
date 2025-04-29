@@ -10,8 +10,8 @@ db = {
     }
 }
 
-content = {
-    "video": [{
+content = [{"id":1,
+        "type":"video",
         "src": "static/video/1.mp4",
         "title": "lol gameplay warwick",
         "author": "Autor del video",
@@ -20,8 +20,10 @@ content = {
         "category": "Categoría del video",
         "rating": "4.5",
         "description": "Descripción del video"
-    }],
-    "audio": [{
+    },
+    {
+        "id":2,
+        "type":"audio",
         "src": "static/audio/1.mp3",
         "title": "Married life",
         "author": "Autor del video",
@@ -31,6 +33,8 @@ content = {
         "rating": "4.5",
         "description": "Descripción del video"
     }, {
+        "id":3,
+        "type":"audio",
         "src": "static/audio/2.mp3",
         "title": "Lefestin",
         "author": "Autor del video",
@@ -39,8 +43,9 @@ content = {
         "category": "Categoría del sonido",
         "rating": "4.8",
         "description": "Descripción del audio"
-    }],
-    "image": [{
+    },{
+        "id":4,
+        "type":"imagen",
         "src": "https://github.com/DretcmU/DOWNEZ/blob/main/templates/static/image/Dedos%20dibujados.jpg?raw=true",
         "title": "Dedos dibujados",
         "author": "Autor de la imagen   ",
@@ -49,12 +54,13 @@ content = {
         "category": "Categoría de la imagen",
         "rating": "4.5",
         "description": "Descripción de  la imagen"
-    }]
-}
+    }
+]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-paths_ulr = ["/login.html","/register.html", "/user_view.html", "/admi_view.html","/addContent.html"]
+paths_ulr = ["/login.html","/register.html", "/user_view.html", 
+             "/admi_view.html","/addContent.html","/item_view.html"]
 
 
 class C_Content:
@@ -62,6 +68,25 @@ class C_Content:
         return 1
     def registrarContent(self, data):
         content[data["type"]].append(data["content"])
+
+    def consultarDatos(self, query, filters):
+        query = query.lower().strip()
+        resultados = []
+
+        for item in content:
+            if len(filters)==0 or item["type"] in filters:
+                titulo = item.get('title', '').lower()
+                author = item.get('author', '').lower()
+                if query in titulo or query in author:
+                    resultados.append({
+                        'title': titulo,
+                        'author': author,
+                        'id': item["id"]
+                    })
+                    
+        return resultados
+    def getContent(self, content_id):
+        return next((item for item in content if item["id"] == content_id), None)
 
 class Usuario:
     def __init__(self):
@@ -75,6 +100,12 @@ class C_Cliente(Usuario):
     def __init__(self):
         super().__init__()
         self.estado_cuenta = None
+    def Buscar(self, query,filters):
+        content_manager = C_Content()
+        return content_manager.consultarDatos(query,filters)
+    def seleccionar(self, content_id):
+        content_manager = C_Content()
+        return content_manager.getContent(content_id)
 
 class C_Administrador(Usuario):
     def __init__(self):
@@ -85,6 +116,7 @@ class C_Administrador(Usuario):
         content_manager.registrarContent(datos)
 
 administrador_manager = C_Administrador()
+cliente_manager = C_Cliente()
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
@@ -180,8 +212,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(response).encode("utf-8"))
         
         elif parsed_path.path == "/search_content":
+            #print(data, data.get("query"))
+            datos_encontrados = cliente_manager.Buscar(data.get("query"), data.get("filters"))
+            #print(datos_encontrados)
             self._set_headers()
-            self.wfile.write(json.dumps(content).encode("utf-8"))
+            self.wfile.write(json.dumps(datos_encontrados).encode("utf-8"))
+
+        elif parsed_path.path == "/get_content_by_id":
+            content_id = data.get("id")
+            try:
+                content_id = int(content_id)
+            except (ValueError, TypeError):
+                self._set_headers()
+                self.wfile.write(json.dumps({"error": "ID inválido"}).encode("utf-8"))
+                return
+
+            found_item = cliente_manager.seleccionar(content_id)
+
+            self._set_headers()
+            if found_item:
+                self.wfile.write(json.dumps(found_item).encode("utf-8"))
+            else:
+                self.wfile.write(json.dumps({"error": "Contenido no encontrado"}).encode("utf-8"))
         
         elif parsed_path.path == "/save_content":
             type_data = data.get("typeData")

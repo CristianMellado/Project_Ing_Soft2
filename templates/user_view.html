@@ -2,18 +2,18 @@
 <html>
 <head>
     <link rel="stylesheet" type="text/css" href="/styles/main_view.css">
-    <title>YouEz-Register</title>
+    <title>DownEz-main</title>
     <script src="scripts/navbar_user.js" defer></script>
-    <script src="/scripts/main_view.js"></script>
+    <script type="module" src="/scripts/main_view.js" defer></script>
 </head>
 <body>
     <u><h1>YouEz</h1></u>
 
     <div class="content-buttons">
         <u><h1>TOP CONTENT MORE DOWNLOADED</h1></u>
-        <button onclick="showContent('image')">Top Imagenes</button>
-        <button onclick="showContent('audio')">Top Audios</button>
-        <button onclick="showContent('video')">Top Videos</button>
+        <button id='imagen-top'>Top Imagenes</button>
+        <button id='audio-top'>Top Audios</button>
+        <button id='video-top'>Top Videos</button>
     </div>
     
     <div class="container">
