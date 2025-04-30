@@ -227,7 +227,7 @@ class C_Content:
         return resultados
     
     @staticmethod
-    def getContentView(self):
+    def getContentView():
         contenidos = E_Contenidos()
         return contenidos.obtenerContenidos()
     
