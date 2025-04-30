@@ -34,7 +34,7 @@ class E_Usuarios:
         self.cursor.execute(query, (id,))
         result = self.cursor.fetchone()
         if result:
-            return result[0]  # saldo
+            return result[0]
         return None
 
     def actualizarSaldo(self,id, cantidad):
@@ -42,6 +42,16 @@ class E_Usuarios:
         self.cursor.execute(query, (cantidad, id))
         self.conn.commit()
 
+    def validarDatos(self, username):
+        query = "SELECT id FROM usuarios WHERE username = ?"
+        self.cursor.execute(query, (username,))
+        result = self.cursor.fetchone()
+        return result is None # si es none, es porque no se encontro, por ende no existe ese usuario a registrar :D
+    
+    def registrarUsuario(self, username, password, email):
+        query = "INSERT INTO usuarios (username, pswd, email) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (username, password, email))
+        self.conn.commit()
 
 class E_Recargas:
     def __init__(self):
@@ -245,7 +255,16 @@ class C_Usuario:
     def getContentView(self):
         content_manager = C_Content()
         return content_manager.getContentView()
-    
+
+    def validarRegistro(self, user):
+        us = E_Usuarios()
+        return us.validarDatos(user)
+
+    def registrarUsuario(self, user,ps,em):
+        us = E_Usuarios()
+        us.registrarUsuario(user,ps,em)
+
+
 class C_Cliente(C_Usuario):
     def __init__(self):
         super().__init__()
@@ -307,6 +326,12 @@ class Usuario:
     
     def getContentView(self):
         return self.controller.getContentView()
+    
+    def validarRegistro(self, us, ps, em):
+        if not self.controller.validarRegistro(us):
+            return 0
+            self.controller.registrarUsuario(us,ps,em)
+        return 1
     
 class Cliente(Usuario):
     def __init__(self, username, id):
