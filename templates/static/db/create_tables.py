@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email TEXT,
     username TEXT,
     pswd TEXT,
-    saldo DOUBLE,
+    saldo DOUBLE DEFAULT 0.0,
     auth INTEGER DEFAULT 0,
-    estado_cuenta TEXT
+    estado TEXT DEFAULT "activo"
 );
 ''')
 
@@ -29,7 +29,7 @@ db = [
 
 for user in db:
     cursor.execute('''
-    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado_cuenta)
+    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado)
     VALUES (?, ?, ?, ?, ?, ?)
     ''', (user["email"], user["username"], user["pswd"], user["saldo"], user["auth"], user["estado"]))
 
