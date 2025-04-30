@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var requestData = {
             name: name,
-            password: password
+            password: password,
+            email: email
         };
 
         var xhr = new XMLHttpRequest();
@@ -80,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     errorMessage.textContent = "Ya existe un usuario con ese nombre de cuenta.";
                 }
             } else {
-                console.error('Hubo un error al enviar la solicitud.');
+                alert('Hubo un error al enviar la solicitud.');
             }
         };
 

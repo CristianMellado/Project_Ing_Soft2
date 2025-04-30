@@ -33,6 +33,7 @@ class E_Usuarios:
         query = "SELECT saldo FROM usuarios WHERE id = ?"
         self.cursor.execute(query, (id,))
         result = self.cursor.fetchone()
+        print(result)
         if result:
             return result[0]
         return None
@@ -50,6 +51,7 @@ class E_Usuarios:
     
     def registrarUsuario(self, username, password, email):
         query = "INSERT INTO usuarios (username, pswd, email) VALUES (?, ?, ?)"
+        print("A")
         self.cursor.execute(query, (username, password, email))
         self.conn.commit()
 
@@ -224,6 +226,7 @@ class C_Content:
 
         return resultados
     
+    @staticmethod
     def getContentView(self):
         contenidos = E_Contenidos()
         return contenidos.obtenerContenidos()
@@ -330,7 +333,7 @@ class Usuario:
     def validarRegistro(self, us, ps, em):
         if not self.controller.validarRegistro(us):
             return 0
-            self.controller.registrarUsuario(us,ps,em)
+        self.controller.registrarUsuario(us,ps,em)
         return 1
     
 class Cliente(Usuario):

@@ -89,8 +89,8 @@ function generateNavbar() {
             .then(response => response.json())
             .then(data => {
                 const saldoElement = document.getElementById('user-balance');
-                if (data) {
-                    saldoElement.textContent = `Saldo: $${data}`;
+                if (data.success) {
+                    saldoElement.textContent = `Saldo: $${data.saldo}`;
                 } else {
                     saldoElement.textContent = "Saldo: Error al cargar";
                 }

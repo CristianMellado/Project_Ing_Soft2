@@ -3,7 +3,7 @@ from urllib.parse import parse_qs, urlparse
 import json
 import os
 import uuid
-from templates.scripts.app_classes import Usuario,Cliente,Administrador
+from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Content
 
 session_store = {}
 
@@ -86,12 +86,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         elif parsed_path.path == "/main_view_content":
             self._set_headers()
-            self.wfile.write(json.dumps(current_usuario.getContentView()).encode("utf-8"))
+            self.wfile.write(json.dumps(C_Content.getContentView()).encode("utf-8"))
 
         elif parsed_path.path == "/get_balance":
             if current_usuario:
                 self._set_headers()
-                self.wfile.write(json.dumps(current_usuario.getSaldo()).encode("utf-8"))
+                self.wfile.write(json.dumps({"success":True, "saldo":current_usuario.getSaldo()}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 
@@ -231,6 +231,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if isinstance(email, list): email = email[0]
 
             new_user = Usuario()
+            print(name, password, email)
             resultado = new_user.validarRegistro(name, password, email)
 
             if resultado == 0:
