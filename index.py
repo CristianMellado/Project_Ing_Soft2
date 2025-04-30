@@ -221,6 +221,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
 
+        elif parsed_path.path == "/register":
+            name = data.get("name")
+            password = data.get("password")
+            email = data.get("email")
+
+            if isinstance(name, list): name = name[0]
+            if isinstance(password, list): password = password[0]
+            if isinstance(email, list): email = email[0]
+
+            new_user = Usuario()
+            resultado = new_user.validarRegistro(name, password, email)
+
+            if resultado == 0:
+                response = {"success": False, "message": "El usuario ya existe."}
+            elif resultado == 1:
+                response = {"success": True, "message": "Registro exitoso."}
+            else:
+                response = {"success": False, "message": "Error al registrar usuario."}
+
+            self._set_headers()
+            self.wfile.write(json.dumps(response).encode("utf-8"))
+
         else:
             self.send_response(404)
             self.end_headers()
