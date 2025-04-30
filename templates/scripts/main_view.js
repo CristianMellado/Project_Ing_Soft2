@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(data => {
             data_cache = data;
+            console.log(data);
             showContent('imagen');
         })
         .catch(error => {

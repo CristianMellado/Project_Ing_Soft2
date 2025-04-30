@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     var recargaDiv = document.createElement('div');
                     recargaDiv.classList.add('recarga-item');
                     recargaDiv.innerHTML = `
-                        <p><strong>User Id:</strong> ${recarga.id_user}</p>
-                        <p><strong>Monto:</strong> $${recarga.cantidad}</p>
+                        <p><strong>User Id:</strong> ${recarga.usuario}</p>
+                        <p><strong>Monto:</strong> $${recarga.monto}</p>
                         <button class="aceptar-recarga" data-id="${recarga.id_recarga}">Aceptar</button>
                     `;
                     recargasElement.appendChild(recargaDiv);

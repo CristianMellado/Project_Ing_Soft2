@@ -3,65 +3,12 @@ from urllib.parse import parse_qs, urlparse
 import json
 import os
 import uuid
-import datetime
+from templates.scripts.app_classes import Usuario,Cliente,Administrador
 
 session_store = {}
 
 def generate_session_id():
     return str(uuid.uuid4())
-db = [
-    {"pswd": "ok", "auth": 0, "username":"alex","id":2,"saldo":150,"estado":1,"email":"abc@gmail.com"},
-    {"pswd": "123", "auth": 1,"username":"admi","id":1, "saldo":-1, "estado":1,"email":"admi@gmail.com"}
-]
-
-e_recargas = [{"id_user":2,"id_recarga":1,"cantidad": 500.0, "fecha":"28-04-2025 10:37:05", "estado":1}]
-
-content = [{"id":1,
-        "type":"video",
-        "src": "static/video/1.mp4",
-        "title": "lol gameplay warwick",
-        "author": "franciso bejar",
-        "price": "$10",
-        "extension": "mp4",
-        "categorys": "Categoría del video",
-        "rating": "4.5",
-        "description": "Descripción del video"
-    },
-    {
-        "id":2,
-        "type":"audio",
-        "src": "static/audio/1.mp3",
-        "title": "Married life",
-        "author": "francete moriarty",
-        "price": "$10",
-        "extension": "mp3",
-        "category": "Categoría del video",
-        "rating": "4.5",
-        "description": "Descripción del video"
-    }, {
-        "id":3,
-        "type":"audio",
-        "src": "static/audio/2.mp3",
-        "title": "Lefestin",
-        "author": "charles de jumps",
-        "price": "$15",
-        "extension": "mp3",
-        "category": "Categoría del sonido",
-        "rating": "4.8",
-        "description": "Descripción del audio"
-    },{
-        "id":4,
-        "type":"imagen",
-        "src": "https://github.com/DretcmU/DOWNEZ/blob/main/templates/static/image/Dedos%20dibujados.jpg?raw=true",
-        "title": "Dedos dibujados",
-        "author": "Konam bursts",
-        "price": "$10",
-        "extension": "jpg",
-        "category": "Categoría de la imagen",
-        "rating": "4.5",
-        "description": "Descripción de  la imagen"
-    }
-]
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -69,231 +16,6 @@ paths_ulr = ["/login.html","/register.html", "/user_view.html",
              "/admi_view.html","/addContent.html","/item_view.html",
              "/user_account.html"]
 
-class E_Usuarios:
-    def __init__(self):
-        pass
-    def verificarLogin(self, username, password):
-        for item in db:
-            user = item["username"]
-            if user == username and item["pswd"] == password:
-                return item["auth"], item['id']  # 1 = Admin, 0 = Cliente
-        return None,None
-    
-    def obtenerUser(self, id):
-        for item in db:
-            if item["id"] == id:
-                data = {"username":item["username"], "email":item["email"], "saldo":item["saldo"]}
-                return data
-        return None
-    
-    def obtenerSaldo(self, id):
-        for item in db:
-            if item["id"] == id:
-                return item["saldo"]
-        return None
-    
-    def actualizarSaldo(self,id, cantidad):
-        for item in db:
-            if item["id"] == id:
-                item["saldo"] += cantidad
-
-class E_Recargas:
-    def __init__(self):
-        pass
-    def __get_id_re__(self):
-        return len(e_recargas)+1
-    
-    def registrarSolicitud(self, monto, user_id):
-        e_recargas.append({"id_user":user_id,"id_recarga": self.__get_id_re__(), 
-                           "cantidad":monto, "fecha":str(datetime.datetime.now()), "estado":1})
-
-    def obtenerListaPeticiones(self):
-        list_peti = [item for item in e_recargas if item["estado"]==1]
-        return list_peti
-    
-    def aprobarRecarga(self, id_recarga):
-        for item in e_recargas:
-            if item["id_recarga"] == id_recarga:
-                print("A")
-                item["estado"] = 0
-                return item["id_user"], item["cantidad"]
-        return None,None
-    
-class E_Contenidos:
-    def __init__(self):
-        pass
-
-    def registrarContenido(self, data):
-        content.append(data)
-
-    def obtenerContenidos(self):
-        return content
-
-class C_Transacciones:
-    def __init__(self):
-        pass
-    def verificarMetPago(self, Ncard, cardType):
-        generate_Bancos_disponibles = lambda a: a in ["mastercard","bcp","visa"]
-        return generate_Bancos_disponibles(cardType)
-    
-    def realizarPago(self, user_id, amount, Ncard):
-        pagoTarjeta = lambda a,b : 1
-        if pagoTarjeta(amount, Ncard):
-            controller = E_Recargas()
-            controller.registrarSolicitud(amount, user_id)
-            return 0
-        return 1
-    def obtenerListaPeticiones(self):
-        controller = E_Recargas()
-        return controller.obtenerListaPeticiones()
-    
-    def aprobarRecarga(self, id_recarga):
-        controller = E_Recargas()
-        id_user, cantidad = controller.aprobarRecarga(id_recarga)
-        return id_user, cantidad
-    
-class C_Content:
-    def get_id(self):
-        return 1
-    def registrarContenido(self, data):
-        contenidos = E_Contenidos()
-        contenidos.registrarContenido(data)
-
-    def consultarDatos(self, query, filters):
-        query = query.lower().strip()
-        resultados = []
-
-        contenidos = E_Contenidos()
-        A =  contenidos.obtenerContenidos()
-
-
-        aut = 0 
-        if 'author' in filters:
-            filters.remove('author')
-            aut = 1
-
-        for item in A:
-            if len(filters)==0 or item["type"] in filters:
-                titulo = item.get('title', '').lower()
-                author = item.get('author', '').lower()
-                if query in titulo or (aut and query in author):
-                    resultados.append({
-                        'title': titulo,
-                        'author': author,
-                        'type': item["type"],
-                        'id': item["id"]
-                    })
-
-        return resultados
-    
-    def getContent(self, content_id):
-        return next((item for item in content if item["id"] == content_id), None)
-    
-class C_Usuario:
-    def __init__(self):
-        self.id = None
-    
-    def getDataUser(self, id_user):
-        usuarios = E_Usuarios()
-        return usuarios.obtenerUser(id_user)
-
-    def Buscar(self, query,filters):
-        content_manager = C_Content()
-        return content_manager.consultarDatos(query,filters)
-    
-    def seleccionarContent(self, content_id):
-        content_manager = C_Content()
-        return content_manager.getContent(content_id)
-    
-    def loginVerificar(self, username, password):
-        usuarios = E_Usuarios()
-        return usuarios.verificarLogin(username,password)
-    
-    
-class C_Cliente(C_Usuario):
-    def __init__(self):
-        super().__init__()
-
-    def enviarSolicitud(self, Ncard, amount, cardType, id_user):
-        controller = C_Transacciones()
-        if not controller.verificarMetPago(Ncard,cardType):
-            return {"success": False, "message":"Metodo de pago invalido"}
-        if controller.realizarPago(id_user, amount, Ncard):
-            return {"success": False, "message":"Saldo insuficiente"}
-        return {"success": True}
-    
-    def obtenerSaldo(self, id_user):
-        usuarios = E_Usuarios()
-        return usuarios.obtenerSaldo(id_user)
-
-    
-class C_Administrador(C_Usuario):
-    def __init__(self):
-        super().__init__()
-
-    def getRecargas(self, estado=1):
-        controller = C_Transacciones()
-        return controller.obtenerListaPeticiones()
-    
-    def aprobarRecarga(self, id_recarga):
-        controller = C_Transacciones()
-        id_user,cantidad = controller.aprobarRecarga(id_recarga)
-        print(id_user,cantidad)
-        usuarios = E_Usuarios()
-        usuarios.actualizarSaldo(id_user, cantidad)
-
-    def ingresarAgregarContenido(self, datos):
-        content_manager = C_Content()
-        content_manager.registrarContenido(datos)
-
-class Usuario:
-    def __init__(self,user=None,id=None, ctr=C_Usuario()):
-        self.user = user
-        self.id = id
-        self.cotroller = ctr
-        
-    def iniciar_sesion(self, username, password):
-        auth, self.id = self.cotroller.loginVerificar(username,password)
-        return auth
-    
-    def Buscar(self, query,filters):
-        print(self.user, self.id)
-        return self.cotroller.Buscar(query,filters)
-    
-    def seleccionar(self, content_id):
-        return self.cotroller.seleccionarContent(content_id)
-    
-    def getDataUser(self):
-        return self.cotroller.getDataUser(self.id)
-    
-    def registrarU(self, data):
-        return 1
-    
-class Cliente(Usuario):
-    def __init__(self, username, id):
-        super().__init__(user=username,id=id,ctr=C_Cliente())
-        self.saldo = None
-        self.estado_cuenta = None
-
-    def ingresarMontoSolicitar(self, Ncard, amount, cardType):
-        return self.cotroller.enviarSolicitud(Ncard, amount, cardType, self.id)
-    
-    def getSaldo(self):
-        return self.cotroller.obtenerSaldo(self.id)
-
-class Administrador(Usuario):
-    def __init__(self, username, id):
-        super().__init__(user=username,id=id,ctr=C_Administrador())
-
-    def obtenerRecargas(self):
-        return self.cotroller.getRecargas()
-    
-    def aprobarSaldoCliente(self, id_recarga):
-        self.cotroller.aprobarRecarga(id_recarga)
-    
-    def ingresarAgregarContenido(self, datos):
-        self.controller.ingresarAgregarContenido(datos)
-    
 def autenticar(username, password):
     temp_user = Usuario()
     auth = temp_user.iniciar_sesion(username, password)
@@ -336,7 +58,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 if "session_id" in item:
                     session_id = item.split("=")[1].strip()
                     return session_store.get(session_id)
-        return None
+        return Usuario()
     
     def permises_web_current_user(self):
         self.send_response(403)
@@ -345,6 +67,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         
     def do_GET(self):
         parsed_path = urlparse(self.path)
+
+        current_usuario = self.get_current_user()
 
         if parsed_path.path == "/":
             self.serve_file(os.path.join(BASE_DIR, "templates", "main_view.html"))
@@ -362,10 +86,9 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         elif parsed_path.path == "/main_view_content":
             self._set_headers()
-            self.wfile.write(json.dumps(content).encode("utf-8"))
+            self.wfile.write(json.dumps(current_usuario.getContentView()).encode("utf-8"))
 
         elif parsed_path.path == "/get_balance":
-            current_usuario = self.get_current_user()
             if current_usuario:
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.getSaldo()).encode("utf-8"))
@@ -373,7 +96,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.permises_web_current_user()
 
         elif parsed_path.path == "/user_data":
-            current_usuario = self.get_current_user()
             if current_usuario:
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.getDataUser()).encode("utf-8"))
@@ -381,7 +103,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.permises_web_current_user()
 
         elif parsed_path.path == "/get_recargas":
-            current_usuario = self.get_current_user()
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtenerRecargas()).encode("utf-8"))
@@ -485,22 +206,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     "author": author,
                     "price": price,
                     "extension": extension,
-                    "category": category,
+                    "categorys": "...",
                     "rating": rating,
-                    "description": description
+                    "description": description,
+                    "type": type_data
                 }
 
-                if type_data in content:
-                    #content[type_data].append(new_item)
-                    current_usuario.ingresarAgregarContenido(new_item)
-                    response = {"success": True, "message": "Contenido guardado"}
-                else:
-                    response = {"success": False, "message": "Tipo de contenido inválido"}
+                current_usuario.ingresarAgregarContenido(new_item)
+                response = {"success": True, "message": "Contenido guardado"}
 
             else:
                 self.permises_web_current_user()
 
-            print(content)
             self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
 
