@@ -40,7 +40,7 @@ function generateNavbar() {
     var filterContainer = document.createElement('div');
     filterContainer.classList.add('filter-checkboxes');
 
-    var filtros = ['video', 'audio', 'imagen']; // Ya no 'todos'
+    var filtros = ['video', 'audio', 'imagen','author'];
     filtros.forEach(tipo => {
         var label = document.createElement('label');
         label.classList.add('filter-label');
@@ -60,7 +60,12 @@ function generateNavbar() {
     searchLi.appendChild(searchContainer);
     ul.appendChild(searchLi);
 
-    var options = {"Account":"account.html","CashCar":"CashCar.html","Notifications":"notification.html", "Sign out": "login.html"};
+    var liSaldo = document.createElement('li');
+    liSaldo.id = 'user-balance';
+    liSaldo.textContent = 'Saldo: Cargando...';
+    ul.appendChild(liSaldo);
+
+    var options = {"Cuenta":"user_account.html","Carrito":"CashCar.html","Notificaciones":"notification.html", "Sign out": "login.html"};
     for(var key in options){
         var liOption = document.createElement('li');
         var aOption = document.createElement('a');
@@ -78,6 +83,26 @@ function generateNavbar() {
     var resultsContainer = document.createElement('div');
     resultsContainer.setAttribute('id', 'search-results');
     document.body.insertBefore(resultsContainer, header.nextSibling);
+
+    function obtenerSaldo() {
+        fetch('/get_balance')
+            .then(response => response.json())
+            .then(data => {
+                const saldoElement = document.getElementById('user-balance');
+                if (data) {
+                    saldoElement.textContent = `Saldo: $${data}`;
+                } else {
+                    saldoElement.textContent = "Saldo: Error al cargar";
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener el saldo:', error);
+                const saldoElement = document.getElementById('user-balance');
+                saldoElement.textContent = "Saldo: Error";
+            });
+    }
+
+    obtenerSaldo();
 
     function realizarBusqueda(textoBusqueda) {
         const query = textoBusqueda.trim().toLowerCase();
@@ -99,7 +124,7 @@ function generateNavbar() {
                 data.forEach(item => {
                     html += `
                     <div class="result-card">
-                        <a href=item_view.html?id=${item.id}><h4>${item.title}</h4></a>
+                        <a href=item_view.html?id=${item.id}><h4>${item.title}</a>(${item.type})</h4>
                         <p><strong>Autor:</strong> ${item.author}</p>
                     </div>`;
                 });
@@ -118,6 +143,12 @@ function generateNavbar() {
     searchForm.addEventListener('submit', function(event) {
         event.preventDefault();
         const texto = searchInput.value;
+
+        if (texto.trim() === '') {
+            resultsContainer.innerHTML = "<p>Ingrese búsqueda.</p>";
+            return;
+        }
+        
         realizarBusqueda(texto);
     });
 }

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="/styles/main_view.css">
+        <link rel="stylesheet" type="text/css" href="/styles/user_account.css">
+        <title>DownEz-Cuenta</title>
+        <script src="scripts/navbar_user.js" defer></script>
+        <script src="/scripts/user_account.js" defer></script>
+    </head>
+    <body>
+        <div class="user-account-container">
+    
+            <!-- Información del usuario -->
+            <div id="user-info">
+                <h2 id="username">Cargando...</h2>
+                <p id="email">Email: cargando...</p>
+            </div>
+    
+            <!-- Lista de opciones -->
+            <ul id="user-list">
+                <li class="clickable-item">Perfil</li>
+                <li class="clickable-item">Historial</li>
+                <li class="clickable-item">Configuración</li>
+            </ul>
+    
+            <!-- Acciones -->
+            <div class="actions">
+                <button id="request-balance-btn">Solicitar saldo</button>
+                <button id="close-account-btn">Cerrar cuenta</button>
+            </div>
+    
+            <!-- Formulario oculto para solicitar saldo -->
+            <form id="balance-form" style="display: none;">
+                <h3>Solicitar saldo</h3>
+    
+                <label for="card_type">Método de pago:</label>
+                <select name="card_type" id="card_type">
+                    <option value="visa">Visa</option>
+                    <option value="bcp">BCP</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="mastercard">Mastercard</option>
+                </select><br>
+    
+                <label for="tarjeta">Número de tarjeta:</label>
+                <input type="text" name="tarjeta" id="tarjeta" required><br>
+    
+                <label for="cantidad">Cantidad:</label>
+                <input type="number" name="cantidad" id="cantidad" min="1" required><br>
+    
+                <button type="button" id="submit-balance">Solicitar saldo</button>
+            </form>
+    
+        </div>
+    </body>
+</html>
