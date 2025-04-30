@@ -1,0 +1,7 @@
+email,usuario,contraseña,saldo,tipo,estado_cuenta
+AliceJohnson@gmail.com,alicej,password123,1500.50,cliente,activo
+BobSmith@gmail.com,bobsmith,mysecurepassword,2500.75,cliente,activo
+CharlieBrown@gmail.com,charlieb,charliepass,1800.20,cliente,suspendido
+DianaGreene@gmail.com,dianag,dianapass,500.00,cliente,activo
+EdwardHarris@gmail.com,edwardh,edwardpass,3000.00,cliente,activo
+admi@gmail.com,admi,123,0.0,admin,activo
