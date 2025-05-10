@@ -154,6 +154,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/search_info":
+            if current_usuario:
+                print(data)
+                self._set_headers()
+                resultados = [
+                    { "id": 101, "autor": "Juan", "tipo": "imagen", "nombre": "paisaje.jpg" },
+                    { "id": 102, "autor": "María", "tipo": "video", "nombre": "intro.mp4" }
+                    ]
+                self.wfile.write(json.dumps(resultados).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         elif parsed_path.path == "/request_balance":
             if current_usuario:
                 response = current_usuario.ingresarMontoSolicitar(data.get("tarjeta"), data.get("cantidad"), data.get("cardType"))

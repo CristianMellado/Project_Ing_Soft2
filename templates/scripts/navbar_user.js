@@ -37,6 +37,17 @@ function generateNavbar() {
     searchButton.textContent = 'Buscar';
     searchForm.appendChild(searchButton);
 
+    var clearButton = document.createElement('button');
+    clearButton.setAttribute('type', 'button');
+    clearButton.textContent = '✖';
+    clearButton.classList.add('clear-search-btn');
+    searchForm.appendChild(clearButton);
+    clearButton.addEventListener('click', function () {
+        searchInput.value = '';
+        resultsContainer.innerHTML = '';
+        filterContainer.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+    });
+
     var filterContainer = document.createElement('div');
     filterContainer.classList.add('filter-checkboxes');
 

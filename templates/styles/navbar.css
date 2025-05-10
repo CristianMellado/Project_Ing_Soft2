@@ -172,3 +172,16 @@ nav a {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     width: 200px;
 }
+
+.clear-search-btn {
+    margin-left: 5px;
+    background-color: #ccc;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.clear-search-btn:hover {
+    background-color: #999;
+}

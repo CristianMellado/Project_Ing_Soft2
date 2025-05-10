@@ -13,5 +13,20 @@
     <u><h1>DownEz</h1></u>
 
     <div class="container">
+        <div class="search-layout">
+            <div class="search-container">
+                <form class="search-form" id="form-busqueda">
+                    <input type="text" id="search-input" placeholder="Buscar por ID o autor...">
+                    <button type="submit">Buscar</button>
+                </form>
+                <div class="filter-checkboxes">
+                    <label class="filter-label"><input type="checkbox" class="filtro-tipo" value="imagen"> Imagen</label>
+                    <label class="filter-label"><input type="checkbox" class="filtro-tipo" value="video"> Video</label>
+                    <label class="filter-label"><input type="checkbox" class="filtro-tipo" value="audio"> Audio</label>
+                </div>
+            </div>
+            <div id="search-results-admi"></div>
+        </div>
+
     </div>
 </body>

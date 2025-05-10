@@ -37,10 +37,22 @@ function generateNavbar() {
     searchButton.textContent = 'Buscar';
     searchForm.appendChild(searchButton);
 
+    var clearButton = document.createElement('button');
+    clearButton.setAttribute('type', 'button');
+    clearButton.textContent = '✖';
+    clearButton.classList.add('clear-search-btn');
+    searchForm.appendChild(clearButton);
+    clearButton.addEventListener('click', function () {
+        searchInput.value = '';
+        resultsContainer.innerHTML = '';
+        filterContainer.querySelectorAll('.filter-checkbox').forEach(cb => cb.checked = false);
+    });
+    
+
     var filterContainer = document.createElement('div');
     filterContainer.classList.add('filter-checkboxes');
 
-    var filtros = ['video', 'audio', 'imagen']; // Ya no 'todos'
+    var filtros = ['video', 'audio', 'imagen','author']; 
     filtros.forEach(tipo => {
         var label = document.createElement('label');
         label.classList.add('filter-label');
@@ -60,7 +72,7 @@ function generateNavbar() {
     searchLi.appendChild(searchContainer);
     ul.appendChild(searchLi);
 
-    var options = { "Recargas":"#", "Add Content":"addContent.html","Sign out": "login.html"};
+    var options = { "Recargas":"#", "Agregar Contenido":"addContent.html","Sign out": "login.html"};
     for(var key in options){
         var liOption = document.createElement('li');
 
@@ -127,6 +139,12 @@ function generateNavbar() {
     searchForm.addEventListener('submit', function(event) {
         event.preventDefault();
         const texto = searchInput.value;
+
+        if (texto.trim() === '') {
+            resultsContainer.innerHTML = "<p>Ingrese búsqueda.</p>";
+            return;
+        }
+
         realizarBusqueda(texto);
     });
 }
