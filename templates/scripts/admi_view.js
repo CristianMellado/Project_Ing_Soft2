@@ -88,14 +88,19 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         const query = searchInput.value.trim();
-        const tipos = Array.from(checkboxes)
+        if (query === '') {
+            searchResults.innerHTML = "<p>Ingrese búsqueda.</p>";
+            return;
+        }
+
+        const filters = Array.from(checkboxes)
             .filter(chk => chk.checked)
             .map(chk => chk.value);
 
         fetch('/search_info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, tipos })
+            body: JSON.stringify({ query, filters })
         })
         .then(res => res.json())
         .then(data => {
@@ -120,19 +125,25 @@ document.addEventListener('DOMContentLoaded', function () {
         header.innerHTML = `
             <span><strong>ID</strong></span>
             <span><strong>Nombre/Título</strong></span>
-            <span><strong>Autor</strong></span>
-            <span><strong>Tipo</strong></span>
+            <span><strong>Autor/Email</strong></span>
+            <span><strong>Tipo/Estado</strong></span>
         `;
         searchResults.appendChild(header);
     
         data.forEach(item => {
-            const row = document.createElement('div');
+            const row = document.createElement('a');
+            if(item.type!='cliente' && item.type!='ex-cliente' && item.type!='administrador'){
+                row.href = `item_info_edit.html?id=${item.id}`;
+            }
+            else{
+                row.href = `user_info.html?id=${item.id}`;
+            }
             row.className = 'result-row';
             row.innerHTML = `
                 <span>${item.id}</span>
-                <span>${item.nombre}</span>
-                <span>${item.autor}</span>
-                <span>${item.tipo}</span>
+                <span>${item.title}</span>
+                <span>${item.author}</span>
+                <span>${item.type}</span>
             `;
             searchResults.appendChild(row);
         });

@@ -40,7 +40,7 @@
 }
 
 /* Estilos para los botones */
-#send-button {
+#send-button, #send-promocion, #send-eliminar, #send-guardar {
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
@@ -52,7 +52,7 @@
 }
 
 /* Efecto hover para el botón */
-#send-button:hover {
+#send-button:hover, #send-promocion:hover, #send-eliminar:hover, #send-guardar:hover {
     background-color: #45a049;
 }
 

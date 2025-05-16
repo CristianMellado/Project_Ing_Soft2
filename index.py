@@ -14,7 +14,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 paths_ulr = ["/login.html","/register.html", "/user_view.html", 
              "/admi_view.html","/addContent.html","/item_view.html",
-             "/user_account.html"]
+             "/user_account.html", "/user_info.html", "/item_info_edit.html",
+             "/item_view_admi.html", "/item_shop.html"]
 
 def autenticar(username, password):
     temp_user = Usuario()
@@ -109,6 +110,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/verificate_downloaded_content":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
+            elif current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                self.wfile.write(json.dumps({'success':False}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -158,10 +169,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if current_usuario:
                 print(data)
                 self._set_headers()
-                resultados = [
-                    { "id": 101, "autor": "Juan", "tipo": "imagen", "nombre": "paisaje.jpg" },
-                    { "id": 102, "autor": "María", "tipo": "video", "nombre": "intro.mp4" }
-                    ]
+                resultados = current_usuario.buscar_info(data)
+                print(resultados)
                 self.wfile.write(json.dumps(resultados).encode("utf-8"))
             else:
                 self.permises_web_current_user()
@@ -188,6 +197,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 found = current_usuario.seleccionar(content_id)
                 self._set_headers()
                 self.wfile.write(json.dumps(found or {"error": "Contenido no encontrado"}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/get_user_by_id":
+            if current_usuario:
+                id = int(data.get("id", 0))
+                found = current_usuario.seleccionar_user(id)
+                self._set_headers()
+                self.wfile.write(json.dumps(found or {"error": "usuario no encontrado"}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 

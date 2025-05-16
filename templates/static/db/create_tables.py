@@ -18,13 +18,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
     pswd TEXT,
     saldo DOUBLE DEFAULT 0.0,
     auth INTEGER DEFAULT 0,
-    estado TEXT DEFAULT "activo"
+    estado TEXT DEFAULT "cliente"
 );
 ''')
 
 db = [
-    {"pswd": "ok", "auth": 0, "username": "alex", "saldo": 150, "estado": "activo", "email": "abc@gmail.com"},
-    {"pswd": "123", "auth": 1, "username": "admi", "saldo": -1, "estado": "activo", "email": "admi@gmail.com"}
+    {"pswd": "ok", "auth": 0, "username": "alex", "saldo": 150, "estado": "cliente", "email": "abc@gmail.com"},
+    {"pswd": "123", "auth": 1, "username": "admi", "saldo": -1, "estado": "administrador", "email": "admi@gmail.com"}
 ]
 
 for user in db:
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS recargas (
 ''')
 
 e_recargas = [
-    {"id_user": 2, "cantidad": 500.0, "fecha": "28-04-2025 10:37:05", "estado": "pendiente"}
+    {"id_user": 1, "cantidad": 500.0, "fecha": "28-04-2025 10:37:05", "estado": "pendiente"}
 ]
 
 for rec in e_recargas:

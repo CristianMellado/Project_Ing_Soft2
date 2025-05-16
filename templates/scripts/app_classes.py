@@ -17,7 +17,7 @@ class E_Usuarios:
         return None, None
 
     def obtenerUser(self, id_usuario):
-        query="SELECT username, email, saldo FROM usuarios WHERE id = ?"
+        query="SELECT username, email, saldo, estado FROM usuarios WHERE id = ?"
         self.cursor.execute(query, (id_usuario,))
         resultado = self.cursor.fetchone()
 
@@ -25,7 +25,8 @@ class E_Usuarios:
             return {
                 "username": resultado[0],
                 "email": resultado[1],  
-                "saldo": resultado[2]
+                "saldo": resultado[2],
+                "estado":resultado[3]
             }
         return None
 
@@ -54,6 +55,22 @@ class E_Usuarios:
         print("A")
         self.cursor.execute(query, (username, password, email))
         self.conn.commit()
+    
+    def buscar_info_usuarios(self, query):
+        q_like = f"%{query.lower()}%"
+        sql = "SELECT id, username, email, estado FROM usuarios WHERE CAST(id AS TEXT) LIKE ? OR LOWER(username) LIKE ?"
+        self.cursor.execute(sql, (q_like,q_like))
+        result = self.cursor.fetchall()
+
+        lista = []
+        for row in result:
+            lista.append({
+                "id": row[0],
+                "title": row[1],
+                "author": row[2],
+                "type": row[3],
+            })
+        return lista
 
 class E_Recargas:
     def __init__(self):
@@ -157,6 +174,46 @@ class E_Contenidos:
             })
         return lista
     
+    def Buscar_info(self, query="", filters=None):
+        if filters is None:
+            filters = []
+
+        sql = "SELECT id, title, author, type FROM contenidos WHERE 1=1"
+        params = []
+
+        tipos = [f.lower() for f in filters if f.lower() in ["imagen", "video", "audio"]]
+        if tipos:
+            placeholders = ", ".join(["?"] * len(tipos))
+            sql += f" AND LOWER(type) IN ({placeholders})"
+            params.extend(tipos)
+
+        filters_lower = [f.lower() for f in filters]
+
+        if query:
+            if "id" in filters_lower:
+                sql += " AND CAST(id AS TEXT) LIKE ?"
+                params.append(f"%{query}%")
+            else:
+                if "author" in filters_lower:
+                    sql += " AND LOWER(author) LIKE ?"
+                    params.append(f"%{query.lower()}%")
+                else:
+                    sql += " AND (LOWER(title) LIKE ? OR CAST(id AS TEXT) LIKE ? OR LOWER(author) LIKE ?)"
+                    params.extend([f"%{query.lower()}%", f"%{query.lower()}%",f"%{query.lower()}%"])
+
+        self.cursor.execute(sql, params)
+        result = self.cursor.fetchall()
+
+        lista = []
+        for row in result:
+            lista.append({
+                "id": row[0],
+                "title": row[1],
+                "author": row[2],
+                "type": row[3],
+            })
+        return lista
+    
     def getContent(self, content_id):
         query = "SELECT * FROM contenidos WHERE id = ?"
         self.cursor.execute(query, (content_id,))
@@ -226,6 +283,10 @@ class C_Content:
 
         return resultados
     
+    def solicitar_info_contenido(self, query, filters):
+        contenidos = E_Contenidos()
+        return contenidos.Buscar_info(query,filters)
+     
     @staticmethod
     def getContentView():
         contenidos = E_Contenidos()
@@ -304,6 +365,22 @@ class C_Administrador(C_Usuario):
         content_manager = C_Content()
         content_manager.registrarContenido(datos)
 
+    def buscar_info(self, data):
+        resultados = []
+        filters = data['filters']
+        if 'cliente' not in filters:
+            content_manager = C_Content()
+            resultados = content_manager.solicitar_info_contenido(data['query'], filters)
+        if not ('audio' in filters or 'video' in filters or 'imagen' in filters or 'author' in filters):
+            usuarios = E_Usuarios()
+            resultados += usuarios.buscar_info_usuarios(data['query'])
+
+        return resultados
+    
+    def seleccionarUser(self, id):
+        usuarios = E_Usuarios()
+        return usuarios.obtenerUser(id)
+    
 class Usuario:
     def __init__(self,user=None,id=None, ctr=C_Usuario()):
         self.user = user
@@ -360,3 +437,9 @@ class Administrador(Usuario):
     
     def ingresarAgregarContenido(self, datos):
         self.controller.ingresarAgregarContenido(datos)
+    
+    def buscar_info(self, data):
+        return self.controller.buscar_info(data)
+    
+    def seleccionar_user(self, id):
+        return self.controller.seleccionarUser(id)

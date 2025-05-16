@@ -27,7 +27,20 @@ export function createMedia(data, Div) {
     
     buyButton.dataset.id = data.id;
     buyButton.addEventListener('click', function () {
-        window.location.href = `item_view.html?id=${data.id}`;
+        fetch('/verificate_downloaded_content')
+        .then(response => response.json())
+        .then(respuesta => {
+            const saldoElement = document.getElementById('user-balance');
+            if (respuesta.success) {
+                alert("CONTENIDO DESCARGADO :D");
+                //window.location.href = `item_view.html?id=${data.id}`;
+            } else {
+                window.location.href = `item_shop.html?id=${data.id}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     });
 
     infoDiv.appendChild(author);

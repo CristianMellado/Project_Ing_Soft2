@@ -5,12 +5,17 @@ function generateNavbar() {
     stylevar.rel = "stylesheet"; 
     stylevar.type = "text/css";
 
+    var stylevar2 = document.createElement('link');
+    stylevar2.href = "/styles/recargas_admi.css";
+    stylevar2.rel = "stylesheet"; 
+    stylevar2.type = "text/css";
+
     var nav = document.createElement('nav');
     var ul = document.createElement('ul');
 
     var liLogo = document.createElement('li');
     var aLogo = document.createElement('a');
-    aLogo.href = 'user_view.html';
+    aLogo.href = 'admi_view.html';
     aLogo.textContent = 'DownEz';
     liLogo.appendChild(aLogo);
     ul.appendChild(liLogo);
@@ -94,6 +99,7 @@ function generateNavbar() {
     nav.appendChild(ul);
     header.appendChild(nav);
     header.appendChild(stylevar);
+    header.appendChild(stylevar2);
     document.body.insertBefore(header, document.body.firstChild);
 
     var resultsContainer = document.createElement('div');
@@ -120,7 +126,7 @@ function generateNavbar() {
                 data.forEach(item => {
                     html += `
                     <div class="result-card">
-                        <a href=item_view.html?id=${item.id}><h4>${item.title}</h4></a>
+                        <a href=item_view_admi.html?id=${item.id}><h4>${item.title}</h4></a>
                         <p><strong>Autor:</strong> ${item.author}</p>
                     </div>`;
                 });
@@ -151,5 +157,85 @@ function generateNavbar() {
 
 document.addEventListener('DOMContentLoaded', function () {
     generateNavbar();
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    if (!document.getElementById('recargas-container')) {
+        var recargasContainer = document.createElement('div');
+        recargasContainer.id = 'recargas-container';
+        recargasContainer.style.display = 'none';
+        document.body.appendChild(recargasContainer);
+    }
+
+    function obtenerRecargas() {
+        fetch('/get_recargas') 
+            .then(response => response.json())
+            .then(data => {
+                const recargasElement = document.getElementById('recargas-container');
+                recargasElement.innerHTML = '<button id="close-recargas">X</button>';
+    
+                document.getElementById('close-recargas').addEventListener('click', function () {
+                    recargasElement.style.display = 'none';
+                });
+    
+                data.forEach(recarga => {
+                    var recargaDiv = document.createElement('div');
+                    recargaDiv.classList.add('recarga-item');
+                    recargaDiv.innerHTML = `
+                        <p><strong>User:</strong> ${recarga.usuario}</p>
+                        <p><strong>Monto:</strong> $${recarga.monto}</p>
+                        <button class="aceptar-recarga" data-id="${recarga.id_recarga}">Aceptar</button>
+                    `;
+                    recargasElement.appendChild(recargaDiv);
+                });
+    
+                var aceptarButtons = document.querySelectorAll('.aceptar-recarga');
+                aceptarButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const recargaId = button.getAttribute('data-id');
+                        aceptarRecarga(recargaId);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener recargas:', error);
+            });
+    }
+
+    function aceptarRecarga(id_recarga) {
+        fetch(`/accept_recarga`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({id_recarga})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Recarga aceptada con éxito');
+                obtenerRecargas(); 
+            } else {
+                alert('Error al aceptar la recarga');
+            }
+        })
+        .catch(error => {
+            console.error('Error al aceptar recarga:', error);
+        });
+    }
+
+    setTimeout(() => {
+        const recargasBtn = document.getElementById('recargas-btn');
+        const recargasContainer = document.getElementById('recargas-container');
+        
+        if (recargasBtn) {
+            recargasBtn.addEventListener('click', function () {
+                obtenerRecargas();
+                if (recargasContainer) {
+                    recargasContainer.style.display = 'block';
+                }
+            });
+        }
+    }, 100);
+
 });
 
