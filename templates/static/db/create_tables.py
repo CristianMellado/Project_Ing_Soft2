@@ -36,7 +36,7 @@ for user in db:
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS categorias (
-#     id_categoria INTEGER PRIMARY KEY AUTOINCREMENT,
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     nombre_categoria TEXT,
 #     descripcion TEXT
 # );
@@ -44,7 +44,7 @@ for user in db:
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS recargas (
-    id_recarga INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_user INTEGER,
     monto DOUBLE,
     fecha TEXT,
@@ -65,36 +65,34 @@ for rec in e_recargas:
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS movimientos (
-#     id_movimiento INTEGER PRIMARY KEY AUTOINCREMENT,
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     id_contenido INTEGER,
 #     id_usuario INTEGER,
 #     precio DOUBLE,
 #     fecha TEXT,
-#     FOREIGN KEY (id_contenido) REFERENCES contenido(id_contenido),
-#     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+#     FOREIGN KEY (id_contenido) REFERENCES contenido(id),
+#     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 # );
 # ''')
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS puntuaciones (
-#     id_puntuaciones INTEGER PRIMARY KEY AUTOINCREMENT,
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     id_cliente INTEGER,
 #     id_contenido INTEGER,
 #     puntuacion INTEGER,
-#     FOREIGN KEY (id_cliente) REFERENCES usuarios(id_usuario),
-#     FOREIGN KEY (id_contenido) REFERENCES contenido(id_contenido)
+#     FOREIGN KEY (id_cliente) REFERENCES usuarios(id),
+#     FOREIGN KEY (id_contenido) REFERENCES contenido(id)
 # );
 # ''')
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS promociones (
-#     id_promocion INTEGER PRIMARY KEY AUTOINCREMENT,
-#     id_cliente INTEGER,
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
 #     id_contenido INTEGER,
 #     descuento DOUBLE,
 #     titulo_de_descuento TEXT,
 #     dias INTEGER,
-#     FOREIGN KEY (id_cliente) REFERENCES usuarios(id_usuario),
 #     FOREIGN KEY (id_contenido) REFERENCES contenido(id_contenido)
 # );
 # ''')
