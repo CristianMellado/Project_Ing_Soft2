@@ -21,10 +21,10 @@ imprimir_tabla('usuarios')
 imprimir_tabla('contenidos')  # sin data_contenido
 # imprimir_tabla('categorias')
 imprimir_tabla('recargas')
-# imprimir_tabla('movimientos')
+imprimir_tabla('movimientos')
 # imprimir_tabla('puntuaciones')
 # imprimir_tabla('promociones')
-# imprimir_tabla('contenido_categoria')
+imprimir_tabla('usuarioContenido')
 
 
 # Cerrar conexiÃ³n

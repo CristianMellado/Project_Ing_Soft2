@@ -1,5 +1,5 @@
 
-export function createMedia(data, Div) {
+export function createMedia(data, Div, shop) {
     var infoDiv = document.createElement('div');
     infoDiv.className = 'info';
 
@@ -23,24 +23,56 @@ export function createMedia(data, Div) {
 
     var buyButton = document.createElement('button');
     buyButton.className = 'buy-button';
-    buyButton.textContent = 'download';
-    
+
+    buyButton.textContent = 'Descargar';
+    if(shop==1)
+        buyButton.textContent = 'Pagar';
+
     buyButton.dataset.id = data.id;
     buyButton.addEventListener('click', function () {
-        fetch('/verificate_downloaded_content')
-        .then(response => response.json())
-        .then(respuesta => {
-            const saldoElement = document.getElementById('user-balance');
-            if (respuesta.success) {
-                alert("CONTENIDO DESCARGADO :D");
-                //window.location.href = `item_view.html?id=${data.id}`;
-            } else {
-                window.location.href = `item_shop.html?id=${data.id}`;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        if(shop == 1){
+            fetch('/pagarContenido', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: data.id})
+            })
+            .then(response => response.json())
+            .then(respuesta => {
+                console.log(respuesta);
+                if (respuesta.success) {
+                    alert("CONTENIDO COMPRADO EXITOSAMENTE :D");
+                    window.location.href = `item_view.html?id=${data.id}`;
+                } else {
+                    alert("NO TIENE SALDO SUFICIENTE D:");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        else{
+            fetch('/verificate_downloaded_content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: data.id})
+                })
+            .then(response => response.json())
+            .then(respuesta => {
+                if (respuesta.success) {
+                    alert("CONTENIDO DESCARGADO :D");
+                    //window.location.href = `item_view.html?id=${data.id}`;
+                } else {
+                    window.location.href = `item_shop.html?id=${data.id}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     });
 
     infoDiv.appendChild(author);
@@ -53,7 +85,7 @@ export function createMedia(data, Div) {
     Div.appendChild(buyButton);
 }
 
-export function createVideoContent(data) {
+export function createVideoContent(data, shop) {
     var videoDiv = document.createElement('div');
     videoDiv.className = 'media-item';
 
@@ -68,13 +100,13 @@ export function createVideoContent(data) {
     video.textContent = 'Your browser does not support the video element.';
     videoDiv.appendChild(video);
 
-    createMedia(data, videoDiv);
+    createMedia(data, videoDiv, shop);
 
     var videoContent = document.querySelector('.container');
     videoContent.appendChild(videoDiv);
 }
 
-export function createImageContent(data) {
+export function createImageContent(data, shop) {
     var Div = document.createElement('div');
     Div.className = 'media-item';
 
@@ -87,13 +119,13 @@ export function createImageContent(data) {
     img.className = "media";
     Div.appendChild(img);
 
-    createMedia(data, Div);
+    createMedia(data, Div, shop);
 
     var Content = document.querySelector('.container');
     Content.appendChild(Div);
 }
 
-export function createAudioContent(data) {
+export function createAudioContent(data, shop) {
     var Div = document.createElement('div');
     Div.className = 'media-item';
 
@@ -107,7 +139,7 @@ export function createAudioContent(data) {
     au.className = "media";
     Div.appendChild(au);
 
-    createMedia(data, Div);
+    createMedia(data, Div, shop);
 
     var Content = document.querySelector('.container');
     Content.appendChild(Div);

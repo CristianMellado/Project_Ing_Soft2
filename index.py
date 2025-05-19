@@ -110,16 +110,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
-        elif parsed_path.path == "/verificate_downloaded_content":
-            if current_usuario and isinstance(current_usuario, Administrador):
-                self._set_headers()
-                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
-            elif current_usuario and isinstance(current_usuario, Cliente):
-                self._set_headers()
-                self.wfile.write(json.dumps({'success':False}).encode("utf-8"))
-            else:
-                self.permises_web_current_user()
-
         else:
             self.send_response(404)
             self.end_headers()
@@ -273,6 +263,28 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
+
+        elif parsed_path.path == "/verificate_downloaded_content":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
+            elif current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                canDownload = current_usuario.verificarContenido(data.get("id"))
+                self.wfile.write(json.dumps({'success':canDownload}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/pagarContenido":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
+            elif current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                canDownload = current_usuario.pagarContenido(data.get("id"))
+                self.wfile.write(json.dumps({'success':canDownload}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
 
         else:
             self.send_response(404)

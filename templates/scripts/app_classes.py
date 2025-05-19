@@ -1,11 +1,15 @@
 import datetime
 import sqlite3
 
-path_bd = 'templates/static/db/downez.db'
+DB_PATH = 'templates/static/db/downez.db'
+
+def get_connection():
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    return conn
 
 class E_Usuarios:
     def __init__(self):
-        self.conn = sqlite3.connect(path_bd)
+        self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
     def verificarLogin(self, username, password):
@@ -40,7 +44,7 @@ class E_Usuarios:
         return None
 
     def actualizarSaldo(self,id, cantidad):
-        query = "UPDATE usuarios SET saldo = saldo + ? WHERE id = ?"
+        query = "UPDATE usuarios SET saldo = ? WHERE id = ?"
         self.cursor.execute(query, (cantidad, id))
         self.conn.commit()
 
@@ -72,9 +76,43 @@ class E_Usuarios:
             })
         return lista
 
+class E_Movimientos:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
+
+    def registrarMovimiento(self, idU, idC, precio):
+        query = "INSERT INTO movimientos (id_contenido, id_usuario, precio, fecha) VALUES (?, ?, ?, ?)"
+        fecha = str(datetime.datetime.now())
+        self.cursor.execute(query, (idU, idC, precio, fecha))
+        self.conn.commit()
+
+    def actualizarSaldo(self, idU, precio):
+        query_set = "UPDATE usuarios SET saldo = saldo - ? WHERE id = ?"
+        self.cursor.execute(query_set, (precio, idU))
+        self.conn.commit()
+
+class E_UsuarioContenido:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
+
+    def verificarContenido(self, idu, idc):
+        query = "SELECT id_contenido, id_usuario FROM usuarioContenido WHERE id_contenido = ? AND id_usuario = ?"
+        self.cursor.execute(query, (idc,idu,))
+        result = self.cursor.fetchone()
+        print(result)
+        if(result is None): return False
+        return True
+    
+    def registrarCompra(self, idU, idC):
+        query = "INSERT INTO usuarioContenido (id_contenido, id_usuario) VALUES (?, ?)"
+        self.cursor.execute(query, (idC, idU,))
+        self.conn.commit()
+
 class E_Recargas:
     def __init__(self):
-        self.conn = sqlite3.connect(path_bd)
+        self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
     def registrarSolicitud(self, monto, user_id):
@@ -86,7 +124,7 @@ class E_Recargas:
     def obtenerListaPeticiones(self):
         query = """
             SELECT 
-                recargas.id_recarga, 
+                recargas.id, 
                 usuarios.username, 
                 recargas.monto, 
                 recargas.fecha, 
@@ -110,12 +148,12 @@ class E_Recargas:
         return lista
     
     def aprobarRecarga(self, id_recarga):
-        query = "SELECT id_user, monto FROM recargas WHERE id_recarga = ? AND estado = 'pendiente'"
+        query = "SELECT id_user, monto FROM recargas WHERE id = ? AND estado = 'pendiente'"
         self.cursor.execute(query, (id_recarga,))
         result = self.cursor.fetchone()
         if result:
             id_user, monto = result
-            query_set = "UPDATE recargas SET estado = 'aprobada' WHERE id_recarga = ?"
+            query_set = "UPDATE recargas SET estado = 'aprobada' WHERE id = ?"
             self.cursor.execute(query_set, (id_recarga,))
             self.conn.commit()
             return id_user, monto
@@ -124,7 +162,7 @@ class E_Recargas:
 
 class E_Contenidos:
     def __init__(self):
-        self.conn = sqlite3.connect(path_bd)
+        self.conn = get_connection()
         self.cursor = self.conn.cursor()
         
     def registrarContenido(self, data):
@@ -225,6 +263,15 @@ class E_Contenidos:
         else:
             return None
         
+    def obtenerPrecio(self, content_id):
+        query = "SELECT price FROM contenidos WHERE id = ?"
+        self.cursor.execute(query, (content_id,))
+        row = self.cursor.fetchone()[0]
+        return row
+                
+    def verificarPromocion(self, idC):
+        return 0
+        
 
 class C_Transacciones:
     def __init__(self):
@@ -249,6 +296,17 @@ class C_Transacciones:
         id_user, cantidad = controller.aprobarRecarga(id_recarga)
         return id_user, cantidad
     
+    def ProcesarPrecioFinal(self, idC):
+        return 1
+    
+    def registrarTransaccion(self, idU,idC, precio):
+        controller = E_Movimientos()
+        controller.registrarMovimiento(idU, idC, precio)
+
+    def actualizarSaldo(self, idU, precio):
+        controller = E_Usuarios()
+        controller.actualizarSaldo(idU, precio) 
+
 class C_Content:
     def get_id(self):
         return 1
@@ -296,6 +354,14 @@ class C_Content:
         contenidos = E_Contenidos()
         return contenidos.getContent(content_id)
     
+    def obtenerPrecio(self, content_id):
+        contenidos = E_Contenidos()
+        return contenidos.obtenerPrecio(content_id)
+    
+    def verificarPromocion(self, idC):
+        contenidos = E_Contenidos()
+        return contenidos.verificarPromocion(idC)
+    
 class C_Usuario:
     def __init__(self):
         self.id = None
@@ -328,6 +394,10 @@ class C_Usuario:
         us = E_Usuarios()
         us.registrarUsuario(user,ps,em)
 
+    def verificarContenido(self, idU, idC):
+        e_usContenido = E_UsuarioContenido()
+        return e_usContenido.verificarContenido(idU, idC)
+
 
 class C_Cliente(C_Usuario):
     def __init__(self):
@@ -344,6 +414,29 @@ class C_Cliente(C_Usuario):
     def obtenerSaldo(self, id_user):
         usuarios = E_Usuarios()
         return usuarios.obtenerSaldo(id_user)
+    
+    def registrarCompra(self, idU, idC):
+        uscont = E_UsuarioContenido()
+        uscont.registrarCompra(idU,idC)
+        
+    def pagarContenido(self, idU, idC):
+        controller_trans = C_Transacciones()
+        controller_cont = C_Content()
+        saldo = self.obtenerSaldo(idU) 
+
+        if controller_cont.verificarPromocion(idC):
+            precioFinal = controller_trans.ProcesarPrecioFinal(idC)
+        else:
+            precioFinal = controller_cont.obtenerPrecio(idC)
+            print(precioFinal)
+
+        if saldo > precioFinal:
+            controller_trans.actualizarSaldo(idU, saldo-precioFinal)
+            controller_trans.registrarTransaccion(idU, idC, precioFinal)
+        else:
+            return False
+        self.registrarCompra(idU, idC)
+        return True
 
     
 class C_Administrador(C_Usuario):
@@ -413,6 +506,9 @@ class Usuario:
         self.controller.registrarUsuario(us,ps,em)
         return 1
     
+    def verificarContenido(self, idC):
+        return self.controller.verificarContenido(self.id, idC)
+    
 class Cliente(Usuario):
     def __init__(self, username, id):
         super().__init__(user=username,id=id,ctr=C_Cliente())
@@ -424,6 +520,9 @@ class Cliente(Usuario):
     
     def getSaldo(self):
         return self.controller.obtenerSaldo(self.id)
+    
+    def pagarContenido(self, idC):
+        return self.controller.pagarContenido(self.id, idC)
 
 class Administrador(Usuario):
     def __init__(self, username, id):

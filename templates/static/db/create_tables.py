@@ -63,17 +63,18 @@ for rec in e_recargas:
     VALUES (?, ?, ?, ?)
     ''', (rec["id_user"], rec["cantidad"], rec["fecha"], rec["estado"]))
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS movimientos (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     id_contenido INTEGER,
-#     id_usuario INTEGER,
-#     precio DOUBLE,
-#     fecha TEXT,
-#     FOREIGN KEY (id_contenido) REFERENCES contenido(id),
-#     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-# );
-# ''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS movimientos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_contenido INTEGER,
+    id_usuario INTEGER,
+    precio DOUBLE,
+    fecha TEXT,
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
+);
+''')
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS puntuaciones (
@@ -97,15 +98,15 @@ for rec in e_recargas:
 # );
 # ''')
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS contenido_categoria (
-#     id_relacion INTEGER PRIMARY KEY AUTOINCREMENT,
-#     id_contenido INTEGER,
-#     id_categoria INTEGER,
-#     FOREIGN KEY (id_contenido) REFERENCES contenido (id_contenido),
-#     FOREIGN KEY (id_categoria) REFERENCES categorias (id_categoria)
-# );
-# ''')
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS usuarioContenido (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_contenido INTEGER,
+    id_usuario INTEGER,
+    FOREIGN KEY (id_contenido) REFERENCES contenidos (id),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios (id)
+);
+''')
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS contenidos (

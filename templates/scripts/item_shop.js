@@ -18,17 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         body: JSON.stringify({ id: id })
     })
-    .then(response => response.json())
-    .then(data => {
+        .then(response => response.json())
+        .then(data => {
             if (data) {
                 itemDetails.innerHTML = '';
                 
                 if (data.type == "imagen") {
-                    createImageContent(data);
+                    createImageContent(data, 1);
                 } else if (data.type == "audio") {
-                    createAudioContent(data);
+                    createAudioContent(data, 1);
                 } else {
-                    createVideoContent(data);
+                    createVideoContent(data, 1);
                 }
             } else {
                 itemDetails.innerHTML = "<p>No se encontró el item.</p>";
