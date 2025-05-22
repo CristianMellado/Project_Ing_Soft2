@@ -76,13 +76,22 @@ function generateNavbar() {
     liSaldo.textContent = 'Saldo: Cargando...';
     ul.appendChild(liSaldo);
 
-    var options = {"Cuenta":"user_account.html","Carrito":"CashCar.html","Notificaciones":"notification.html", "Sign out": "login.html"};
+    var options = {"Cuenta":"user_account.html","Notificaciones":"#", "Sign out": "login.html"};
     for(var key in options){
         var liOption = document.createElement('li');
-        var aOption = document.createElement('a');
-        aOption.href = options[key];
-        aOption.textContent = key;    
-        liOption.appendChild(aOption);
+
+        if (key === "Notificaciones") {
+            var btn = document.createElement('button');
+            btn.textContent = key;
+            btn.id = "recargas-btn";
+            liOption.appendChild(btn);
+        } else {
+            var aOption = document.createElement('a');
+            aOption.href = options[key];
+            aOption.textContent = key;
+            liOption.appendChild(aOption);
+        }
+
         ul.appendChild(liOption);
     }
 
@@ -166,4 +175,85 @@ function generateNavbar() {
 
 document.addEventListener('DOMContentLoaded', function () {
     generateNavbar();
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    if (!document.getElementById('recargas-container')) {
+        var recargasContainer = document.createElement('div');
+        recargasContainer.id = 'recargas-container';
+        recargasContainer.style.display = 'none';
+        document.body.appendChild(recargasContainer);
+    }
+
+    function obtenerRecargas() {
+        fetch('/get_notificaciones') 
+            .then(response => response.json())
+            .then(data => {
+                const recargasElement = document.getElementById('recargas-container');
+                recargasElement.innerHTML = '<button id="close-recargas">X</button>';
+    
+                document.getElementById('close-recargas').addEventListener('click', function () {
+                    recargasElement.style.display = 'none';
+                });
+    
+                data.forEach(recarga => {
+                    var recargaDiv = document.createElement('div');
+                    recargaDiv.classList.add('recarga-item');
+                    recargaDiv.innerHTML = `
+                        <p><strong>User:</strong> ${recarga.usuario}</p>
+                        <p><strong>Monto:</strong> $${recarga.monto}</p>
+                        <button class="aceptar-recarga" data-id="${recarga.id_recarga}">Aceptar</button>
+                    `;
+                    recargasElement.appendChild(recargaDiv);
+                });
+    
+                var aceptarButtons = document.querySelectorAll('.aceptar-recarga');
+                aceptarButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const recargaId = button.getAttribute('data-id');
+                        aceptarRecarga(recargaId);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener recargas:', error);
+            });
+    }
+
+    function aceptarRecarga(id_recarga) {
+        fetch(`/accept_notificacion`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({id_recarga})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Recarga aceptada con éxito');
+                obtenerRecargas(); 
+            } else {
+                alert('Error al aceptar la recarga');
+            }
+        })
+        .catch(error => {
+            console.error('Error al aceptar recarga:', error);
+        });
+    }
+
+    setTimeout(() => {
+        const recargasBtn = document.getElementById('recargas-btn');
+        const recargasContainer = document.getElementById('recargas-container');
+        
+        if (recargasBtn) {
+            recargasBtn.addEventListener('click', function () {
+                obtenerRecargas();
+                if (recargasContainer) {
+                    recargasContainer.style.display = 'block';
+                }
+            });
+        }
+    }, 100);
+
 });

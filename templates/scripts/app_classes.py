@@ -157,7 +157,43 @@ class E_Puntuaciones:
         result = self.cursor.fetchone()
         if(result is None): return False
         return True
-    
+
+class E_Notificaciones:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
+
+    def registrarNotificacionRegalo(self, idU, idC, msg):
+        query = "INSERT INTO notificaciones (id_usuario, id_contenido, messagge) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (idU, idC, msg))
+        self.conn.commit()
+
+    def obtenerListaPeticiones(self):
+        query = """
+            SELECT 
+                recargas.id, 
+                usuarios.username, 
+                recargas.monto, 
+                recargas.fecha, 
+                recargas.estado
+            FROM 
+                recargas
+            JOIN 
+                usuarios ON recargas.id_user = usuarios.id
+            WHERE 
+                recargas.estado = 'pendiente'
+        """
+        self.cursor.execute(query)
+        result = self.cursor.fetchall()
+
+        lista = [{"id_recarga": row[0],
+                "usuario": row[1],
+                "monto": row[2],
+                "fecha": row[3],
+                "estado": row[4]} for row in result]
+
+        return lista
+        
 class E_Recargas:
     def __init__(self):
         self.conn = get_connection()

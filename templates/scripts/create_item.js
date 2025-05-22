@@ -72,6 +72,19 @@ export function createMedia(data, Div, shop) {
         }
     });
 
+    if(shop==1){
+        var giftButton = document.createElement('button');
+        giftButton.textContent = 'Regalar';
+        giftButton.className = 'gift-button';
+        giftButton.style.marginLeft = '10px';
+        giftButton.addEventListener('click', function () {
+            window.location.href = `item_shop.html?id=${data.id}&gift=1`;
+        });
+
+        Div.appendChild(giftButton);
+        console.log("gift");
+    }
+
     infoDiv.appendChild(author);
     infoDiv.appendChild(price);
     infoDiv.appendChild(extension);

@@ -109,6 +109,17 @@ CREATE TABLE IF NOT EXISTS usuarioContenido (
 ''')
 
 cursor.execute('''
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    messagge TEXT,
+    id_contenido INTEGER,
+    id_usuario INTEGER,
+    FOREIGN KEY (id_contenido) REFERENCES contenidos (id),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
+);
+''')
+
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS contenidos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     src TEXT,

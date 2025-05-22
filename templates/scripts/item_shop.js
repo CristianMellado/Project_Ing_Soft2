@@ -3,6 +3,7 @@ import {createImageContent, createAudioContent, createVideoContent} from './crea
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
+    const isGift = params.get('gift') === '1';
 
     const itemDetails = document.querySelector('.container');
 
@@ -20,7 +21,53 @@ document.addEventListener('DOMContentLoaded', function () {
     })
         .then(response => response.json())
         .then(data => {
-            if (data) {
+            if (isGift) {
+                const label = document.createElement('label');
+                label.textContent = 'Usuario destinatario: ';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'recipient';
+                input.placeholder = 'Nombre de usuario o correo';
+                input.style.margin = '10px';
+
+                const sendBtn = document.createElement('button');
+                sendBtn.textContent = 'Enviar regalo';
+                sendBtn.addEventListener('click', () => {
+                    const recipient = input.value.trim();
+                    if (!recipient) {
+                        alert('Debes ingresar un destinatario.');
+                        return;
+                    }
+
+                    fetch('/gift_content', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: id,
+                            recipient: recipient
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(response => {
+                        if (response.success) {
+                            alert("¡Contenido regalado exitosamente!");
+                            window.location.href = `item_view.html?id=${id}`;
+                        } else {
+                            alert("Error al enviar regalo: " + (response.message || ""));
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error al enviar regalo:', err);
+                        alert("Error al conectar con el servidor.");
+                    });
+                });
+
+                container.appendChild(label);
+                container.appendChild(input);
+                container.appendChild(sendBtn);
+            } 
+
+            if(data) {
                 itemDetails.innerHTML = '';
                 
                 if (data.type == "imagen") {
