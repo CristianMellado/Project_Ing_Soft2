@@ -85,4 +85,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
     });
+
+    const downloadsList = document.getElementById("downloads-list");
+
+    fetch("/get_user_downloads")
+    .then(res => res.json())
+    .then(data => {
+        downloadsList.innerHTML = ''; // Limpiar lista
+
+        if (data.length === 0) {
+            downloadsList.innerHTML = '<li>No hay contenidos descargados.</li>';
+            return;
+        }
+
+        data.forEach(item => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                        <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
+                        (${item.type})</h4>
+                        <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating}</p>
+            `;
+            downloadsList.appendChild(li);
+        });
+    })
+    .catch(err => {
+        downloadsList.innerHTML = '<li style="color:red">Error al cargar contenidos.</li>';
+        console.error(err);
+    });
 });

@@ -110,6 +110,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/get_user_downloads":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerDescargasCliente()).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -271,18 +278,27 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             elif current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
                 canDownload = current_usuario.verificarContenido(data.get("id"))
-                self.wfile.write(json.dumps({'success':canDownload}).encode("utf-8"))
+                self.wfile.write(json.dumps(canDownload).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 
         elif parsed_path.path == "/pagarContenido":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
-                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
+                self.wfile.write(json.dumps({'success':True, 'hasRated':True}).encode("utf-8"))
             elif current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
                 canDownload = current_usuario.pagarContenido(data.get("id"))
                 self.wfile.write(json.dumps({'success':canDownload}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/rate_content":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                #print((data.get("id"), data.get("score")), "ratee")
+                hasRated = current_usuario.Enviar_Puntuacion(data.get("id"), data.get("score"))
+                self.wfile.write(json.dumps({'success':hasRated}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 

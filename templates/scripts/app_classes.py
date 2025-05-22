@@ -101,7 +101,7 @@ class E_UsuarioContenido:
         query = "SELECT id_contenido, id_usuario FROM usuarioContenido WHERE id_contenido = ? AND id_usuario = ?"
         self.cursor.execute(query, (idc,idu,))
         result = self.cursor.fetchone()
-        print(result)
+        #print(result)
         if(result is None): return False
         return True
     
@@ -110,6 +110,54 @@ class E_UsuarioContenido:
         self.cursor.execute(query, (idC, idU,))
         self.conn.commit()
 
+    def obtenerDescargasCliente(self, id_usuario):
+        query = """
+            SELECT c.title, c.rating, c.type, c.author, c.id
+            FROM usuarioContenido uc
+            JOIN contenidos c ON uc.id_contenido = c.id
+            WHERE uc.id_usuario = ?
+        """
+        self.cursor.execute(query, (id_usuario,))
+        results = self.cursor.fetchall()
+        lista = []
+        for row in results:
+            lista.append({
+                "title": row[0],
+                "rating": row[1],
+                "type": row[2],
+                "author": row[3],
+                "id": row[4]
+            })
+        return lista
+    
+class E_Puntuaciones:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
+
+    def Registrar_Puntuacion(self, user_id, id_contenido, puntuacion):
+        # Paso 1: Insertar nueva puntuación
+        insert_query = "INSERT INTO puntuaciones (id_contenido, id_cliente, puntuacion) VALUES (?, ?, ?)"
+        self.cursor.execute(insert_query, (id_contenido, user_id, puntuacion))
+        self.conn.commit()
+
+        # Paso 2: Calcular el nuevo promedio de puntuaciones
+        promedio_query = "SELECT AVG(puntuacion) FROM puntuaciones WHERE id_contenido = ?"
+        self.cursor.execute(promedio_query, (id_contenido,))
+        promedio = self.cursor.fetchone()[0]
+
+        # Paso 3: Actualizar el campo 'rating' en la tabla contenidos
+        update_query = "UPDATE contenidos SET rating = ? WHERE id = ?"
+        self.cursor.execute(update_query, (promedio, id_contenido))
+        self.conn.commit()
+
+    def Existe_Puntuacion(self, idU,idC):
+        query = "SELECT * FROM puntuaciones WHERE id_cliente = ? AND id_contenido = ?"
+        self.cursor.execute(query, (idU,idC,))
+        result = self.cursor.fetchone()
+        if(result is None): return False
+        return True
+    
 class E_Recargas:
     def __init__(self):
         self.conn = get_connection()
@@ -272,6 +320,17 @@ class E_Contenidos:
     def verificarPromocion(self, idC):
         return 0
         
+class C_Puntuacion:
+    def __init__(self):
+        pass
+
+    def Obtener_Puntuacion(self, idU, idC):
+        e_pun = E_Puntuaciones()
+        return e_pun.Existe_Puntuacion(idU, idC)
+    
+    def Enviar_Puntuacion(self, idU, idC, score):
+       e_pun = E_Puntuaciones()
+       e_pun.Registrar_Puntuacion(idU,idC,score)
 
 class C_Transacciones:
     def __init__(self):
@@ -362,6 +421,14 @@ class C_Content:
         contenidos = E_Contenidos()
         return contenidos.verificarPromocion(idC)
     
+    def Obtener_Puntuacion(self, idU, idC):
+        c_pun = C_Puntuacion()
+        return c_pun.Obtener_Puntuacion(idU, idC)
+    
+    def Enviar_Puntuacion(self, idU, idC, score):
+       ctr = C_Puntuacion()
+       ctr.Enviar_Puntuacion(idU,idC,score)
+
 class C_Usuario:
     def __init__(self):
         self.id = None
@@ -396,7 +463,10 @@ class C_Usuario:
 
     def verificarContenido(self, idU, idC):
         e_usContenido = E_UsuarioContenido()
-        return e_usContenido.verificarContenido(idU, idC)
+        content_manager = C_Content()
+        res = {'success':e_usContenido.verificarContenido(idU, idC), 
+               'hasRated':content_manager.Obtener_Puntuacion(idU, idC)}
+        return res
 
 
 class C_Cliente(C_Usuario):
@@ -437,7 +507,18 @@ class C_Cliente(C_Usuario):
             return False
         self.registrarCompra(idU, idC)
         return True
-
+    
+    def obtenerDescargasCliente(self, idU):
+        uscont = E_UsuarioContenido()
+        return uscont.obtenerDescargasCliente(idU)
+    
+    def Obtener_Puntuacion(self, idU):
+        ctr = C_Content()
+        return ctr.Obtener_Puntuacion(idU)
+    
+    def Enviar_Puntuacion(self, idU, idC, score):
+       ctr = C_Content()
+       ctr.Enviar_Puntuacion(idU,idC,score)
     
 class C_Administrador(C_Usuario):
     def __init__(self):
@@ -523,7 +604,17 @@ class Cliente(Usuario):
     
     def pagarContenido(self, idC):
         return self.controller.pagarContenido(self.id, idC)
-
+    def obtenerDescargasCliente(self):
+        return self.controller.obtenerDescargasCliente(self.id)
+    def Obtener_Puntuacion(self, idU):
+        return self.controller.Obtener_Puntuacion(idU)
+    def Enviar_Puntuacion(self, idC, score):
+        try:
+            self.controller.Enviar_Puntuacion(self.id,idC,score)
+        except:
+            return False
+        return True
+    
 class Administrador(Usuario):
     def __init__(self, username, id):
         super().__init__(user=username,id=id,ctr=C_Administrador())

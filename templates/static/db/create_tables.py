@@ -76,16 +76,16 @@ CREATE TABLE IF NOT EXISTS movimientos (
 );
 ''')
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS puntuaciones (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     id_cliente INTEGER,
-#     id_contenido INTEGER,
-#     puntuacion INTEGER,
-#     FOREIGN KEY (id_cliente) REFERENCES usuarios(id),
-#     FOREIGN KEY (id_contenido) REFERENCES contenido(id)
-# );
-# ''')
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS puntuaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_cliente INTEGER,
+    id_contenido INTEGER,
+    puntuacion INTEGER,
+    FOREIGN KEY (id_cliente) REFERENCES usuarios(id),
+    FOREIGN KEY (id_contenido) REFERENCES contenidos(id)
+);
+''')
 
 # cursor.execute('''
 # CREATE TABLE IF NOT EXISTS promociones (
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS movimientos (
 #     descuento DOUBLE,
 #     titulo_de_descuento TEXT,
 #     dias INTEGER,
-#     FOREIGN KEY (id_contenido) REFERENCES contenido(id_contenido)
+#     FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido)
 # );
 # ''')
 
@@ -117,23 +117,23 @@ CREATE TABLE IF NOT EXISTS contenidos (
     price DOUBLE,
     extension TEXT,
     category TEXT,
-    rating DOUBLE,
+    rating DOUBLE DEFAULT 0.0,
     description TEXT,
     type TEXT
 );
 ''')
 
 archivos = [
-    ("static/audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock','2.5','awesome','audio'),
-    ("static/image/monalisa.png", "Monalisa", "van", 15.50,'png','art','2.5','awesome','imagen'),
-    ("static/image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art','2.5','awesome','imagen'),
-    ("static/video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game','2.5','awesome','video'),
-    ("static/video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion','2.5','awesome','video'),
-    ("static/audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno','2.5','awesome','audio'),
-    ("static/video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video", 4.5, "Descripción del video", "video"),
-    ("static/audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video", 4.5, "Descripción del video", "audio"),
-    ("static/audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido", 4.8, "Descripción del audio", "audio"),
-    ("https://github.com/DretcmU/DOWNEZ/blob/main/templates/static/image/Dedos%20dibujados.jpg?raw=true", "Dedos dibujados", "Konam bursts", 10.0, "jpg", "Categoría de la imagen", 4.5, "Descripción de  la imagen", "imagen")
+    ("static/audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock', 0.0,'awesome','audio'),
+    ("static/image/monalisa.png", "Monalisa", "van", 15.50,'png','art', 0.0,'awesome','imagen'),
+    ("static/image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art', 0.0,'awesome','imagen'),
+    ("static/video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game', 0.0,'awesome','video'),
+    ("static/video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion', 0.0,'awesome','video'),
+    ("static/audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno', 0.0,'awesome','audio'),
+    ("static/video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video",  0.0, "Descripción del video", "video"),
+    ("static/audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video",  0.0, "Descripción del video", "audio"),
+    ("static/audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido",  0.0, "Descripción del audio", "audio"),
+    ("https://github.com/DretcmU/DOWNEZ/blob/main/templates/static/image/Dedos%20dibujados.jpg?raw=true", "Dedos dibujados", "Konam bursts", 10.0, "jpg", "Categoría de la imagen", 0.0, "Descripción de  la imagen", "imagen")
 ]
 
 for archivo in archivos:
