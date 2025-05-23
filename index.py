@@ -117,6 +117,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/get_user_role":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                self.wfile.write(json.dumps({"role":"Cliente"}).encode("utf-8"))
+            elif current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps({"role":"Administrador"}).encode("utf-8"))                
+            else:
+                self.permises_web_current_user()
+
         elif parsed_path.path == "/get_user_downloads":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -128,6 +138,29 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
                 self.wfile.write(json.dumps({'success':current_usuario.SolicitarValidarSaldo()}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/logout_account":
+            if current_usuario:
+                print(session_store)
+                cookie_header = self.headers.get("Cookie")
+                session_id = None
+
+                if cookie_header:
+                    cookies = dict(cookie.strip().split("=", 1) for cookie in cookie_header.split(";") if "=" in cookie)
+                    session_id = cookies.get("session_id")
+
+                if session_id and session_id in session_store:
+                    del session_store[session_id]
+
+                # Invalida la cookie enviando una expiración pasada
+                expired_cookie = "session_id=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                self.send_response(302)
+                self.send_header("Set-Cookie", expired_cookie)
+                self.send_header("Location", "/login.html")
+                self.end_headers()
+                print(session_store)
             else:
                 self.permises_web_current_user()
         else:

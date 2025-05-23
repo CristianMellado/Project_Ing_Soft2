@@ -14,10 +14,30 @@ function generateNavbar() {
     var ul = document.createElement('ul');
 
     var liLogo = document.createElement('li');
-    var aLogo = document.createElement('a');
-    aLogo.href = 'user_view.html';
-    aLogo.textContent = 'DownEz';
-    liLogo.appendChild(aLogo);
+    var btnLogo = document.createElement('button');
+    btnLogo.textContent = 'DownEz';
+    btnLogo.id = 'logo-btn';
+    btnLogo.addEventListener('click', function () {
+        fetch('/get_user_role')
+            .then(response => response.json())
+            .then(data => {
+                if (data.role === 'Administrador') {
+                    window.location.href = 'admi_view.html';
+                } else if (data.role === 'Cliente') {
+                    window.location.href = 'user_view.html';
+                } else {
+                    //alert("Sesión inválida o no identificada.");
+                    console.log("Sesión inválida o no identificada.");
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar rol:', error);
+                alert("Error al verificar tu rol.");
+                window.location.href = '/';
+            });
+    });
+    liLogo.appendChild(btnLogo);
     ul.appendChild(liLogo);
 
     var searchLi = document.createElement('li');
@@ -82,7 +102,7 @@ function generateNavbar() {
     ul.appendChild(liSaldo);
 
     var options = {"Cuenta":"user_account.html","Notificaciones":"#", "Sign out": "login.html"};
-    for(var key in options){
+    for (var key in options) {
         var liOption = document.createElement('li');
 
         if (key === "Notificaciones") {
@@ -90,6 +110,30 @@ function generateNavbar() {
             btn.textContent = key;
             btn.id = "recargas-btn";
             liOption.appendChild(btn);
+        } else if (key === "Sign out") {
+            var signOutBtn = document.createElement('button');
+            signOutBtn.id = "logout-btn";
+            signOutBtn.textContent = key;
+            signOutBtn.addEventListener('click', function () {
+                fetch('/logout_account', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = 'login.html';
+                    } else {
+                        alert('Error al cerrar sesión');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error durante logout:', error);
+                    alert('Error al cerrar sesión');
+                });
+            });
+            liOption.appendChild(signOutBtn);
         } else {
             var aOption = document.createElement('a');
             aOption.href = options[key];
@@ -125,6 +169,7 @@ function generateNavbar() {
                 console.error('Error al obtener el saldo:', error);
                 const saldoElement = document.getElementById('user-balance');
                 saldoElement.textContent = "Saldo: Error";
+                window.location.href = '/';
             });
     }
 
@@ -233,6 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error al obtener recargas:', error);
+                window.location.href = '/';
             });
     }
 

@@ -1,5 +1,5 @@
 
-export function createMedia(data, Div, shop) {
+export function createMedia(data, Div, shop, current_role) {
     var infoDiv = document.createElement('div');
     infoDiv.className = 'info';
 
@@ -56,14 +56,15 @@ export function createMedia(data, Div, shop) {
                 if (respuesta.success) {
                     alert("CONTENIDO DESCARGADO :D");
                     console.log(respuesta);
-                    if (!respuesta.hasRated) {
+                    if (!respuesta.hasRated && current_role=='Cliente') {
                         showRatingPrompt(data.id);
                     } 
                     // else {
                     //     window.location.href = `item_view.html?id=${data.id}`;
                     // }
                 } else {
-                    window.location.href = `item_shop.html?id=${data.id}`;
+                    if(current_role=='Cliente')
+                        window.location.href = `item_shop.html?id=${data.id}`;
                 }
             })
             .catch(error => {
@@ -80,7 +81,7 @@ export function createMedia(data, Div, shop) {
     infoDiv.appendChild(description);
     Div.appendChild(infoDiv);
     Div.appendChild(buyButton);
-    if(shop!=1){
+    if(shop!=1 && current_role === "Cliente"){
         var giftButton = document.createElement('button');
         giftButton.textContent = 'Regalar';
         giftButton.className = 'gift-button';
@@ -173,7 +174,7 @@ function showRatingPrompt(contentId) {
     document.body.appendChild(overlay);
 }
 
-export function createVideoContent(data, shop) {
+export function createVideoContent(data, shop, current_role) {
     var videoDiv = document.createElement('div');
     videoDiv.className = 'media-item';
 
@@ -188,13 +189,13 @@ export function createVideoContent(data, shop) {
     video.textContent = 'Your browser does not support the video element.';
     videoDiv.appendChild(video);
 
-    createMedia(data, videoDiv, shop);
+    createMedia(data, videoDiv, shop, current_role);
 
     var videoContent = document.querySelector('.container');
     videoContent.appendChild(videoDiv);
 }
 
-export function createImageContent(data, shop) {
+export function createImageContent(data, shop, current_role) {
     var Div = document.createElement('div');
     Div.className = 'media-item';
 
@@ -207,13 +208,13 @@ export function createImageContent(data, shop) {
     img.className = "media";
     Div.appendChild(img);
 
-    createMedia(data, Div, shop);
+    createMedia(data, Div, shop, current_role);
 
     var Content = document.querySelector('.container');
     Content.appendChild(Div);
 }
 
-export function createAudioContent(data, shop) {
+export function createAudioContent(data, shop, current_role) {
     var Div = document.createElement('div');
     Div.className = 'media-item';
 
@@ -227,7 +228,7 @@ export function createAudioContent(data, shop) {
     au.className = "media";
     Div.appendChild(au);
 
-    createMedia(data, Div, shop);
+    createMedia(data, Div, shop, current_role);
 
     var Content = document.querySelector('.container');
     Content.appendChild(Div);

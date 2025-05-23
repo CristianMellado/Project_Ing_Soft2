@@ -136,7 +136,7 @@ nav a {
     cursor: pointer;
 }
 
-#recargas-btn {
+#recargas-btn,#logout-btn,#logo-btn {
     font-size: 16px;
     padding: 8px 16px;
     font-weight: bold;
@@ -152,7 +152,7 @@ nav a {
     background-color: #03995d;
 }
 
-#recargas-btn:hover {
+#recargas-btn:hover,#logout-btn:hover,#logo-btn:hover {
     background-color: #555;
 }
 
