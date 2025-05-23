@@ -44,7 +44,7 @@ class E_Usuarios:
         return None
 
     def actualizarSaldo(self,id, cantidad):
-        query = "UPDATE usuarios SET saldo = ? WHERE id = ?"
+        query = "UPDATE usuarios SET saldo = saldo + ? WHERE id = ?"
         self.cursor.execute(query, (cantidad, id))
         self.conn.commit()
 
@@ -54,6 +54,12 @@ class E_Usuarios:
         result = self.cursor.fetchone()
         return result is None # si es none, es porque no se encontro, por ende no existe ese usuario a registrar :D
     
+    def UsuarioExiste(self, username, idU):
+        query = "SELECT id FROM usuarios WHERE username = ? AND id != ?"
+        self.cursor.execute(query, (username,idU))
+        result = self.cursor.fetchone()
+        return -1 if result is None else result[0]
+        
     def registrarUsuario(self, username, password, email):
         query = "INSERT INTO usuarios (username, pswd, email) VALUES (?, ?, ?)"
         print("A")
@@ -105,9 +111,9 @@ class E_UsuarioContenido:
         if(result is None): return False
         return True
     
-    def registrarCompra(self, idU, idC):
-        query = "INSERT INTO usuarioContenido (id_contenido, id_usuario) VALUES (?, ?)"
-        self.cursor.execute(query, (idC, idU,))
+    def registrarCompra(self, idU, idC, type="compra"):
+        query = "INSERT INTO usuarioContenido (id_contenido, id_usuario, type) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (idC, idU, type))
         self.conn.commit()
 
     def obtenerDescargasCliente(self, id_usuario):
@@ -168,32 +174,59 @@ class E_Notificaciones:
         self.cursor.execute(query, (idU, idC, msg))
         self.conn.commit()
 
-    def obtenerListaPeticiones(self):
+    def registrarNotificacionRecarga(self, idU, msg):
+        query = "INSERT INTO notificaciones (id_usuario, id_contenido, messagge) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (idU, -1, msg))
+        self.conn.commit()
+
+    def obtenerListaNotificaciones(self, idU):
         query = """
-            SELECT 
-                recargas.id, 
-                usuarios.username, 
-                recargas.monto, 
-                recargas.fecha, 
-                recargas.estado
-            FROM 
-                recargas
-            JOIN 
-                usuarios ON recargas.id_user = usuarios.id
-            WHERE 
-                recargas.estado = 'pendiente'
-        """
-        self.cursor.execute(query)
+                SELECT 
+                    n.id,
+                    c.id, 
+                    c.title, 
+                    n.messagge
+                FROM 
+                    notificaciones n
+                JOIN 
+                    contenidos c ON c.id = n.id_contenido
+                WHERE 
+                    n.id_usuario = ?
+            """
+        self.cursor.execute(query, (idU,))
         result = self.cursor.fetchall()
 
-        lista = [{"id_recarga": row[0],
-                "usuario": row[1],
-                "monto": row[2],
-                "fecha": row[3],
-                "estado": row[4]} for row in result]
+        lista = [{"id_notificacion": row[0],
+                    "id_contenido": row[1],
+                    "title": row[2],
+                    "messagge": row[3]} for row in result]
+        return lista
+    
+    def obtenerListaNotificacionesRecargas(self, idU):
+        query = """
+                SELECT 
+                    id,
+                    id_contenido, 
+                    messagge
+                FROM 
+                    notificaciones
+                WHERE 
+                    id_usuario = ? AND id_contenido = -1
+            """
+        self.cursor.execute(query, (idU,))
+        result = self.cursor.fetchall()
 
+        lista = [{"id_notificacion": row[0],
+                    "id_contenido": row[1],
+                    "title": 0,
+                    "messagge": row[2]} for row in result]
         return lista
         
+    def aceptarNotificacion(self, id_noti):
+        query_delete = "DELETE FROM notificaciones WHERE id = ?"
+        self.cursor.execute(query_delete, (id_noti,))
+        self.conn.commit()
+            
 class E_Recargas:
     def __init__(self):
         self.conn = get_connection()
@@ -474,8 +507,11 @@ class C_Usuario:
         return usuarios.obtenerUser(id_user)
 
     def Buscar(self, query,filters):
+        # content_manager = C_Content()
+        # return content_manager.consultarDatos(query,filters)
         content_manager = C_Content()
-        return content_manager.consultarDatos(query,filters)
+        resultados = content_manager.solicitar_info_contenido(query, filters)
+        return resultados
     
     def seleccionarContent(self, content_id):
         content_manager = C_Content()
@@ -521,11 +557,11 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.obtenerSaldo(id_user)
     
-    def registrarCompra(self, idU, idC):
+    def registrarCompra(self, idU, idC, type='compra'):
         uscont = E_UsuarioContenido()
-        uscont.registrarCompra(idU,idC)
+        uscont.registrarCompra(idU,idC,type)
         
-    def pagarContenido(self, idU, idC):
+    def pagarContenido(self, idU, idC, id_des=None):
         controller_trans = C_Transacciones()
         controller_cont = C_Content()
         saldo = self.obtenerSaldo(idU) 
@@ -537,11 +573,14 @@ class C_Cliente(C_Usuario):
             print(precioFinal)
 
         if saldo > precioFinal:
-            controller_trans.actualizarSaldo(idU, saldo-precioFinal)
+            controller_trans.actualizarSaldo(idU, -precioFinal)
             controller_trans.registrarTransaccion(idU, idC, precioFinal)
         else:
             return False
-        self.registrarCompra(idU, idC)
+        if id_des == None:
+            self.registrarCompra(idU, idC)
+        else:
+            self.registrarCompra(id_des, idC, "regalo")
         return True
     
     def obtenerDescargasCliente(self, idU):
@@ -555,6 +594,36 @@ class C_Cliente(C_Usuario):
     def Enviar_Puntuacion(self, idU, idC, score):
        ctr = C_Content()
        ctr.Enviar_Puntuacion(idU,idC,score)
+
+    def Enviar_destinatario(self, idU, idC, destinatario):
+        res = {'success':False}
+        e_us = E_Usuarios()
+        id_des = e_us.UsuarioExiste(destinatario, idU)
+        if id_des==-1:
+            res['msg']="El destinatario no existe."
+        else:
+            e_uscont = E_UsuarioContenido()
+            if e_uscont.verificarContenido(id_des, idC):
+                res['msg'] = 'El destinatario ya tiene el contenido.'
+            else:
+                if not self.pagarContenido(idU, idC,id_des=id_des):
+                    res['msg'] = 'Dinero insuficiente para la compra.'
+                else:
+                    res['success'] = True
+                    e_notifi = E_Notificaciones()
+                    from_user = e_us.obtenerUser(idU)['username']
+                    e_notifi.registrarNotificacionRegalo(id_des, idC, f"Regalo de parte de {from_user}.")
+        return res
+    
+    def obtenerNotificaciones(self, idU):
+        e_notifi = E_Notificaciones()
+        res = e_notifi.obtenerListaNotificaciones(idU)
+        res.extend(e_notifi.obtenerListaNotificacionesRecargas(idU))
+        return res
+    
+    def aceptarNotificacion(self, idN):
+        e_notifi = E_Notificaciones()
+        e_notifi.aceptarNotificacion(idN)
     
 class C_Administrador(C_Usuario):
     def __init__(self):
@@ -570,6 +639,8 @@ class C_Administrador(C_Usuario):
         print(id_user,cantidad)
         usuarios = E_Usuarios()
         usuarios.actualizarSaldo(id_user, cantidad)
+        e_noti = E_Notificaciones()
+        e_noti.registrarNotificacionRecarga(id_user,f"Recarga de ${cantidad} aprobada.")
 
     def ingresarAgregarContenido(self, datos):
         content_manager = C_Content()
@@ -625,6 +696,8 @@ class Usuario:
     
     def verificarContenido(self, idC):
         return self.controller.verificarContenido(self.id, idC)
+    def aceptarNotificacion(self, idN):
+        self.controller.aceptarNotificacion(idN)
     
 class Cliente(Usuario):
     def __init__(self, username, id):
@@ -650,6 +723,11 @@ class Cliente(Usuario):
         except:
             return False
         return True
+    
+    def Enviar_destinatario(self, idC, destinatario):
+        return self.controller.Enviar_destinatario(self.id, idC, destinatario)
+    def obtenerNotificaciones(self):
+        return self.controller.obtenerNotificaciones(self.id)
     
 class Administrador(Usuario):
     def __init__(self, username, id):

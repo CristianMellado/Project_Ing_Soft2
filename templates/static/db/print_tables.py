@@ -23,6 +23,7 @@ imprimir_tabla('contenidos')  # sin data_contenido
 imprimir_tabla('recargas')
 imprimir_tabla('movimientos')
 imprimir_tabla('puntuaciones')
+imprimir_tabla('notificaciones')
 # imprimir_tabla('promociones')
 imprimir_tabla('usuarioContenido')
 

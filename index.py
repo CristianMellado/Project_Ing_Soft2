@@ -110,6 +110,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/get_notificaciones":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerNotificaciones()).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         elif parsed_path.path == "/get_user_downloads":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -183,6 +190,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/accept_recarga":
             if current_usuario:
                 current_usuario.aprobarSaldoCliente(int(data.get("id_recarga")))
+                self._set_headers()
+                self.wfile.write(json.dumps({"success":True}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/accept_notificacion":
+            if current_usuario:
+                current_usuario.aceptarNotificacion(int(data.get("id_recarga")))
                 self._set_headers()
                 self.wfile.write(json.dumps({"success":True}).encode("utf-8"))
             else:
@@ -302,6 +317,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/gift_content":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                print(data.get("id"), data.get("destinatario"))
+                canGift = current_usuario.Enviar_destinatario(data.get("id"), data.get("destinatario"))
+                self.wfile.write(json.dumps(canGift).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
         else:
             self.send_response(404)
             self.end_headers()

@@ -72,7 +72,15 @@ export function createMedia(data, Div, shop) {
         }
     });
 
-    if(shop==1){
+    infoDiv.appendChild(author);
+    infoDiv.appendChild(price);
+    infoDiv.appendChild(extension);
+    infoDiv.appendChild(category);
+    infoDiv.appendChild(rating);
+    infoDiv.appendChild(description);
+    Div.appendChild(infoDiv);
+    Div.appendChild(buyButton);
+    if(shop!=1){
         var giftButton = document.createElement('button');
         giftButton.textContent = 'Regalar';
         giftButton.className = 'gift-button';
@@ -84,15 +92,6 @@ export function createMedia(data, Div, shop) {
         Div.appendChild(giftButton);
         console.log("gift");
     }
-
-    infoDiv.appendChild(author);
-    infoDiv.appendChild(price);
-    infoDiv.appendChild(extension);
-    infoDiv.appendChild(category);
-    infoDiv.appendChild(rating);
-    infoDiv.appendChild(description);
-    Div.appendChild(infoDiv);
-    Div.appendChild(buyButton);
 }
 
 function showRatingPrompt(contentId) {

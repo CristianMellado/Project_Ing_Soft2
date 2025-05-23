@@ -2,7 +2,7 @@
     margin-bottom: 20px;
 }
 
-.content-buttons button, .buy-button {
+.content-buttons button, .buy-button, .gift-button, .send-gift {
     padding: 10px 20px;
     margin: 0 10px;
     border: none;
@@ -12,7 +12,7 @@
     border-radius: 5px;
 }
 
-.content-buttons button:hover, .buy-button:hover  {
+.content-buttons button:hover, .buy-button:hover,.gift-button:hover, .send-gift:hover  {
     background-color: #555;
 }
 

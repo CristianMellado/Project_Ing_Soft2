@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS usuarioContenido (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_contenido INTEGER,
     id_usuario INTEGER,
+    type TEXT DEFAULT 'compra',
     FOREIGN KEY (id_contenido) REFERENCES contenidos (id),
     FOREIGN KEY (id_usuario) REFERENCES usuarios (id)
 );
@@ -114,7 +115,6 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     messagge TEXT,
     id_contenido INTEGER,
     id_usuario INTEGER,
-    FOREIGN KEY (id_contenido) REFERENCES contenidos (id),
     FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
 );
 ''')

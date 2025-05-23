@@ -5,6 +5,11 @@ function generateNavbar() {
     stylevar.rel = "stylesheet"; 
     stylevar.type = "text/css";
 
+    var stylevar2 = document.createElement('link');
+    stylevar2.href = "/styles/recargas_admi.css";
+    stylevar2.rel = "stylesheet"; 
+    stylevar2.type = "text/css";
+
     var nav = document.createElement('nav');
     var ul = document.createElement('ul');
 
@@ -98,6 +103,7 @@ function generateNavbar() {
     nav.appendChild(ul);
     header.appendChild(nav);
     header.appendChild(stylevar);
+    header.appendChild(stylevar2);
     document.body.insertBefore(header, document.body.firstChild);
 
     var resultsContainer = document.createElement('div');
@@ -201,19 +207,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.forEach(recarga => {
                     var recargaDiv = document.createElement('div');
                     recargaDiv.classList.add('recarga-item');
-                    recargaDiv.innerHTML = `
-                        <p><strong>User:</strong> ${recarga.usuario}</p>
-                        <p><strong>Monto:</strong> $${recarga.monto}</p>
-                        <button class="aceptar-recarga" data-id="${recarga.id_recarga}">Aceptar</button>
-                    `;
+                    if(recarga.id_contenido==-1){
+                        recargaDiv.innerHTML = `
+                        <p>${recarga.messagge}</p>
+                        <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Aceptar</button>
+                        `;
+                    }
+                    else{
+                        recargaDiv.innerHTML = `
+                        <p><strong>Title:<a href=item_view.html?id=${recarga.id_contenido}></strong> ${recarga.title}</a></p>
+                        <p>${recarga.messagge}</p>
+                        <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Aceptar</button>
+                        `;                        
+                    }
                     recargasElement.appendChild(recargaDiv);
                 });
     
-                var aceptarButtons = document.querySelectorAll('.aceptar-recarga');
+                var aceptarButtons = document.querySelectorAll('.aceptar-notifi');
                 aceptarButtons.forEach(button => {
                     button.addEventListener('click', function () {
                         const recargaId = button.getAttribute('data-id');
-                        aceptarRecarga(recargaId);
+                        aceptarNotificacion(recargaId);
                     });
                 });
             })
@@ -222,19 +236,18 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    function aceptarRecarga(id_recarga) {
+    function aceptarNotificacion(id_recarga) {
         fetch(`/accept_notificacion`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({id_recarga})
+            body: JSON.stringify({id_recarga: id_recarga})
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Recarga aceptada con éxito');
                 obtenerRecargas(); 
             } else {
-                alert('Error al aceptar la recarga');
+                alert('Error al aceptar la notificacion');
             }
         })
         .catch(error => {
