@@ -136,8 +136,24 @@ nav a {
     cursor: pointer;
 }
 
+#recargas-btn {
+    font-size: 16px;
+    padding: 8px 16px;
+    font-weight: bold;
+    background-color: #333;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+}
+
+
 .search-form button:hover {
     background-color: #03995d;
+}
+
+#recargas-btn:hover {
+    background-color: #555;
 }
 
 .filter-checkboxes {
@@ -184,4 +200,9 @@ nav a {
 
 .clear-search-btn:hover {
     background-color: #999;
-} 
+}
+
+
+#user-balance{
+    font-weight: bold;
+}

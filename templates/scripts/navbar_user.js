@@ -116,7 +116,7 @@ function generateNavbar() {
             .then(data => {
                 const saldoElement = document.getElementById('user-balance');
                 if (data.success) {
-                    saldoElement.textContent = `Saldo: $${data.saldo}`;
+                    saldoElement.textContent = `Saldo: $ ${data.saldo}`;
                 } else {
                     saldoElement.textContent = "Saldo: Error al cargar";
                 }

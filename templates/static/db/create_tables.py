@@ -71,7 +71,6 @@ CREATE TABLE IF NOT EXISTS movimientos (
     id_usuario INTEGER,
     precio DOUBLE,
     fecha TEXT,
-    FOREIGN KEY (id_contenido) REFERENCES contenidos(id),
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 ''')

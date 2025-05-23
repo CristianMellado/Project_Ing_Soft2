@@ -124,6 +124,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/close_account":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                self.wfile.write(json.dumps({'success':current_usuario.SolicitarValidarSaldo()}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
         else:
             self.send_response(404)
             self.end_headers()
@@ -325,6 +331,21 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(canGift).encode("utf-8"))
             else:
                 self.permises_web_current_user()
+
+        elif parsed_path.path == "/withdraw_balance":
+            if current_usuario and isinstance(current_usuario, Cliente):
+                self._set_headers()
+                res = {'success':current_usuario.Retirar_Saldo(data.get("tarjeta"), data.get("cardType"))}
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/get_user_downloads_info":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerDescargasCliente(data.get("id"))).encode("utf-8"))
+            else:
+                self.permises_web_current_user()           
         else:
             self.send_response(404)
             self.end_headers()

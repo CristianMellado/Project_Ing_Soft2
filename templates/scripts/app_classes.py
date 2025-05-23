@@ -12,8 +12,20 @@ class E_Usuarios:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
+    def registrar_Excliente(self, idU):
+        query = "UPDATE usuarios SET estado = 'ex-cliente' WHERE id = ?"
+        self.cursor.execute(query, (idU,))
+        self.conn.commit()
+
     def verificarLogin(self, username, password):
-        query = "SELECT auth, id FROM usuarios WHERE username = ? AND pswd = ?"
+        query = """
+        SELECT 
+                auth, id 
+            FROM 
+                usuarios 
+            WHERE 
+                username = ? AND pswd = ? AND (estado = 'cliente' OR estado = 'administrador')
+        """
         self.cursor.execute(query, (username, password))
         result = self.cursor.fetchone()
         if result:
@@ -49,13 +61,13 @@ class E_Usuarios:
         self.conn.commit()
 
     def validarDatos(self, username):
-        query = "SELECT id FROM usuarios WHERE username = ?"
+        query = "SELECT id FROM usuarios WHERE username = ? AND (estado = 'cliente' OR estado = 'administrador')"
         self.cursor.execute(query, (username,))
         result = self.cursor.fetchone()
         return result is None # si es none, es porque no se encontro, por ende no existe ese usuario a registrar :D
     
     def UsuarioExiste(self, username, idU):
-        query = "SELECT id FROM usuarios WHERE username = ? AND id != ?"
+        query = "SELECT id FROM usuarios WHERE username = ? AND id != ? AND estado = 'cliente'"
         self.cursor.execute(query, (username,idU))
         result = self.cursor.fetchone()
         return -1 if result is None else result[0]
@@ -251,7 +263,7 @@ class E_Recargas:
             JOIN 
                 usuarios ON recargas.id_user = usuarios.id
             WHERE 
-                recargas.estado = 'pendiente'
+                recargas.estado = 'pendiente' AND usuarios.estado = 'cliente'
         """
         self.cursor.execute(query)
         result = self.cursor.fetchall()
@@ -433,7 +445,12 @@ class C_Transacciones:
 
     def actualizarSaldo(self, idU, precio):
         controller = E_Usuarios()
-        controller.actualizarSaldo(idU, precio) 
+        controller.actualizarSaldo(idU, precio)
+
+    def RegistrarRetiro(self, card, cardType,idU, monto):
+        # proceso de enviar dinero a la tarjeta ...
+        controller = E_Movimientos()
+        controller.registrarMovimiento(idU, -1, -monto)
 
 class C_Content:
     def get_id(self):
@@ -539,7 +556,10 @@ class C_Usuario:
         res = {'success':e_usContenido.verificarContenido(idU, idC), 
                'hasRated':content_manager.Obtener_Puntuacion(idU, idC)}
         return res
-
+    def obtenerDescargasCliente(self, idU):
+        uscont = E_UsuarioContenido()
+        return uscont.obtenerDescargasCliente(idU)
+    
 
 class C_Cliente(C_Usuario):
     def __init__(self):
@@ -583,10 +603,6 @@ class C_Cliente(C_Usuario):
             self.registrarCompra(id_des, idC, "regalo")
         return True
     
-    def obtenerDescargasCliente(self, idU):
-        uscont = E_UsuarioContenido()
-        return uscont.obtenerDescargasCliente(idU)
-    
     def Obtener_Puntuacion(self, idU):
         ctr = C_Content()
         return ctr.Obtener_Puntuacion(idU)
@@ -615,6 +631,13 @@ class C_Cliente(C_Usuario):
                     e_notifi.registrarNotificacionRegalo(id_des, idC, f"Regalo de parte de {from_user}.")
         return res
     
+    def SolicitarValidarSaldo(self, idU):
+        if (self.obtenerSaldo(idU) == 0):
+            usuarios = E_Usuarios()
+            usuarios.registrar_Excliente(idU)
+            return True
+        return False
+    
     def obtenerNotificaciones(self, idU):
         e_notifi = E_Notificaciones()
         res = e_notifi.obtenerListaNotificaciones(idU)
@@ -624,6 +647,14 @@ class C_Cliente(C_Usuario):
     def aceptarNotificacion(self, idN):
         e_notifi = E_Notificaciones()
         e_notifi.aceptarNotificacion(idN)
+
+    def Retirar_Saldo(self, card, cardType, idU):
+        usuarios = E_Usuarios()
+        monto = usuarios.obtenerSaldo(idU)
+        controller_trans = C_Transacciones()
+        controller_trans.RegistrarRetiro(card, cardType, idU, monto)
+        usuarios.actualizarSaldo(idU, -monto)
+        return True
     
 class C_Administrador(C_Usuario):
     def __init__(self):
@@ -661,6 +692,7 @@ class C_Administrador(C_Usuario):
     def seleccionarUser(self, id):
         usuarios = E_Usuarios()
         return usuarios.obtenerUser(id)
+
     
 class Usuario:
     def __init__(self,user=None,id=None, ctr=C_Usuario()):
@@ -729,6 +761,11 @@ class Cliente(Usuario):
     def obtenerNotificaciones(self):
         return self.controller.obtenerNotificaciones(self.id)
     
+    def SolicitarValidarSaldo(self):
+        return self.controller.SolicitarValidarSaldo(self.id)
+    def Retirar_Saldo(self, card, cardType):
+        return self.controller.Retirar_Saldo(card, cardType, self.id)
+    
 class Administrador(Usuario):
     def __init__(self, username, id):
         super().__init__(user=username,id=id,ctr=C_Administrador())
@@ -747,3 +784,6 @@ class Administrador(Usuario):
     
     def seleccionar_user(self, id):
         return self.controller.seleccionarUser(id)
+    
+    def obtenerDescargasCliente(self, idU):
+        return self.controller.obtenerDescargasCliente(idU)

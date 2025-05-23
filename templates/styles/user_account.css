@@ -77,26 +77,28 @@ button:hover {
 }
 
 /* Balance form */
-#balance-form {
+#balance-form, #withdraw-form {
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-#balance-form h3 {
+#balance-form h3, #withdraw-form h3 {
     font-size: 20px;
     margin-bottom: 10px;
 }
 
-#balance-form label {
+#balance-form label, #withdraw-form label {
     font-size: 16px;
     margin-top: 10px;
     display: block;
 }
 
 #balance-form input,
-#balance-form select {
+#balance-form select, 
+#withdraw-form select,
+#withdraw-form input {
     width: 100%;
     padding: 10px;
     margin: 5px 0 15px 0;
@@ -104,12 +106,12 @@ button:hover {
     border-radius: 4px;
 }
 
-#balance-form button {
+#balance-form button, #withdraw-form button{
     background-color: #28a745;
     color: white;
 }
 
-#balance-form button:hover {
+#balance-form button:hover, #withdraw-form button:hover {
     background-color: #218838;
 }
 

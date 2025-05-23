@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeAccountBtn = document.getElementById("close-account-btn");
     const balanceForm = document.getElementById("balance-form");
     const submitBalanceBtn = document.getElementById("submit-balance");
+    const closeforms = document.getElementById("withdraw-form");
+    const submitcloseBtn = document.getElementById("submit-withdraw");
 
     fetch("/user_data")
         .then(res => res.json())
@@ -33,6 +35,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     requestBalanceBtn.addEventListener("click", () => {
         balanceForm.style.display = balanceForm.style.display === "none" ? "block" : "none";
+    });
+
+    submitcloseBtn.addEventListener("click", () => {
+        const tarjeta = document.getElementById("withdraw_card").value;
+        const cardType = document.getElementById("withdraw_card_type").value;
+
+        if (!tarjeta) {
+            alert("Complete todos los campos correctamente.");
+            return;
+        }
+
+        fetch("/withdraw_balance", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ tarjeta,cardType })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Saldo retirado con éxito.");
+                    closeforms.style.display = "none";
+                    window.location.href = "/user_account.html";
+                }
+            })
+            .catch(err => {
+                alert("Ocurrió un error al procesar la solicitud.");
+                console.error(err);
+            });
     });
 
     submitBalanceBtn.addEventListener("click", () => {
@@ -69,14 +101,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeAccountBtn.addEventListener("click", () => {
         if (confirm("¿Estás seguro de cerrar tu cuenta?")) {
-            fetch("/close_account", { method: "POST" })
+            fetch("/close_account", { method: "GET" })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
                         alert("Cuenta cerrada correctamente.");
                         window.location.href = "/";
                     } else {
-                        alert("No se pudo cerrar la cuenta.");
+                        alert("No se pudo cerrar la cuenta, retire su saldo antes de cerrar la cuenta.");
+                        closeforms.style.display = closeforms.style.display === "none" ? "block" : "none";
                     }
                 })
                 .catch(err => {
