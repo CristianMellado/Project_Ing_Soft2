@@ -10,7 +10,7 @@
 </head>
 <body>
     <u><h1>Add Content</h1></u>
-    <form id="content-form">
+    <form id="uploadForm" enctype="multipart/form-data">
         <label for="content-type">Content Type:</label><br>
         <select id="content-type" name="content-type">
             <option value="image">Image</option>
@@ -18,8 +18,7 @@
             <option value="audio">Audio</option>
         </select><br>
 
-        <label for="content-file">Enter link File:</label><br>
-        <input type="text" id="content-file" name="content-file"><br><br>
+        <input type="file" id="fileInput" name="file" required /><br>
 
         <label for="content-title">Title:</label><br>
         <input type="text" id="content-title" name="content-title"><br>
@@ -38,7 +37,8 @@
 
         <div id="error-message" class="error"></div>
 
-        <button type="button" id="send-button">Send</button><br>
+        <button type="submit" id="send-button">Send</button><br>
     </form>
+
 </body>
 </html>

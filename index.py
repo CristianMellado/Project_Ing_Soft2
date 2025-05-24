@@ -2,6 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 import json
 import os
+import cgi
 import uuid
 from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Content
 
@@ -261,46 +262,46 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.permises_web_current_user()
 
         elif parsed_path.path == "/save_content":
-            if current_usuario:
-                type_data = data.get("typeData")
-                src = data.get("src")
-                title = data.get("title")
-                author = data.get("author")
-                price = data.get("price")
-                extension = data.get("extension")
-                category = data.get("category")
-                rating = 2.5
-                description = data.get("description")
+            if current_usuario and isinstance(current_usuario, Administrador):
+                ctype, pdict = cgi.parse_header(self.headers.get('Content-Type'))
+                if ctype == 'multipart/form-data':
+                    pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
+                    pdict['CONTENT-LENGTH'] = int(self.headers['Content-Length'])
+                    fields = cgi.parse_multipart(self.rfile, pdict)
 
-                if isinstance(type_data, list): type_data = type_data[0]
-                if isinstance(src, list): src = src[0]
-                if isinstance(title, list): title = title[0]
-                if isinstance(author, list): author = author[0]
-                if isinstance(price, list): price = price[0]
-                if isinstance(extension, list): extension = extension[0]
-                if isinstance(category, list): category = category[0]
-                if isinstance(description, list): description = description[0]
+                    file_data = fields.get('file')[0]  # archivo binario
+                    type_data = fields.get("typeData", [""])[0]
+                    title = fields.get("title", [""])[0]
+                    author = fields.get("author", [""])[0]
+                    price = fields.get("price", [""])[0]
+                    extension = fields.get("extension", [""])[0]
+                    category = fields.get("category", [""])[0]
+                    description = fields.get("description", [""])[0]
+                    rating = 2.5  # Valor por defecto o puedes calcularlo
 
-                new_item = {
-                    "src": src,
-                    "title": title,
-                    "author": author,
-                    "price": price,
-                    "extension": extension,
-                    "categorys": "...",
-                    "rating": rating,
-                    "description": description,
-                    "type": type_data
-                }
+                    new_item = {
+                        "src": "",  # puedes dejarlo vacío o guardar una ruta virtual
+                        "title": title,
+                        "author": author,
+                        "price": price,
+                        "extension": extension,
+                        "category": category,
+                        "rating": rating,
+                        "description": description,
+                        "type": type_data,
+                        "binario": file_data  # si vas a guardar en base de datos
+                    }
+                    
+                    print(new_item)
+                    #current_usuario.ingresarAgregarContenido(new_item)
 
-                current_usuario.ingresarAgregarContenido(new_item)
-                response = {"success": True, "message": "Contenido guardado"}
-
+                    response = {"success": True, "message": "Contenido guardado"}
+                    self._set_headers()
+                    self.wfile.write(json.dumps(response).encode("utf-8"))
+                else:
+                    self.send_error(400, "Tipo de contenido no soportado")
             else:
                 self.permises_web_current_user()
-
-            self._set_headers()
-            self.wfile.write(json.dumps(response).encode("utf-8"))
 
         elif parsed_path.path == "/register":
             name = data.get("name")

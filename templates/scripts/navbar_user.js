@@ -1,4 +1,23 @@
 function generateNavbar() {
+    var href_logo;
+    fetch('/get_user_role')
+            .then(response => response.json())
+            .then(data => {
+                if (data.role === 'Administrador') {
+                    href_logo = 'admi_view.html';
+                } else if (data.role === 'Cliente') {
+                    href_logo = 'user_view.html';
+                } else {
+                    //alert("Sesión inválida o no identificada.");
+                    //console.log("Sesión inválida o no identificada.");
+                    window.location.href = '/';
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar rol:', error);
+                //alert("Error al verificar tu rol.");
+                window.location.href = '/';
+    });    
     var header = document.createElement('header');
     var stylevar = document.createElement('link');
     stylevar.href = "/styles/navbar.css";
@@ -18,24 +37,7 @@ function generateNavbar() {
     btnLogo.textContent = 'DownEz';
     btnLogo.id = 'logo-btn';
     btnLogo.addEventListener('click', function () {
-        fetch('/get_user_role')
-            .then(response => response.json())
-            .then(data => {
-                if (data.role === 'Administrador') {
-                    window.location.href = 'admi_view.html';
-                } else if (data.role === 'Cliente') {
-                    window.location.href = 'user_view.html';
-                } else {
-                    //alert("Sesión inválida o no identificada.");
-                    console.log("Sesión inválida o no identificada.");
-                    window.location.href = '/';
-                }
-            })
-            .catch(error => {
-                console.error('Error al verificar rol:', error);
-                alert("Error al verificar tu rol.");
-                window.location.href = '/';
-            });
+        window.location.href = href_logo;
     });
     liLogo.appendChild(btnLogo);
     ul.appendChild(liLogo);

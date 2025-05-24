@@ -1,45 +1,46 @@
-document.addEventListener("DOMContentLoaded", function() {
-    const sendButton = document.getElementById('send-button');
+document.addEventListener("DOMContentLoaded", function () {
+    const uploadForm = document.getElementById('uploadForm');
 
-    sendButton.addEventListener('click', function() {
-        const contentType = document.getElementById('content-type').value;
-        const contentTitle = document.getElementById('content-title').value;
-        const contentAuthor = document.getElementById('content-author').value;
-        const contentPrice = document.getElementById('content-price').value;
-        const contentCategory = document.getElementById('content-category').value;
-        const contentDescription = document.getElementById('content-description').value;
-        const fileName = document.getElementById('content-file').value;
-        const ext = fileName.split('.').pop().toLowerCase();
+    uploadForm.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-        const formData = {
-            typeData: contentType,
-                src: fileName,
-                extension: ext,
-                title: contentTitle,
-                author: contentAuthor,
-                price: contentPrice,
-                category: contentCategory,
-                description: contentDescription
-        };
+        const formData = new FormData();
+
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Selecciona un archivo.");
+            return;
+        }
+
+        formData.append("file", file);
+        formData.append("typeData", document.getElementById('content-type').value);
+        formData.append("title", document.getElementById('content-title').value);
+        formData.append("author", document.getElementById('content-author').value);
+        formData.append("price", document.getElementById('content-price').value);
+        formData.append("category", document.getElementById('content-category').value);
+        formData.append("description", document.getElementById('content-description').value);
+        formData.append("extension", file.name.split('.').pop().toLowerCase());
 
         fetch('/save_content', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            body: formData
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Error en el servidor');
             }
             return response.json();
-        }).then(data => {
-            window.location.href = "admi_view.html";
+        })
+        .then(data => {
+            if (data.success) {
+                window.location.href = "admi_view.html";
+            } else {
+                document.getElementById('error-message').textContent = data.message || 'Error al guardar el contenido';
+            }
         })
         .catch(error => {
             console.error('Error:', error);
         });
     });
-
 });
