@@ -3,27 +3,34 @@ import {createImageContent, createAudioContent, createVideoContent} from './crea
 document.addEventListener('DOMContentLoaded', function () {
     var header = document.createElement('header');
     var scriptAdmi = document.createElement('script');
-    var current_role = "usuario";
+    var current_role = "Usuario";
     scriptAdmi.type = 'text/javascript';
     fetch('/get_user_role')
         .then(response => response.json())
         .then(data => {
-                if (data.role === 'Administrador') {
+            console.log(data.role);
+                if (data.role == "Administrador") {
                     scriptAdmi.src = '/scripts/navbar_admi.js';
                     current_role = "Administrador";
-                } else if (data.role === 'Cliente') {
+                } else if (data.role == "Cliente") {
                     scriptAdmi.src = '/scripts/navbar_user.js';
                     current_role = "Cliente";
                 } else {
                     scriptAdmi.src = '/scripts/navbar.js';
                 }
+                console.log(current_role);
+                itemGen(current_role);
             })
         .catch(error => {
                 console.error('Error al verificar rol:', error);
                 alert("Error al verificar tu rol.");
     });
     header.appendChild(scriptAdmi);
+    console.log(current_role);
 
+});
+
+function itemGen(current_role){
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
 
@@ -61,4 +68,4 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error obteniendo el item:', error);
             itemDetails.innerHTML = "<p>Error cargando el contenido.</p>";
         });
-});
+}

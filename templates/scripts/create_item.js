@@ -55,9 +55,12 @@ export function createMedia(data, Div, shop, current_role) {
             .then(respuesta => {
                 if (respuesta.success) {
                     alert("CONTENIDO DESCARGADO :D");
-                    console.log(respuesta);
+                    descargarContenido(data.id);
+                    // console.log(respuesta);
+                    // console.log(current_role);
                     if (!respuesta.hasRated && current_role=='Cliente') {
                         showRatingPrompt(data.id);
+                        // console.log(2);
                     } 
                     // else {
                     //     window.location.href = `item_view.html?id=${data.id}`;
@@ -172,6 +175,39 @@ function showRatingPrompt(contentId) {
     modal.appendChild(cancelButton);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+}
+
+function descargarContenido(id) {
+    fetch('/download_content', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("No se pudo descargar el archivo");
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+
+        // Esto es solo temporal si no tienes el nombre desde JS.
+        a.download = "contenido_" + id;
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(downloadUrl);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Error al descargar el archivo");
+    });
 }
 
 export function createVideoContent(data, shop, current_role) {

@@ -18,7 +18,7 @@ def imprimir_tabla(nombre_tabla, columnas=None):
 
 # Imprimir todas las tablas
 imprimir_tabla('usuarios')
-imprimir_tabla('contenidos')  # sin data_contenido
+imprimir_tabla('contenidos',columnas=['title','type','id'])  # sin data_contenido
 # imprimir_tabla('categorias')
 imprimir_tabla('recargas')
 imprimir_tabla('movimientos')

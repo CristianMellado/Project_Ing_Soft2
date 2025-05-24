@@ -126,7 +126,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps({"role":"Administrador"}).encode("utf-8"))                
             else:
-                self.permises_web_current_user()
+                self._set_headers()
+                self.wfile.write(json.dumps({"role":"User"}).encode("utf-8")) 
 
         elif parsed_path.path == "/get_user_downloads":
             if current_usuario and isinstance(current_usuario, Cliente):
@@ -171,15 +172,20 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed_path = urlparse(self.path)
-        content_length = int(self.headers.get('Content-Length', 0))
-        body = self.rfile.read(content_length).decode('utf-8')
+        content_type = self.headers.get('Content-Type', '')
 
-        try:
-            data = json.loads(body)
-        except json.JSONDecodeError:
-            data = parse_qs(body)
-
+        data = {}
+        form = None
         current_usuario = self.get_current_user()
+
+        if not content_type.startswith('multipart/form-data'):
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length).decode('utf-8')
+
+            try:
+                data = json.loads(body)
+            except json.JSONDecodeError:
+                data = parse_qs(body)
 
         if parsed_path.path == "/signin":
             name = data.get("name")
@@ -252,6 +258,63 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        elif parsed_path.path == "/download_content":
+            if current_usuario:
+                content_id = int(data.get("id", 0))
+                cont = C_Content()
+                contenido = cont.obtenerBinarioPorID(content_id)  
+
+                if contenido:
+                    bin_data = contenido['src']
+                    extension = contenido['extension']
+                    filename = contenido['title'].replace(" ", "_") + "." + extension
+
+                    mime_map = {
+                        # Imágenes
+                        "png": "image/png",
+                        "jpg": "image/jpeg",
+                        "jpeg": "image/jpeg",
+                        "gif": "image/gif",
+                        "bmp": "image/bmp",
+                        "webp": "image/webp",
+                        "svg": "image/svg+xml",
+                        "tiff": "image/tiff",
+                        "ico": "image/x-icon",
+
+                        # Audio
+                        "mp3": "audio/mpeg",
+                        "wav": "audio/wav",
+                        "ogg": "audio/ogg",
+                        "aac": "audio/aac",
+                        "flac": "audio/flac",
+                        "m4a": "audio/mp4",
+                        "mid": "audio/midi",
+                        "oga": "audio/ogg",
+
+                        # Video
+                        "mp4": "video/mp4",
+                        "webm": "video/webm",
+                        "mov": "video/quicktime",
+                        "avi": "video/x-msvideo",
+                        "mkv": "video/x-matroska",
+                        "flv": "video/x-flv",
+                        "wmv": "video/x-ms-wmv",
+                        "3gp": "video/3gpp",
+                    }
+                    mime_type = mime_map.get(extension.lower(), "application/octet-stream")
+
+                    self.send_response(200)
+                    self.send_header("Content-Type", mime_type)
+                    self.send_header("Content-Disposition", f"attachment; filename={filename}")
+                    self.send_header("Content-Length", str(len(bin_data)))
+                    self.end_headers()
+
+                    self.wfile.write(bin_data)
+                else:
+                    self.send_error(404, "Contenido no encontrado")
+            else:
+                self.permises_web_current_user()
+
         elif parsed_path.path == "/get_user_by_id":
             if current_usuario:
                 id = int(data.get("id", 0))
@@ -263,45 +326,47 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         elif parsed_path.path == "/save_content":
             if current_usuario and isinstance(current_usuario, Administrador):
-                ctype, pdict = cgi.parse_header(self.headers.get('Content-Type'))
-                if ctype == 'multipart/form-data':
-                    pdict['boundary'] = bytes(pdict['boundary'], "utf-8")
-                    pdict['CONTENT-LENGTH'] = int(self.headers['Content-Length'])
-                    fields = cgi.parse_multipart(self.rfile, pdict)
+                print("AEA")
+                form = cgi.FieldStorage(
+                    fp=self.rfile,
+                    headers=self.headers,
+                    environ={'REQUEST_METHOD': 'POST'},
+                )
 
-                    file_data = fields.get('file')[0]  # archivo binario
-                    type_data = fields.get("typeData", [""])[0]
-                    title = fields.get("title", [""])[0]
-                    author = fields.get("author", [""])[0]
-                    price = fields.get("price", [""])[0]
-                    extension = fields.get("extension", [""])[0]
-                    category = fields.get("category", [""])[0]
-                    description = fields.get("description", [""])[0]
-                    rating = 2.5  # Valor por defecto o puedes calcularlo
+                fileitem = form['file']
+                if fileitem.filename:
+                    filename = fileitem.filename
+                    binary_data = fileitem.file.read()  # Aquí están los bytes del archivo
+
+                    title = form.getvalue("content-title")
+                    author = form.getvalue("content-author")
+                    price = form.getvalue("content-price")
+                    extension = filename.split('.')[-1]
+                    content_type = form.getvalue("content-type")
+                    category = form.getvalue("content-category")
+                    description = form.getvalue("content-description")
 
                     new_item = {
-                        "src": "",  # puedes dejarlo vacío o guardar una ruta virtual
+                        "src": binary_data,  # Guarda como BLOB
                         "title": title,
                         "author": author,
                         "price": price,
                         "extension": extension,
                         "category": category,
-                        "rating": rating,
+                        "rating": 0,
                         "description": description,
-                        "type": type_data,
-                        "binario": file_data  # si vas a guardar en base de datos
+                        "type": content_type
                     }
-                    
-                    print(new_item)
-                    #current_usuario.ingresarAgregarContenido(new_item)
 
+                    current_usuario.ingresarAgregarContenido(new_item)
                     response = {"success": True, "message": "Contenido guardado"}
-                    self._set_headers()
-                    self.wfile.write(json.dumps(response).encode("utf-8"))
+                    #print(binary_data)
+                    #print(new_item)
                 else:
-                    self.send_error(400, "Tipo de contenido no soportado")
-            else:
-                self.permises_web_current_user()
+                    response = {"success": False, "message": "No se recibió archivo"}
+
+                self._set_headers()
+                self.wfile.write(json.dumps(response).encode("utf-8"))
 
         elif parsed_path.path == "/register":
             name = data.get("name")

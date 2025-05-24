@@ -1,5 +1,5 @@
 function generateNavbar() {
-    var href_logo;
+    var href_logo="#";
     fetch('/get_user_role')
             .then(response => response.json())
             .then(data => {
@@ -128,11 +128,13 @@ function generateNavbar() {
                         window.location.href = 'login.html';
                     } else {
                         alert('Error al cerrar sesión');
+                        window.location.href = '/';
                     }
                 })
                 .catch(error => {
                     console.error('Error durante logout:', error);
                     alert('Error al cerrar sesión');
+                    window.location.href = '/';
                 });
             });
             liOption.appendChild(signOutBtn);
@@ -162,7 +164,8 @@ function generateNavbar() {
             .then(data => {
                 const saldoElement = document.getElementById('user-balance');
                 if (data.success) {
-                    saldoElement.textContent = `Saldo: $ ${data.saldo}`;
+                    const saldoFormateado = parseFloat(data.saldo).toFixed(2);
+                    saldoElement.textContent = `Saldo: $ ${saldoFormateado}`;
                 } else {
                     saldoElement.textContent = "Saldo: Error al cargar";
                 }

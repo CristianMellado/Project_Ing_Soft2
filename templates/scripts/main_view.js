@@ -2,27 +2,57 @@ import {createImageContent, createAudioContent, createVideoContent} from './crea
 
 var data_cache = [];
 
-function showContent(contentType) {
+function showContent(contentType, shop, current_role) {
     document.querySelector('.container').innerHTML = '';
 
     data_cache.forEach(element => {
         if(element.type==contentType){
             if (element.type == "imagen") {
-                createImageContent(element);
+                createImageContent(element,shop, current_role);
             } else if (element.type == "audio") {
-                createAudioContent(element);
+                createAudioContent(element,shop, current_role);
             } else {
-                createVideoContent(element);
+                createVideoContent(element,shop, current_role);
             }
         }
     });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    var current_role = "usuario";
+
+    fetch('/get_user_role')
+        .then(response => response.json())
+        .then(data => {
+            const scriptAdmi = document.createElement('script');
+            scriptAdmi.type = 'text/javascript';
+
+            if (data.role === 'Administrador') {
+                scriptAdmi.src = '/scripts/navbar_admi.js';
+                current_role = "Administrador";
+            } else if (data.role === 'Cliente') {
+                scriptAdmi.src = '/scripts/navbar_user.js';
+                current_role = "Cliente";
+            } else {
+                scriptAdmi.src = '/scripts/navbar.js';
+            }
+
+            // ✅ Agregar el script al body (o al head) solo después de asignar src
+            document.head.appendChild(scriptAdmi);
+        })
+        .catch(error => {
+            console.error('Error al verificar rol:', error);
+            // Si quieres puedes cargar el navbar por defecto
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = '/scripts/navbar.js';
+            document.head.appendChild(fallbackScript);
+    });
+
+
     const tops = ['imagen','audio','video'];
     tops.forEach(i => {
         const boton = document.getElementById(i+"-top");
-        boton.addEventListener('click', () => showContent(i));
+        boton.addEventListener('click', () => showContent(i, 0, current_role));
     })
 
     fetch('/main_view_content')
@@ -35,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             data_cache = data;
             console.log(data);
-            showContent('imagen');
+            showContent('imagen', 0, current_role);
         })
         .catch(error => {
             console.error('Error:', error);

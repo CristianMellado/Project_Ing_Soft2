@@ -1,5 +1,6 @@
 import datetime
 import sqlite3
+import base64
 
 DB_PATH = 'templates/static/db/downez.db'
 
@@ -302,10 +303,10 @@ class E_Contenidos:
                 author,
                 price,
                 extension,
-                categorys,
+                category,
                 rating,
                 description,
-                types
+                type
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         self.cursor.execute(query, (
@@ -314,33 +315,51 @@ class E_Contenidos:
             data["author"],
             float(data["price"]),
             data["extension"],
-            data["categorys"],
+            data["category"],
             float(data["rating"]),
             data["description"],
             data["type"]
         ))
-
         self.conn.commit()
 
+    def _generar_data_url(self, bin_data, tipo, extension):
+        # Parte	Explicación:
+        # data:	Esquema que indica que se trata de un Data URL.
+        # image/png	Tipo MIME del contenido (imagen en formato PNG en este caso).
+        # ;base64	Indica que los datos están codificados en Base64.
+        # iVBORw0KGgoAAA...	Los datos binarios del archivo codificados en Base64.
+        # data_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."
+        # <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..." />        
+        mime_types = {
+            "imagen": f"image/{extension}",
+            "audio": f"audio/{extension}",
+            "video": f"video/{extension}"
+        }
+        mime_type = mime_types.get(tipo, "application/octet-stream")
+        encoded = base64.b64encode(bin_data).decode("utf-8")
+        return f"data:{mime_type};base64,{encoded}"
+
     def obtenerContenidos(self):
-        query = "SELECT id, src, title, author, price, description, rating, type,category FROM contenidos"
+        query = "SELECT id, src, title, author, price, description, rating, type, category, extension FROM contenidos"
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         lista = []
         for row in result:
+            id_, src_bin, title, author, price, desc, rating, tipo, category, ext = row
+            data_url = self._generar_data_url(src_bin, tipo, ext)
             lista.append({
-                "id": row[0],
-                "src": row[1],
-                "title": row[2],
-                "author": row[3],
-                "price": row[4],
-                "description":row[5],
-                "rating":row[6],
-                "type":row[7],
-                "category":row[8]
+                "id": id_,
+                "src": data_url,
+                "title": title,
+                "author": author,
+                "price": price,
+                "description": desc,
+                "rating": rating,
+                "type": tipo,
+                "category": category
             })
         return lista
-    
+
     def Buscar_info(self, query="", filters=None):
         if filters is None:
             filters = []
@@ -366,7 +385,7 @@ class E_Contenidos:
                     params.append(f"%{query.lower()}%")
                 else:
                     sql += " AND (LOWER(title) LIKE ? OR CAST(id AS TEXT) LIKE ? OR LOWER(author) LIKE ?)"
-                    params.extend([f"%{query.lower()}%", f"%{query.lower()}%",f"%{query.lower()}%"])
+                    params.extend([f"%{query.lower()}%", f"%{query.lower()}%", f"%{query.lower()}%"])
 
         self.cursor.execute(sql, params)
         result = self.cursor.fetchall()
@@ -380,26 +399,41 @@ class E_Contenidos:
                 "type": row[3],
             })
         return lista
-    
+
     def getContent(self, content_id):
         query = "SELECT * FROM contenidos WHERE id = ?"
         self.cursor.execute(query, (content_id,))
         row = self.cursor.fetchone()
-        
         if row:
             keys = [desc[0] for desc in self.cursor.description]
-            return dict(zip(keys, row))
+            content_dict = dict(zip(keys, row))
+
+            # convertir binario a data URL
+            content_dict["src"] = self._generar_data_url(
+                content_dict["src"], content_dict["type"], content_dict["extension"]
+            )
+            return content_dict
         else:
             return None
-        
+
     def obtenerPrecio(self, content_id):
         query = "SELECT price FROM contenidos WHERE id = ?"
         self.cursor.execute(query, (content_id,))
-        row = self.cursor.fetchone()[0]
-        return row
-                
+        return self.cursor.fetchone()[0]
+
     def verificarPromocion(self, idC):
         return 0
+    
+    def obtenerBinarioPorID(self, idC):
+        self.cursor.execute("SELECT src, title, extension FROM contenidos WHERE id = ?", (idC,))
+        row = self.cursor.fetchone()
+        if row:
+            return {
+                "src": row[0],  # binario
+                "title": "_".join(row[1].split(" ")),
+                "extension": row[2]  # etc.
+            }
+        return None
         
 class C_Puntuacion:
     def __init__(self):
@@ -515,6 +549,10 @@ class C_Content:
        ctr = C_Puntuacion()
        ctr.Enviar_Puntuacion(idU,idC,score)
 
+    def obtenerBinarioPorID(self, idC):
+        conte = E_Contenidos()
+        return conte.obtenerBinarioPorID(idC)
+    
 class C_Usuario:
     def __init__(self):
         self.id = None

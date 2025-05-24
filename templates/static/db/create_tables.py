@@ -118,10 +118,54 @@ CREATE TABLE IF NOT EXISTS notificaciones (
 );
 ''')
 
+# cursor.execute('''
+# CREATE TABLE IF NOT EXISTS contenidos (
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
+#     src BLOB,
+#     title TEXT,
+#     author TEXT,
+#     price DOUBLE,
+#     extension TEXT,
+#     category TEXT,
+#     rating DOUBLE DEFAULT 0.0,
+#     description TEXT,
+#     type TEXT
+# );
+# ''')
+
+# archivos = [
+#     ("static/audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock', 0.0,'awesome','audio'),
+#     ("static/image/monalisa.png", "Monalisa", "van", 15.50,'png','art', 0.0,'awesome','imagen'),
+#     ("static/image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art', 0.0,'awesome','imagen'),
+#     ("static/video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game', 0.0,'awesome','video'),
+#     ("static/video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion', 0.0,'awesome','video'),
+#     ("static/audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno', 0.0,'awesome','audio'),
+#     ("static/video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video",  0.0, "Descripción del video", "video"),
+#     ("static/audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video",  0.0, "Descripción del video", "audio"),
+#     ("static/audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido",  0.0, "Descripción del audio", "audio")
+# ]
+
+# for archivo in archivos:
+#     filename = archivo[0]
+#     titulo = archivo[1]
+#     autor = archivo[2]
+#     precio = archivo[3]
+#     ext=archivo[4]
+#     cat=archivo[5]
+#     rat=archivo[6]
+#     des=archivo[7]
+#     typ=archivo[8]
+#     #ruta para carpeta multimedia
+
+#     cursor.execute('''
+#     INSERT INTO contenidos (src,title, author, price, extension,category,rating,description,type)
+#     VALUES (?, ?, ?, ?,?,?,?,?,?)
+#     ''', (filename,titulo, autor, precio, ext,cat,rat,des,typ))
+
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS contenidos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    src TEXT,
+    src BLOB,
     title TEXT,
     author TEXT,
     price DOUBLE,
@@ -134,35 +178,27 @@ CREATE TABLE IF NOT EXISTS contenidos (
 ''')
 
 archivos = [
-    ("static/audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock', 0.0,'awesome','audio'),
-    ("static/image/monalisa.png", "Monalisa", "van", 15.50,'png','art', 0.0,'awesome','imagen'),
-    ("static/image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art', 0.0,'awesome','imagen'),
-    ("static/video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game', 0.0,'awesome','video'),
-    ("static/video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion', 0.0,'awesome','video'),
-    ("static/audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno', 0.0,'awesome','audio'),
-    ("static/video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video",  0.0, "Descripción del video", "video"),
-    ("static/audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video",  0.0, "Descripción del video", "audio"),
-    ("static/audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido",  0.0, "Descripción del audio", "audio"),
-    ("https://github.com/DretcmU/DOWNEZ/blob/main/templates/static/image/Dedos%20dibujados.jpg?raw=true", "Dedos dibujados", "Konam bursts", 10.0, "jpg", "Categoría de la imagen", 0.0, "Descripción de  la imagen", "imagen")
+    ("../audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock', 0.0,'awesome','audio'),
+    ("../image/monalisa.png", "Monalisa", "van", 15.50,'png','art', 0.0,'awesome','imagen'),
+    ("../image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art', 0.0,'awesome','imagen'),
+    ("../video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game', 0.0,'awesome','video'),
+    ("../video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion', 0.0,'awesome','video'),
+    ("../audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno', 0.0,'awesome','audio'),
+    ("../video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video",  0.0, "Descripción del video", "video"),
+    ("../audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video",  0.0, "Descripción del video", "audio"),
+    ("../audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido",  0.0, "Descripción del audio", "audio")
 ]
 
-for archivo in archivos:
-    filename = archivo[0]
-    titulo = archivo[1]
-    autor = archivo[2]
-    precio = archivo[3]
-    ext=archivo[4]
-    cat=archivo[5]
-    rat=archivo[6]
-    des=archivo[7]
-    typ=archivo[8]
-    #ruta para carpeta multimedia
-
-    cursor.execute('''
-    INSERT INTO contenidos (src,title, author, price, extension,category,rating,description,type)
-    VALUES (?, ?, ?, ?,?,?,?,?,?)
-    ''', (filename,titulo, autor, precio, ext,cat,rat,des,typ))
-
+for ruta, titulo, autor, precio, ext, cat, rat, des, typ in archivos:
+    try:
+        with open(ruta, "rb") as f:
+            binario = f.read()
+        cursor.execute('''
+            INSERT INTO contenidos (src, title, author, price, extension, category, rating, description, type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (binario, titulo, autor, precio, ext, cat, rat, des, typ))
+    except Exception as e:
+        print(f"Error al leer o insertar {ruta}: {e}")
 
 # relaciones = [
 #     (1, 1), 

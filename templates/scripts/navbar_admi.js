@@ -1,5 +1,5 @@
 function generateNavbar() {
-    var href_logo;
+    var href_logo="#";
     fetch('/get_user_role')
             .then(response => response.json())
             .then(data => {
@@ -124,11 +124,13 @@ function generateNavbar() {
                         window.location.href = 'login.html';
                     } else {
                         alert('Error al cerrar sesión');
+                        window.location.href = '/';
                     }
                 })
                 .catch(error => {
                     console.error('Error durante logout:', error);
                     alert('Error al cerrar sesión');
+                    window.location.href = '/';
                 });
             });
             liOption.appendChild(signOutBtn);
@@ -172,7 +174,7 @@ function generateNavbar() {
                 data.forEach(item => {
                     html += `
                     <div class="result-card">
-                        <a href=item_view_admi.html?id=${item.id}><h4>${item.title}</h4></a>
+                        <a href=item_view_admi.html?id=${item.id}><h4>${item.title}</a>(${item.type})</h4>
                         <p><strong>Autor:</strong> ${item.author}</p>
                     </div>`;
                 });
