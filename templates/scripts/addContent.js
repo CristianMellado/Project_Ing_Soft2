@@ -37,3 +37,53 @@ document.getElementById("content-form").addEventListener("submit", function (e) 
     })
     .catch(err => console.error("Error:", err));
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const fileInput = document.getElementById("fileInput");
+    const fileNameSpan = document.getElementById("file-name");
+    const previewContainer = document.getElementById("preview-container");
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        previewContainer.innerHTML = ""; // Limpiar previews anteriores
+        const contentType = document.getElementById("content-type");
+
+        if (file) {
+            fileNameSpan.textContent = file.name;
+            document.getElementById("content-title").value = file.name.trim();
+            const fileType = file.type;
+            const url = URL.createObjectURL(file);
+
+            if (fileType.startsWith("image/")) {
+                contentType.value="imagen";
+                const img = document.createElement("img");
+                img.src = url;
+                img.alt = "Vista previa";
+                img.style.maxWidth = "300px";
+                img.style.maxHeight = "300px";
+                previewContainer.appendChild(img);
+
+            } else if (fileType.startsWith("video/")) {
+                contentType.value="video";
+                const video = document.createElement("video");
+                video.src = url;
+                video.controls = true;
+                video.style.maxWidth = "300px";
+                previewContainer.appendChild(video);
+
+            } else if (fileType.startsWith("audio/")) {
+                contentType.value="audio";
+                const audio = document.createElement("audio");
+                audio.src = url;
+                audio.controls = true;
+                previewContainer.appendChild(audio);
+
+            } else {
+                previewContainer.textContent = "Tipo de archivo no compatible para vista previa.";
+            }
+
+        } else {
+            fileNameSpan.textContent = "Ningún archivo seleccionado";
+        }
+    });
+});

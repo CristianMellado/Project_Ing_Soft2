@@ -18,7 +18,13 @@
             <option value="audio">Audio</option>
         </select><br>
 
-        <input type="file" id="fileInput" name="file" required /><br>
+        <div class="file-upload-container">
+            <label for="fileInput" class="custom-file-label">Seleccionar archivo</label>
+            <input type="file" id="fileInput" name="file" required style="display: none;" />
+            
+            <div id="preview-container"></div>
+            <span id="file-name">Ningún archivo seleccionado</span>
+        </div>
 
         <label for="content-title">Title:</label><br>
         <input type="text" id="content-title" name="content-title"><br>

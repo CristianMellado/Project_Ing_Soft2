@@ -9,16 +9,21 @@
     <script src="/scripts/item_info_edit.js"></script>
 </head>
 <body>
-    <form id="content-form">
+    <form id="content-form" enctype="multipart/form-data" method="POST">
         <label for="content-type">Content Type:</label><br>
         <select id="content-type" name="content-type">
-            <option value="imagen">Image</option>
+            <option value="imagen">Imagen</option>
             <option value="video">Video</option>
             <option value="audio">Audio</option>
         </select><br>
 
-        <label for="content-file">Enter link File:</label><br>
-        <input type="text" id="content-file" name="content-file"><br><br>
+        <div class="file-upload-container">
+            <label for="fileInput" class="custom-file-label">Seleccionar archivo</label>
+            <input type="file" id="fileInput" name="file" required style="display: none;" />
+            
+            <div id="preview-container"></div>
+            <span id="file-name">Ningún archivo seleccionado</span>
+        </div>
 
         <label for="content-title">Title:</label><br>
         <input type="text" id="content-title" name="content-title"><br>
@@ -28,9 +33,6 @@
 
         <label for="content-price">Price:</label><br>
         <input type="text" id="content-price" name="content-price"><br>
-
-        <label for="content-extension">Extención:</label><br>
-        <input type="text" id="content-ext" name="content-ext"><br>
 
         <label for="content-category">Category:</label><br>
         <input type="text" id="content-category" name="content-category"><br>

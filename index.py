@@ -261,54 +261,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/download_content":
             if current_usuario:
                 content_id = int(data.get("id", 0))
-                cont = C_Content()
-                contenido = cont.obtenerBinarioPorID(content_id)  
-
-                if contenido:
-                    bin_data = contenido['src']
-                    extension = contenido['extension']
-                    filename = contenido['title'].replace(" ", "_") + "." + extension
-
-                    mime_map = {
-                        # Imágenes
-                        "png": "image/png",
-                        "jpg": "image/jpeg",
-                        "jpeg": "image/jpeg",
-                        "gif": "image/gif",
-                        "bmp": "image/bmp",
-                        "webp": "image/webp",
-                        "svg": "image/svg+xml",
-                        "tiff": "image/tiff",
-                        "ico": "image/x-icon",
-
-                        # Audio
-                        "mp3": "audio/mpeg",
-                        "wav": "audio/wav",
-                        "ogg": "audio/ogg",
-                        "aac": "audio/aac",
-                        "flac": "audio/flac",
-                        "m4a": "audio/mp4",
-                        "mid": "audio/midi",
-                        "oga": "audio/ogg",
-
-                        # Video
-                        "mp4": "video/mp4",
-                        "webm": "video/webm",
-                        "mov": "video/quicktime",
-                        "avi": "video/x-msvideo",
-                        "mkv": "video/x-matroska",
-                        "flv": "video/x-flv",
-                        "wmv": "video/x-ms-wmv",
-                        "3gp": "video/3gpp",
-                    }
-                    mime_type = mime_map.get(extension.lower(), "application/octet-stream")
-
+                mime_type, bin_data, filename = current_usuario.obtenerContenidoDescarga(content_id)
+                if mime_type!=None:
                     self.send_response(200)
                     self.send_header("Content-Type", mime_type)
                     self.send_header("Content-Disposition", f"attachment; filename={filename}")
                     self.send_header("Content-Length", str(len(bin_data)))
                     self.end_headers()
-
                     self.wfile.write(bin_data)
                 else:
                     self.send_error(404, "Contenido no encontrado")

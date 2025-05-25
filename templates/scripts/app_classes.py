@@ -549,9 +549,50 @@ class C_Content:
        ctr = C_Puntuacion()
        ctr.Enviar_Puntuacion(idU,idC,score)
 
-    def obtenerBinarioPorID(self, idC):
+    def obtenerContenidoBinarios(self, idC):
         conte = E_Contenidos()
-        return conte.obtenerBinarioPorID(idC)
+        contenido  = conte.obtenerBinarioPorID(idC)
+
+        if contenido:
+            bin_data = contenido['src']
+            extension = contenido['extension']
+            filename = contenido['title'].replace(" ", "_") + "." + extension
+
+            mime_map = {
+                        # Imágenes
+                        "png": "image/png",
+                        "jpg": "image/jpeg",
+                        "jpeg": "image/jpeg",
+                        "gif": "image/gif",
+                        "bmp": "image/bmp",
+                        "webp": "image/webp",
+                        "svg": "image/svg+xml",
+                        "tiff": "image/tiff",
+                        "ico": "image/x-icon",
+
+                        # Audio
+                        "mp3": "audio/mpeg",
+                        "wav": "audio/wav",
+                        "ogg": "audio/ogg",
+                        "aac": "audio/aac",
+                        "flac": "audio/flac",
+                        "m4a": "audio/mp4",
+                        "mid": "audio/midi",
+                        "oga": "audio/ogg",
+
+                        # Video
+                        "mp4": "video/mp4",
+                        "webm": "video/webm",
+                        "mov": "video/quicktime",
+                        "avi": "video/x-msvideo",
+                        "mkv": "video/x-matroska",
+                        "flv": "video/x-flv",
+                        "wmv": "video/x-ms-wmv",
+                        "3gp": "video/3gpp",
+            }
+            mime_type = mime_map.get(extension.lower(), "application/octet-stream") 
+            return mime_type, bin_data, filename
+        return None,None,None
     
 class C_Usuario:
     def __init__(self):
@@ -597,7 +638,9 @@ class C_Usuario:
     def obtenerDescargasCliente(self, idU):
         uscont = E_UsuarioContenido()
         return uscont.obtenerDescargasCliente(idU)
-    
+    def obtenerContenidoDescarga(self,content_id):
+        controller = C_Content()
+        return controller.obtenerContenidoBinarios(content_id) 
 
 class C_Cliente(C_Usuario):
     def __init__(self):
@@ -768,6 +811,9 @@ class Usuario:
         return self.controller.verificarContenido(self.id, idC)
     def aceptarNotificacion(self, idN):
         self.controller.aceptarNotificacion(idN)
+
+    def obtenerContenidoDescarga(self,content_id):
+        return self.controller.obtenerContenidoDescarga(content_id)
     
 class Cliente(Usuario):
     def __init__(self, username, id):
