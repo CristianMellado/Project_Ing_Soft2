@@ -170,6 +170,53 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Ruta GET no encontrada")
 
+    def recibirContenidoDesdeFrontend(self, id=False):
+            form = cgi.FieldStorage(
+                    fp=self.rfile,
+                    headers=self.headers,
+                    environ={'REQUEST_METHOD': 'POST'},
+            )
+
+
+            fileitem = form['file']
+            if fileitem.filename or id:
+                binary_data = None
+                extension = None
+                
+                if fileitem.filename:
+                    filename = fileitem.filename
+                    binary_data = fileitem.file.read()  # Aquí están los bytes del archivo
+                    extension = filename.split('.')[-1]
+
+                title = form.getvalue("content-title")
+                author = form.getvalue("content-author")
+                price = form.getvalue("content-price")
+                content_type = form.getvalue("content-type")
+                category = form.getvalue("content-category")
+                description = form.getvalue("content-description")
+
+                new_item = {
+                        "src": binary_data,  # Guarda como BLOB
+                        "title": title,
+                        "author": author,
+                        "price": price,
+                        "extension":extension,
+                        "category": category,
+                        "rating": 0,
+                        "description": description,
+                        "type": content_type
+                    }
+                    
+                if id:
+                    new_item['id'] = form.getvalue("id")
+                    
+                #current_usuario.ingresarAgregarContenido(new_item)
+                return {"success": True, "message": "Contenido guardado"}, new_item
+                #print(binary_data)
+                #print(new_item)
+            else:
+                return {"success": False, "message": "No se recibió archivo"}, None
+
     def do_POST(self):
         parsed_path = urlparse(self.path)
         content_type = self.headers.get('Content-Type', '')
@@ -285,47 +332,24 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         elif parsed_path.path == "/save_content":
             if current_usuario and isinstance(current_usuario, Administrador):
-                print("AEA")
-                form = cgi.FieldStorage(
-                    fp=self.rfile,
-                    headers=self.headers,
-                    environ={'REQUEST_METHOD': 'POST'},
-                )
-
-                fileitem = form['file']
-                if fileitem.filename:
-                    filename = fileitem.filename
-                    binary_data = fileitem.file.read()  # Aquí están los bytes del archivo
-
-                    title = form.getvalue("content-title")
-                    author = form.getvalue("content-author")
-                    price = form.getvalue("content-price")
-                    extension = filename.split('.')[-1]
-                    content_type = form.getvalue("content-type")
-                    category = form.getvalue("content-category")
-                    description = form.getvalue("content-description")
-
-                    new_item = {
-                        "src": binary_data,  # Guarda como BLOB
-                        "title": title,
-                        "author": author,
-                        "price": price,
-                        "extension": extension,
-                        "category": category,
-                        "rating": 0,
-                        "description": description,
-                        "type": content_type
-                    }
-
-                    current_usuario.ingresarAgregarContenido(new_item)
-                    response = {"success": True, "message": "Contenido guardado"}
-                    #print(binary_data)
-                    #print(new_item)
-                else:
-                    response = {"success": False, "message": "No se recibió archivo"}
-
+                res, content = self.recibirContenidoDesdeFrontend()
+                if content:
+                    current_usuario.ingresarAgregarContenido(content)
                 self._set_headers()
-                self.wfile.write(json.dumps(response).encode("utf-8"))
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/update_content":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                res, content = self.recibirContenidoDesdeFrontend(id=True)
+                if content:
+                    print(content)
+                    current_usuario.actualizarContenido(content)
+                self._set_headers()
+                self.wfile.write(json.dumps(res).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
 
         elif parsed_path.path == "/register":
             name = data.get("name")
@@ -403,7 +427,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtenerDescargasCliente(data.get("id"))).encode("utf-8"))
             else:
-                self.permises_web_current_user()           
+                self.permises_web_current_user()
+
+        elif parsed_path.path == "/get_user_refills_info":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerRecargasCliente(data.get("id"))).encode("utf-8"))
+            else:
+                self.permises_web_current_user()      
+
         else:
             self.send_response(404)
             self.end_headers()

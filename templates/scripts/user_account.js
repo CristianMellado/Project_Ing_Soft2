@@ -133,6 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         data.forEach(item => {
             const li = document.createElement("li");
+            li.classList.add("recarga-item");
             li.innerHTML = `
                         <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
                         (${item.type})</h4>

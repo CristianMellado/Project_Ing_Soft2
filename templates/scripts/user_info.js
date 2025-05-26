@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     const downloadsList = document.getElementById("downloads-list");
+    downloadsList.innerHTML = '';
 
     fetch("/get_user_downloads_info", {
         method: 'POST',
@@ -55,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         data.forEach(item => {
             const li = document.createElement("li");
+            li.classList.add("recarga-item");
             li.innerHTML = `
                         <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
                         (${item.type})</h4>
@@ -68,4 +70,72 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error(err);
     });
 
+
+    const recargaslist = document.getElementById("recargas-list");
+    recargaslist.innerHTML = '';
+    fetch("/get_user_refills_info", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.length === 0) {
+            recargaslist.innerHTML = '<li>No hay recargas solicitadas.</li>';
+            return;
+        }
+
+        data.forEach(item => {
+            const li = document.createElement("li");
+            li.classList.add("recarga-item");
+
+            li.innerHTML = `
+                <p>
+                <strong>Monto:</strong> ${item.monto} | 
+                <strong> Estado:</strong> ${item.estado}| 
+                <strong> Fecha:</strong> ${item.fecha} | `;
+            if(item.estado=="pendiente"){
+                li.innerHTML += `<button class="aceptar-recarga" data-id="${item.id_recarga}">Aceptar</button>
+                    </p>
+                `;
+            }
+            li.innerHTML += `</p>`;                
+            recargaslist.appendChild(li);
+        });
+
+        var aceptarButtons = document.querySelectorAll('.aceptar-recarga');
+            aceptarButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const recargaId = button.getAttribute('data-id');
+                    aceptarRecarga(recargaId);
+                });
+        });
+
+    })
+    .catch(err => {
+        recargaslist.innerHTML = '<li style="color:red">Error al cargar contenidos.</li>';
+        console.error(err);
+    });
+
 });
+
+function aceptarRecarga(id_recarga) {
+    fetch(`/accept_recarga`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({id_recarga})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Recarga aceptada con éxito');
+        } else {
+            alert('Error al aceptar la recarga');
+        }
+    })
+    .catch(error => {
+        console.error('Error al aceptar recarga:', error);
+    });
+}

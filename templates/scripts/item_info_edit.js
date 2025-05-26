@@ -113,8 +113,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const price = document.getElementById("content-price").value.trim();
         const category = document.getElementById("content-category").value.trim();
         const description = document.getElementById("content-description").value.trim();
+        const fileInputV = document.getElementById("fileInput");
 
-        if ((!fileInput && !id) || !title || !author || !price || !category || !description) {
+        if (!id || !title || !author || !price || !category || !description) {
             alert("Por favor, completa todos los campos sin dejar espacios en blanco.");
             return;
         }
@@ -129,7 +130,16 @@ document.addEventListener("DOMContentLoaded", function () {
             formData.append("id", id);
         }
 
-        fetch("/save_content", {
+        if (!fileInputV.files || fileInputV.files.length === 0) {
+            console.log("No se ha subido ningún archivo.");
+            alert(1);
+            //formData.append("changes", false);
+        }
+        // else{
+        //     formData.append("changes", true);
+        // }
+
+        fetch("/update_content", {
             method: "POST",
             body: formData
         })

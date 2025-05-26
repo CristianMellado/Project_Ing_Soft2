@@ -135,3 +135,32 @@ button:hover {
         padding: 8px 15px;
     }
 }
+
+
+/* extra info user:*/
+.recarga-item {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* espacio entre elementos */
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    list-style: none;
+    font-family: Arial, sans-serif;
+}
+
+.recarga-item span {
+    white-space: nowrap; /* para que todo quede en línea */
+}
+
+.recarga-item button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.recarga-item button:hover {
+    background-color: #45a049;
+}

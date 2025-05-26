@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import sqlite3
 import base64
 
@@ -102,7 +102,7 @@ class E_Movimientos:
 
     def registrarMovimiento(self, idU, idC, precio):
         query = "INSERT INTO movimientos (id_contenido, id_usuario, precio, fecha) VALUES (?, ?, ?, ?)"
-        fecha = str(datetime.datetime.now())
+        fecha = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         self.cursor.execute(query, (idU, idC, precio, fecha))
         self.conn.commit()
 
@@ -246,7 +246,7 @@ class E_Recargas:
         self.cursor = self.conn.cursor()
 
     def registrarSolicitud(self, monto, user_id):
-        fecha = str(datetime.datetime.now())
+        fecha = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         query = "INSERT INTO recargas (id_user, monto, fecha) VALUES (?, ?, ?)"
         self.cursor.execute(query, (user_id, monto, fecha))
         self.conn.commit()
@@ -277,6 +277,28 @@ class E_Recargas:
 
         return lista
     
+    def obtenerRecargasCliente(self, idU):
+        query = """
+            SELECT 
+                id,
+                monto,
+                fecha,
+                estado
+            FROM 
+                recargas
+            WHERE 
+                id_user = ?
+        """
+        self.cursor.execute(query,(idU))
+        result = self.cursor.fetchall()
+
+        lista = [{"id_recarga": row[0],
+                "monto": row[1],
+                "fecha": row[2],
+                "estado": row[3]} for row in result]
+
+        return lista
+        
     def aprobarRecarga(self, id_recarga):
         query = "SELECT id_user, monto FROM recargas WHERE id = ? AND estado = 'pendiente'"
         self.cursor.execute(query, (id_recarga,))
@@ -320,6 +342,41 @@ class E_Contenidos:
             data["description"],
             data["type"]
         ))
+        self.conn.commit()
+
+    def actualizarContenido(self, data):
+        campos_validos = {
+            "src": data.get("src"),
+            "title": data.get("title"),
+            "author": data.get("author"),
+            "price": float(data["price"]) if data.get("price") is not None else None,
+            "extension": data.get("extension"),
+            "category": data.get("category"),
+            "rating": float(data["rating"]) if data.get("rating") is not None else None,
+            "description": data.get("description"),
+            "type": data.get("type")
+        }
+
+        # Filtrar solo campos que no son None
+        columnas = []
+        valores = []
+
+        for campo, valor in campos_validos.items():
+            if valor is not None:
+                columnas.append(f"{campo} = ?")
+                valores.append(valor)
+
+        if not columnas:
+            return  # Nada que actualizar
+
+        query = f"""
+            UPDATE contenidos SET
+                {', '.join(columnas)}
+            WHERE id = ?
+        """
+
+        valores.append(data["id"])
+        self.cursor.execute(query, tuple(valores))
         self.conn.commit()
 
     def _generar_data_url(self, bin_data, tipo, extension):
@@ -465,6 +522,10 @@ class C_Transacciones:
         controller = E_Recargas()
         return controller.obtenerListaPeticiones()
     
+    def obtenerRecargasCliente(self, idU):
+        controller = E_Recargas()
+        return controller.obtenerRecargasCliente(idU)
+        
     def aprobarRecarga(self, id_recarga):
         controller = E_Recargas()
         id_user, cantidad = controller.aprobarRecarga(id_recarga)
@@ -492,6 +553,10 @@ class C_Content:
     def registrarContenido(self, data):
         contenidos = E_Contenidos()
         contenidos.registrarContenido(data)
+
+    def actualizarContenido(self, data):
+        contenidos = E_Contenidos()
+        contenidos.actualizarContenido(data)
 
     def consultarDatos(self, query, filters):
         query = query.lower().strip()
@@ -638,6 +703,11 @@ class C_Usuario:
     def obtenerDescargasCliente(self, idU):
         uscont = E_UsuarioContenido()
         return uscont.obtenerDescargasCliente(idU)
+    
+    def obtenerRecargasCliente(self, idU):
+        controller_trans = C_Transacciones()
+        return controller_trans.obtenerRecargasCliente(idU)
+    
     def obtenerContenidoDescarga(self,content_id):
         controller = C_Content()
         return controller.obtenerContenidoBinarios(content_id) 
@@ -758,6 +828,10 @@ class C_Administrador(C_Usuario):
         content_manager = C_Content()
         content_manager.registrarContenido(datos)
 
+    def actualizarContenido(self, datos):
+        content_manager = C_Content()
+        content_manager.actualizarContenido(datos)
+
     def buscar_info(self, data):
         resultados = []
         filters = data['filters']
@@ -862,7 +936,9 @@ class Administrador(Usuario):
     
     def ingresarAgregarContenido(self, datos):
         self.controller.ingresarAgregarContenido(datos)
-    
+    def actualizarContenido(self, datos):
+        self.controller.actualizarContenido(datos)
+
     def buscar_info(self, data):
         return self.controller.buscar_info(data)
     
@@ -871,3 +947,6 @@ class Administrador(Usuario):
     
     def obtenerDescargasCliente(self, idU):
         return self.controller.obtenerDescargasCliente(idU)
+    
+    def obtenerRecargasCliente(self, idU):
+        return self.controller.obtenerRecargasCliente(idU)
