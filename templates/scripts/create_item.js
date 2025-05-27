@@ -55,7 +55,7 @@ export function createMedia(data, Div, shop, current_role) {
             .then(respuesta => {
                 if (respuesta.success) {
                     alert("CONTENIDO DESCARGADO :D");
-                    descargarContenido(data.id);
+                    descargarContenido(data.id, data.title);
                     // console.log(respuesta);
                     // console.log(current_role);
                     if (!respuesta.hasRated && current_role=='Cliente') {
@@ -177,7 +177,7 @@ function showRatingPrompt(contentId) {
     document.body.appendChild(overlay);
 }
 
-function descargarContenido(id) {
+function descargarContenido(id,name) {
     fetch('/download_content', {
         method: 'POST',
         headers: {
@@ -197,7 +197,8 @@ function descargarContenido(id) {
         a.href = downloadUrl;
 
         // Esto es solo temporal si no tienes el nombre desde JS.
-        a.download = "contenido_" + id;
+        //a.download = "contenido_" + id;
+        a.download = name;
 
         document.body.appendChild(a);
         a.click();
