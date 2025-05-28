@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', function () {
     checkEmptyFields();
     
     var form = document.querySelector('form');
+    
+    // [RF-0002] envia los datos de un usuario para registrarlo.
     form.addEventListener('submit', function(event) {
         event.preventDefault();
 

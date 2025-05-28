@@ -86,6 +86,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             content_type = mime_types.get(ext, "application/octet-stream")
             self.serve_file(file_path, content_type)
 
+        # [RF-0016] retorna los contenidos más descargados
         elif parsed_path.path == "/main_view_content":
             self._set_headers()
             self.wfile.write(json.dumps(C_Content.getContentView()).encode("utf-8"))
@@ -103,7 +104,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(current_usuario.getDataUser()).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        # [RF-0013] envia al frontend las solicitudes de saldo pendientes de los clientes.
         elif parsed_path.path == "/get_recargas":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
@@ -111,6 +113,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-]
         elif parsed_path.path == "/get_notificaciones":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -136,6 +139,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0003] api que verifica si es posible cerrar la cuenta de un cliente.
         elif parsed_path.path == "/close_account":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -234,6 +238,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             except json.JSONDecodeError:
                 data = parse_qs(body)
 
+        # [RF-0001] API para poder validar el iniciar sesión.
         if parsed_path.path == "/signin":
             name = data.get("name")
             password = data.get("password")
@@ -254,6 +259,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
 
+        # [RF-0014] recibe una cadena de texto para buscarla en los contenidos existentes.
         elif parsed_path.path == "/search_content":
             if current_usuario:
                 resultados = current_usuario.Buscar(data.get("query"), data.get("filters"))
@@ -261,7 +267,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(resultados).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        # [RF-0015] recibe una cadena de texto para buscarla en los contenidos y usuarios existentes.
         elif parsed_path.path == "/search_info":
             if current_usuario:
                 print(data)
@@ -271,7 +278,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(resultados).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        # [RF-0011] verifica y solicita el saldo a un cliente.
         elif parsed_path.path == "/request_balance":
             if current_usuario:
                 response = current_usuario.ingresarMontoSolicitar(data.get("tarjeta"), data.get("cantidad"), data.get("cardType"))
@@ -280,6 +288,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0012] Aprueba la solicitud de saldo de un cliente.
         elif parsed_path.path == "/accept_recarga":
             if current_usuario:
                 current_usuario.aprobarSaldoCliente(int(data.get("id_recarga")))
@@ -304,7 +313,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(found or {"error": "Contenido no encontrado"}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        #[RF-0006] El cliente o administrador descargan un contenido.
         elif parsed_path.path == "/download_content":
             if current_usuario:
                 content_id = int(data.get("id", 0))
@@ -330,6 +340,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0009] El administrador agrega un contenido nuevo.
         elif parsed_path.path == "/save_content":
             if current_usuario and isinstance(current_usuario, Administrador):
                 res, content = self.recibirContenidoDesdeFrontend()
@@ -339,7 +350,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        # [RF-0010] El administrador edita un contenido existente.
         elif parsed_path.path == "/update_content":
             if current_usuario and isinstance(current_usuario, Administrador):
                 res, content = self.recibirContenidoDesdeFrontend(id=True)
@@ -351,6 +363,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0002] apartado que recibe los datos de un usuario para registrarlo.
         elif parsed_path.path == "/register":
             name = data.get("name")
             password = data.get("password")
@@ -374,6 +387,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self._set_headers()
             self.wfile.write(json.dumps(response).encode("utf-8"))
 
+        # [RF-0005] verifica si el cliente o administrador pueden descargar un contenido.
         elif parsed_path.path == "/verificate_downloaded_content":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
@@ -396,6 +410,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0008] verifica y registra una puntuación para cierto contenido.
         elif parsed_path.path == "/rate_content":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -405,6 +420,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        #[RF-0007] verifica y envia un regalo a un cliente.
         elif parsed_path.path == "/gift_content":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -414,6 +430,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0004] Extrae el credito de una cuenta de un cliente.
         elif parsed_path.path == "/withdraw_balance":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()

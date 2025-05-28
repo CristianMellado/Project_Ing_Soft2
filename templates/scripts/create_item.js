@@ -46,6 +46,7 @@ export function createMedia(data, Div, shop, current_role) {
                 console.error('Error:', error);
             });
         } else {
+            // [RF-0005] envia al servidor la verificaion si puede decargar cierto contenido.
             fetch('/verificate_downloaded_content', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -98,6 +99,7 @@ export function createMedia(data, Div, shop, current_role) {
     }
 }
 
+// [RF-0008] solicita y registra una puntuación para cierto contenido.
 function showRatingPrompt(contentId) {
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';
@@ -177,6 +179,7 @@ function showRatingPrompt(contentId) {
     document.body.appendChild(overlay);
 }
 
+// [RF-0006] pide el contenido al servidor y descarga el contenido en el dispositivo.
 function descargarContenido(id,name) {
     fetch('/download_content', {
         method: 'POST',

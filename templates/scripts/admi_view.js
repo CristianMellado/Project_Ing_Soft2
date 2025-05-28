@@ -1,3 +1,4 @@
+// [RF-0015] envía una cadena de texto para buscarla en los contenidos y usuarios existentes.
 document.addEventListener('DOMContentLoaded', function () {
     const formBusqueda = document.getElementById('form-busqueda');
     const searchInput = document.getElementById('search-input');

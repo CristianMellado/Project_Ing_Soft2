@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.querySelector('form');
 
+    // [RF-0001] : envio de datos para el inicio de sesión.
     form.addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -11,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
             name: name,
             password: password
         };
-
+        
         fetch('/signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

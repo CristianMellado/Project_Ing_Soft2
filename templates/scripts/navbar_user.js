@@ -179,7 +179,8 @@ function generateNavbar() {
     }
 
     obtenerSaldo();
-
+    
+    // [RF-0014] envia una cadena de texto para buscarla en los contenidos existentes.
     function realizarBusqueda(textoBusqueda) {
         const query = textoBusqueda.trim().toLowerCase();
         const selectedFilters = Array.from(filterContainer.querySelectorAll('.filter-checkbox'))

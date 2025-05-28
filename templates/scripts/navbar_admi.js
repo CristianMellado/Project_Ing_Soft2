@@ -154,6 +154,7 @@ function generateNavbar() {
     resultsContainer.setAttribute('id', 'search-results');
     document.body.insertBefore(resultsContainer, header.nextSibling);
 
+    // [RF-0014] envia una cadena de texto para buscarla en los contenidos existentes.
     function realizarBusqueda(textoBusqueda) {
         const query = textoBusqueda.trim().toLowerCase();
         const selectedFilters = Array.from(filterContainer.querySelectorAll('.filter-checkbox'))
@@ -216,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(recargasContainer);
     }
 
+    // [RF-0013] obtiene del servidor las solicitudes de saldo pendientes de los clientes.
     function obtenerRecargas() {
         fetch('/get_recargas') 
             .then(response => response.json())
@@ -251,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // [RF-0012] El Administrador aprueba la solicitud de saldo de un cliente.
     function aceptarRecarga(id_recarga) {
         fetch(`/accept_recarga`, {
             method: 'POST',

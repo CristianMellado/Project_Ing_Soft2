@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         balanceForm.style.display = balanceForm.style.display === "none" ? "block" : "none";
     });
 
+    // [RF-0004] envia la peticion al servidor de enviar todo el credito del cliente a cierta tarjeta.
     submitcloseBtn.addEventListener("click", () => {
         const tarjeta = document.getElementById("withdraw_card").value;
         const cardType = document.getElementById("withdraw_card_type").value;
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Complete todos los campos correctamente.");
             return;
         }
-
+        
         fetch("/withdraw_balance", {
             method: "POST",
             headers: {
@@ -67,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
+    // [RF-0011] solicita saldo al servidor.
     submitBalanceBtn.addEventListener("click", () => {
         const tarjeta = document.getElementById("tarjeta").value;
         const cantidad = parseFloat(document.getElementById("cantidad").value);
@@ -99,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
+    // [RF-0003] verifica si es posible cerrar la cuenta de un cliente.
     closeAccountBtn.addEventListener("click", () => {
         if (confirm("¿Estás seguro de cerrar tu cuenta?")) {
             fetch("/close_account", { method: "GET" })

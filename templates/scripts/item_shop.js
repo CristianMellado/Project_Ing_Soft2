@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         alert('Debes ingresar un destinatario.');
                         return;
                     }
-
+                    // [RF-0007] envia la peticón al server para verificar y enviar un regalo a un cliente existente.
                     fetch('/gift_content', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
