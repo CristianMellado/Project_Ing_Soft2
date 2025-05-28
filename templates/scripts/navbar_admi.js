@@ -1,4 +1,5 @@
-function generateNavbar() {
+// [RF-0025] Genera una barra de navegacion para un Administrador.
+function generateNavbarAdministrador() {
     var href_logo="#";
     fetch('/get_user_role')
             .then(response => response.json())
@@ -205,7 +206,7 @@ function generateNavbar() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    generateNavbar();
+    generateNavbarAdministrador();
 });
 
 document.addEventListener('DOMContentLoaded', function () {

@@ -1,4 +1,5 @@
 
+// [RF-0029] Función que renderiza la información de un contenido, ya sea de video, audio, o imagen.
 export function createMedia(data, Div, shop, current_role) {
     var infoDiv = document.createElement('div');
     infoDiv.className = 'info';
@@ -214,6 +215,7 @@ function descargarContenido(id,name) {
     });
 }
 
+// [RF-0030] Renderización de video de cierto contenido.
 export function createVideoContent(data, shop, current_role) {
     var videoDiv = document.createElement('div');
     videoDiv.className = 'media-item';
@@ -235,6 +237,7 @@ export function createVideoContent(data, shop, current_role) {
     videoContent.appendChild(videoDiv);
 }
 
+// [RF-0031] Renderización de imagen de cierto contenido.
 export function createImageContent(data, shop, current_role) {
     var Div = document.createElement('div');
     Div.className = 'media-item';
@@ -254,6 +257,7 @@ export function createImageContent(data, shop, current_role) {
     Content.appendChild(Div);
 }
 
+// [RF-0032] Renderización de audio de cierto contenido.
 export function createAudioContent(data, shop, current_role) {
     var Div = document.createElement('div');
     Div.className = 'media-item';

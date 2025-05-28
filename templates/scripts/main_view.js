@@ -2,6 +2,7 @@ import {createImageContent, createAudioContent, createVideoContent} from './crea
 
 var data_cache = [];
 
+// [RNF-0017] funcion que envia la renderización de un contenido para renderizarlo en imagen, video, o audio.
 function showContent(contentType, shop, current_role) {
     document.querySelector('.container').innerHTML = '';
 
@@ -18,6 +19,7 @@ function showContent(contentType, shop, current_role) {
     });
 }
 
+// [RF-0016] solicita al servidor los contenidos más descargados.
 document.addEventListener('DOMContentLoaded', function () {
     var current_role = "usuario";
 
@@ -55,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         boton.addEventListener('click', () => showContent(i, 0, current_role));
     })
 
-    fetch('/main_view_content')
+    fetch('/top_content_downloaded')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

@@ -18,6 +18,7 @@ paths_ulr = ["/login.html","/register.html", "/user_view.html",
              "/user_account.html", "/user_info.html", "/item_info_edit.html",
              "/item_view_admi.html", "/item_shop.html"]
 
+# [RF-0001] parte del loguin, para designar un role.
 def autenticar(username, password):
     temp_user = Usuario()
     auth = temp_user.iniciar_sesion(username, password)
@@ -53,6 +54,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Archivo no encontrado")
 
+    # [RNF-0035] verifica desde los cookies de la pagina el id de la sesión para verificar a los distintos usuarios usando el aplicativo.
     def get_current_user(self):
         cookie = self.headers.get("Cookie")
         if cookie:
@@ -87,10 +89,11 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.serve_file(file_path, content_type)
 
         # [RF-0016] retorna los contenidos más descargados
-        elif parsed_path.path == "/main_view_content":
+        elif parsed_path.path == "/top_content_downloaded":
             self._set_headers()
             self.wfile.write(json.dumps(C_Content.getContentView()).encode("utf-8"))
 
+        # [RF-0018] retorna el saldo de cierto cliente.
         elif parsed_path.path == "/get_balance":
             if current_usuario:
                 self._set_headers()
@@ -98,6 +101,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0019] solicita la información del cliente actualmente logueado.
         elif parsed_path.path == "/user_data":
             if current_usuario:
                 self._set_headers()
@@ -113,7 +117,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
-        # [RF-]
+        # [RF-0021] Solicita las notificaciones del cliente actualmente logueado, tanto de regalos o recargas.
         elif parsed_path.path == "/get_notificaciones":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -121,6 +125,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0023] retorna el role del inicio de sesion, si es cliente, administrador, o un usuario.
         elif parsed_path.path == "/get_user_role":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -132,6 +137,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps({"role":"User"}).encode("utf-8")) 
 
+        # [RF-0020] solicita las compras del cliente actualmente logueado.
         elif parsed_path.path == "/get_user_downloads":
             if current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
@@ -147,6 +153,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0034] solicita el cierre de sesión de un cliente o administrador.
         elif parsed_path.path == "/logout_account":
             if current_usuario:
                 print(session_store)
@@ -174,6 +181,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"Ruta GET no encontrada")
 
+    # [RNF-0033] Función que leé en binario la información enviada por el método post con archivos subidos de tipo contenido.
     def recibirContenidoDesdeFrontend(self, id=False):
             form = cgi.FieldStorage(
                     fp=self.rfile,
@@ -297,14 +305,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0022] Acepta la notificación y la marca como leida.
         elif parsed_path.path == "/accept_notificacion":
             if current_usuario:
-                current_usuario.aceptarNotificacion(int(data.get("id_recarga")))
+                current_usuario.aceptarNotificacion(int(data.get("id_notificacion")))
                 self._set_headers()
                 self.wfile.write(json.dumps({"success":True}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 
+        # [RF-0028] Solicita información de cierto contenido al servidor.
         elif parsed_path.path == "/get_content_by_id":
             if current_usuario:
                 content_id = int(data.get("id", 0))
@@ -331,6 +341,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0027] solicita informacion como id, saldo, estado cuenta, etc. de un cliente.
         elif parsed_path.path == "/get_user_by_id":
             if current_usuario:
                 id = int(data.get("id", 0))
@@ -399,6 +410,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0029] Utilizada para ver la información del contenido y establecer el botón de pagar.
         elif parsed_path.path == "/pagarContenido":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
@@ -438,7 +450,8 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(res).encode("utf-8"))
             else:
                 self.permises_web_current_user()
-
+        
+        # [RF-0027] solicita informacion del historial de compras de un cliente.
         elif parsed_path.path == "/get_user_downloads_info":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
@@ -446,6 +459,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0027] solicita informacion del historial de recargas de un cliente.
         elif parsed_path.path == "/get_user_refills_info":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()

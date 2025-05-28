@@ -1,4 +1,4 @@
-// [RF-0009] Se envia datos de un contenido al servidor.
+// [RF-0009] Se envia datos de tipo binario y json de un contenido al servidor.
 document.getElementById("content-form").addEventListener("submit", function (e) {
     e.preventDefault();
 

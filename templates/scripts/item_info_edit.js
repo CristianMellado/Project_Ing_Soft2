@@ -1,3 +1,4 @@
+// [RF-0010] Se envia datos editados de un contenido, en forma de tipo binario y json de un contenido al servidor.
 document.addEventListener("DOMContentLoaded", function () {
     const fileInput = document.getElementById("fileInput");
     const fileNameSpan = document.getElementById("file-name");
@@ -132,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!fileInputV.files || fileInputV.files.length === 0) {
             console.log("No se ha subido ningún archivo.");
-            alert(1);
+            //alert(1);
             //formData.append("changes", false);
         }
         // else{

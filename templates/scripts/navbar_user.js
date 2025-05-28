@@ -1,4 +1,5 @@
-function generateNavbar() {
+// [RF-0024] Genera una barra de navegacion para un Cliente.
+function generateNavbarCliente() {
     var href_logo="#";
     fetch('/get_user_role')
             .then(response => response.json())
@@ -158,6 +159,7 @@ function generateNavbar() {
     resultsContainer.setAttribute('id', 'search-results');
     document.body.insertBefore(resultsContainer, header.nextSibling);
 
+    // [RF-0018] solicita el saldo actual del cliente.
     function obtenerSaldo() {
         fetch('/get_balance')
             .then(response => response.json())
@@ -231,7 +233,7 @@ function generateNavbar() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    generateNavbar();
+    generateNavbarCliente();
 });
 
 
@@ -244,7 +246,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(recargasContainer);
     }
 
-    function obtenerRecargas() {
+    // [RF-0021] Solicita las notificaciones del cliente actualmente logueado, tanto de regalos o recargas.
+    function obtenerNotificaciones() {
         fetch('/get_notificaciones') 
             .then(response => response.json())
             .then(data => {
@@ -261,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if(recarga.id_contenido==-1){
                         recargaDiv.innerHTML = `
                         <p>${recarga.messagge}</p>
-                        <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Aceptar</button>
+                        <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Leída</button>
                         `;
                     }
                     else{
@@ -288,16 +291,17 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    function aceptarNotificacion(id_recarga) {
+    // [RF-0022] Acepta la notificación y la marca como leida.
+    function aceptarNotificacion(id_notificacion) {
         fetch(`/accept_notificacion`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({id_recarga: id_recarga})
+            body: JSON.stringify({id_notificacion: id_notificacion})
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                obtenerRecargas(); 
+                obtenerNotificaciones(); 
             } else {
                 alert('Error al aceptar la notificacion');
             }
@@ -313,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if (recargasBtn) {
             recargasBtn.addEventListener('click', function () {
-                obtenerRecargas();
+                obtenerNotificaciones();
                 if (recargasContainer) {
                     recargasContainer.style.display = 'block';
                 }

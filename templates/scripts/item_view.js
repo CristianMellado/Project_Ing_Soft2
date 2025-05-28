@@ -1,5 +1,6 @@
 import {createImageContent, createAudioContent, createVideoContent} from './create_item.js';
 
+// [RF-0023] retorna el role del inicio de sesion, si es cliente, administrador, o un usuario.
 document.addEventListener('DOMContentLoaded', function () {
     var header = document.createElement('header');
     var scriptAdmi = document.createElement('script');
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+// [RF-0028] Solicita información de cierto contenido al servidor.
 function itemGen(current_role){
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');

@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeforms = document.getElementById("withdraw-form");
     const submitcloseBtn = document.getElementById("submit-withdraw");
 
+    // [RF-0019] solicita la información del cliente actualmente logueado.
     fetch("/user_data")
         .then(res => res.json())
         .then(data => {
@@ -123,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const downloadsList = document.getElementById("downloads-list");
-
+    // [RF-0020] solicita las compras del cliente actualmente logueado.
     fetch("/get_user_downloads")
     .then(res => res.json())
     .then(data => {

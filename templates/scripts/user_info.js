@@ -1,3 +1,4 @@
+// [RF-0027] solicita informacion como id, saldo, estado cuenta, etc. de un cliente.
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+// [RF-0012] El Administrador aprueba la solicitud de saldo de un cliente.
 function aceptarRecarga(id_recarga) {
     fetch(`/accept_recarga`, {
         method: 'POST',
