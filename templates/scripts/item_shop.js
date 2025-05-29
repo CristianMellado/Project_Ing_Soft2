@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
+    var buyButton = document.createElement('button');
+    buyButton.className = 'buy-button';
+    buyButton.textContent = 'Comprar';
+
     fetch('/get_content_by_id', {
         method: 'POST',
         headers: {
@@ -25,67 +29,94 @@ document.addEventListener('DOMContentLoaded', function () {
                 itemDetails.innerHTML = '';
                 
                 if (data.type == "imagen") {
-                    createImageContent(data, 1);
+                    createImageContent(data);
                 } else if (data.type == "audio") {
-                    createAudioContent(data, 1);
+                    createAudioContent(data);
                 } else {
-                    createVideoContent(data, 1);
+                    createVideoContent(data);
                 }
+                buyButton.addEventListener('click', function () {
+                    fetch('/pagarContenido', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: data.id })
+                    })
+                    .then(response => response.json())
+                    .then(respuesta => {
+                        if (respuesta.success) {
+                            alert("CONTENIDO COMPRADO EXITOSAMENTE :D");
+                            window.location.href = `item_view.html?id=${data.id}`;
+                        } else {
+                            alert("NO TIENE SALDO SUFICIENTE D:");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
             } else {
                 itemDetails.innerHTML = "<p>No se encontró el item.</p>";
             }
 
             if (isGift) {
-                const container = document.querySelector('.media-item');
-                const label = document.createElement('label');
-                label.textContent = 'Usuario destinatario: ';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = 'recipient';
-                input.placeholder = 'Nombre de usuario o correo';
-                input.style.margin = '10px';
-
-                const sendBtn = document.createElement('button');
-                sendBtn.textContent = 'Enviar regalo';
-                sendBtn.className = 'send-gift';
-                sendBtn.addEventListener('click', () => {
-                    const recipient = input.value.trim();
-                    if (!recipient) {
-                        alert('Debes ingresar un destinatario.');
-                        return;
-                    }
-                    // [RF-0007] envia la peticón al server para verificar y enviar un regalo a un cliente existente.
-                    fetch('/gift_content', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id: id,
-                            destinatario: recipient
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(response => {
-                        if (response.success) {
-                            alert("¡Contenido regalado exitosamente!");
-                            window.location.href = `user_view.html`;
-                        } 
-                        else{
-                            alert(response.msg);
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Error al enviar regalo:', err);
-                        alert("Error al conectar con el servidor.");
-                    });
-                });
-
-                container.appendChild(label);
-                container.appendChild(input);
-                container.appendChild(sendBtn);
-            } 
+                genRegaloBar(id);
+            }
+            else{
+                var Div = document.querySelector(".media-item");
+                Div.appendChild(buyButton);
+            }
         })
         .catch(error => {
             console.error('Error obteniendo el item:', error);
             itemDetails.innerHTML = "<p>Error cargando el contenido.</p>";
         });
 });
+
+// [RF-0007] envia la peticón al server para verificar y enviar un regalo a un cliente existente.
+function genRegaloBar(id){
+    const container = document.querySelector('.media-item');
+    const label = document.createElement('label');
+    label.textContent = 'Usuario destinatario: ';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'recipient';
+    input.placeholder = 'Nombre de usuario o correo';
+    input.style.margin = '10px';
+
+    const sendBtn = document.createElement('button');
+    sendBtn.textContent = 'Enviar regalo';
+    sendBtn.className = 'send-gift';
+    sendBtn.addEventListener('click', () => {
+        const recipient = input.value.trim();
+        if (!recipient) {
+            alert('Debes ingresar un destinatario.');
+            return;
+        }
+        fetch('/gift_content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                destinatario: recipient
+            })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                alert("¡Contenido regalado exitosamente!");
+                window.location.href = `user_view.html`;
+            } 
+            else{
+                alert(response.msg);
+            }
+        })
+        .catch(err => {
+            console.error('Error al enviar regalo:', err);
+            alert("Error al conectar con el servidor.");
+        });
+    });
+
+    container.appendChild(label);
+    container.appendChild(input);
+    container.appendChild(sendBtn);
+}
