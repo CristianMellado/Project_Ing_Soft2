@@ -18,25 +18,30 @@ CREATE TABLE IF NOT EXISTS usuarios (
     pswd TEXT,
     saldo DOUBLE DEFAULT 0.0,
     auth INTEGER DEFAULT 0,
-    estado TEXT DEFAULT "cliente"
+    estado_cuenta TEXT DEFAULT "cliente"
+    nombre TEXT DEFAULT "",
+    apellido1 TEXT DEFAULT "",
+    apellido2 TEXT DEFAULT ""
 );
 ''')
 
 db = [
     {"pswd": "ok", "auth": 0, 
      "username": "alex", "saldo": 150, 
-     "estado": "cliente", "email": "abc@gmail.com"},
+     "estado": "cliente", "email": "abc@gmail.com","nombre":"Alexander",
+     "apellido1":"Carpio","apellido2":"Mamani"},
      
     {"pswd": "123", "auth": 1, "username": "admi", 
      "saldo": -1, "estado": "administrador", 
-     "email": "admi@gmail.com"}
+     "email": "admi@gmail.com","nombre":"Juan",
+     "apellido1":"sancho","apellido2":"panza"}
 ]
 
 for user in db:
     cursor.execute('''
-    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado)
+    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado, nombre, apellido1,apellido2)
     VALUES (?, ?, ?, ?, ?, ?)
-    ''', (user["email"], user["username"], user["pswd"], user["saldo"], user["auth"], user["estado"]))
+    ''', (user["email"], user["username"], user["pswd"], user["saldo"], user["auth"], user["estado"], user["nombre"],user["apellido1"], user["apellido2"]))
 
 
 # cursor.execute('''
@@ -70,17 +75,6 @@ for rec in e_recargas:
 
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS movimientos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_contenido INTEGER,
-    id_usuario INTEGER,
-    precio DOUBLE,
-    fecha TEXT,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-);
-''')
-
-cursor.execute('''
 CREATE TABLE IF NOT EXISTS puntuaciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_cliente INTEGER,
@@ -103,13 +97,20 @@ CREATE TABLE IF NOT EXISTS puntuaciones (
 # ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS usuarioContenido (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_contenido INTEGER,
+CREATE TABLE IF NOT EXISTS transacciones (
+    id INTEGER PRIMARY KEY,
     id_usuario INTEGER,
-    type TEXT DEFAULT 'compra',
-    FOREIGN KEY (id_contenido) REFERENCES contenidos (id),
-    FOREIGN KEY (id_usuario) REFERENCES usuarios (id)
+    id_contenido INTEGER,
+    fecha TEXT,
+    precio DOUBLE,
+    tipo_transaccion TEXT DEFAULT 'compra'
+);
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT regalos (
+    id_transaccion INTEGER PRIMARY KEY REFERENCES transacciones(id),
+    id_destinatario INTEGER NOT NULL
 );
 ''')
 

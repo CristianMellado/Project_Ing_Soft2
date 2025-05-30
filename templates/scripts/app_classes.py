@@ -14,7 +14,7 @@ class E_Usuarios:
         self.cursor = self.conn.cursor()
 
     def registrar_Excliente(self, idU):
-        query = "UPDATE usuarios SET estado = 'ex-cliente' WHERE id = ?"
+        query = "UPDATE usuarios SET estado_cuenta = 'ex-cliente' WHERE id = ?"
         self.cursor.execute(query, (idU,))
         self.conn.commit()
 
@@ -25,7 +25,7 @@ class E_Usuarios:
             FROM 
                 usuarios 
             WHERE 
-                username = ? AND pswd = ? AND (estado = 'cliente' OR estado = 'administrador')
+                username = ? AND pswd = ? AND (estado_cuenta = 'cliente' OR estado_cuenta = 'administrador')
         """
         self.cursor.execute(query, (username, password))
         result = self.cursor.fetchone()
@@ -34,7 +34,7 @@ class E_Usuarios:
         return None, None
 
     def obtenerUser(self, id_usuario):
-        query="SELECT username, email, saldo, estado FROM usuarios WHERE id = ?"
+        query="SELECT username, email, saldo, estado_cuenta FROM usuarios WHERE id = ?"
         self.cursor.execute(query, (id_usuario,))
         resultado = self.cursor.fetchone()
 
@@ -62,13 +62,13 @@ class E_Usuarios:
         self.conn.commit()
 
     def validarDatos(self, username):
-        query = "SELECT id FROM usuarios WHERE username = ? AND (estado = 'cliente' OR estado = 'administrador')"
+        query = "SELECT id FROM usuarios WHERE username = ? AND (estado_cuenta = 'cliente' OR estado_cuenta = 'administrador')"
         self.cursor.execute(query, (username,))
         result = self.cursor.fetchone()
         return result is None # si es none, es porque no se encontro, por ende no existe ese usuario a registrar :D
     
     def UsuarioExiste(self, username, idU):
-        query = "SELECT id FROM usuarios WHERE username = ? AND id != ? AND estado = 'cliente'"
+        query = "SELECT id FROM usuarios WHERE username = ? AND id != ? AND estado_cuenta = 'cliente'"
         self.cursor.execute(query, (username,idU))
         result = self.cursor.fetchone()
         return -1 if result is None else result[0]
@@ -81,7 +81,7 @@ class E_Usuarios:
     
     def buscar_info_usuarios(self, query):
         q_like = f"%{query.lower()}%"
-        sql = "SELECT id, username, email, estado FROM usuarios WHERE CAST(id AS TEXT) LIKE ? OR LOWER(username) LIKE ?"
+        sql = "SELECT id, username, email, estado_cuenta FROM usuarios WHERE CAST(id AS TEXT) LIKE ? OR LOWER(username) LIKE ?"
         self.cursor.execute(sql, (q_like,q_like))
         result = self.cursor.fetchall()
 
@@ -95,44 +95,31 @@ class E_Usuarios:
             })
         return lista
 
-class E_Movimientos:
-    def __init__(self):
-        self.conn = get_connection()
-        self.cursor = self.conn.cursor()
-
-    def registrarMovimiento(self, idU, idC, precio):
-        query = "INSERT INTO movimientos (id_contenido, id_usuario, precio, fecha) VALUES (?, ?, ?, ?)"
-        fecha = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        self.cursor.execute(query, (idU, idC, precio, fecha))
-        self.conn.commit()
-
-    def actualizarSaldo(self, idU, precio):
-        query_set = "UPDATE usuarios SET saldo = saldo - ? WHERE id = ?"
-        self.cursor.execute(query_set, (precio, idU))
-        self.conn.commit()
-
-class E_UsuarioContenido:
+class E_Transacciones:
     def __init__(self):
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
     def verificarContenido(self, idu, idc):
-        query = "SELECT id_contenido, id_usuario FROM usuarioContenido WHERE id_contenido = ? AND id_usuario = ?"
+        query = "SELECT id_contenido, id_usuario FROM transacciones WHERE id_contenido = ? AND id_usuario = ?"
         self.cursor.execute(query, (idc,idu,))
         result = self.cursor.fetchone()
         #print(result)
         if(result is None): return False
         return True
     
-    def registrarCompra(self, idU, idC, type="compra"):
-        query = "INSERT INTO usuarioContenido (id_contenido, id_usuario, type) VALUES (?, ?, ?)"
-        self.cursor.execute(query, (idC, idU, type))
+    def registrarCompra(self, idU, idC,precio, type_trans="compra"):
+        query = "INSERT INTO transacciones (id_usuario,id_contenido, precio, fecha, tipo_transaccion) VALUES (?, ?, ?, ?,?)"
+        fecha = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        self.cursor.execute(query, (idU, idC, precio, fecha,type_trans))
+        transaccion_id = self.cursor.lastrowid  # obtiene el ID insertado
         self.conn.commit()
+        return transaccion_id
 
     def obtenerDescargasCliente(self, id_usuario):
         query = """
             SELECT c.title, c.rating, c.type, c.author, c.id
-            FROM usuarioContenido uc
+            FROM transacciones uc
             JOIN contenidos c ON uc.id_contenido = c.id
             WHERE uc.id_usuario = ?
         """
@@ -148,6 +135,31 @@ class E_UsuarioContenido:
                 "id": row[4]
             })
         return lista
+
+class E_Regalos(E_Transacciones):
+    def __init__(self):
+        super().__init__()
+
+    def registrarRegalo(self, idU, idC, precio, type_trans, id_des):
+        id_trans = self.registrarCompra(idU,idC,precio,type_trans)
+        query = "INSERT INTO regalos (id_transaccion, id_destinatario) VALUES (?, ?)"
+        self.cursor.execute(query, (id_trans,id_des))
+        self.conn.commit()
+
+    def verificarContenidoDestinatario(self, id_des, idc):
+        query = """
+            SELECT 
+                t.id
+            FROM 
+                transacciones t
+            JOIN 
+                regalos r ON t.id = r.transaccion_id
+            WHERE 
+                t.id_contenido = ? AND r.destinatario_id = ?
+        """
+        self.cursor.execute(query, (idc, id_des))
+        result = self.cursor.fetchone()
+        return result is not None
     
 class E_Puntuaciones:
     def __init__(self):
@@ -264,7 +276,7 @@ class E_Recargas:
             JOIN 
                 usuarios ON recargas.id_user = usuarios.id
             WHERE 
-                recargas.estado = 'pendiente' AND usuarios.estado = 'cliente'
+                recargas.estado = 'pendiente' AND usuarios.estado_cuenta = 'cliente'
         """
         self.cursor.execute(query)
         result = self.cursor.fetchall()
@@ -391,7 +403,7 @@ class E_Contenidos:
         lista = []
         for row in result:
             id_, src_bin, title, author, price, desc, rating, tipo, category, ext, down = row
-            data_url = C_Content._generar_data_url(src_bin, tipo, ext)
+            data_url = C_Contenidos._generar_data_url(src_bin, tipo, ext)
             lista.append({
                 "id": id_,
                 "src": data_url,
@@ -455,7 +467,7 @@ class E_Contenidos:
             content_dict = dict(zip(keys, row))
 
             # convertir binario a data URL
-            content_dict["src"] = C_Content._generar_data_url(
+            content_dict["src"] = C_Contenidos._generar_data_url(
                 content_dict["src"], content_dict["type"], content_dict["extension"]
             )
             return content_dict
@@ -468,7 +480,7 @@ class E_Contenidos:
         return self.cursor.fetchone()[0]
 
     def verificarPromocion(self, idC):
-        return 0
+        return 0*idC
     
     def obtenerBinarioPorID(self, idC):
         self.cursor.execute("SELECT src, title, extension FROM contenidos WHERE id = ?", (idC,))
@@ -506,7 +518,7 @@ class C_Transacciones:
     def __init__(self):
         pass
     def verificarMetPago(self, Ncard, cardType):
-        generate_Bancos_disponibles = lambda a: a in ["mastercard","bcp","visa"]
+        generate_Bancos_disponibles = lambda a: a in ["mastercard","bcp","visa","paypal"]
         return generate_Bancos_disponibles(cardType)
     
     def realizarPago(self, user_id, amount, Ncard):
@@ -531,21 +543,27 @@ class C_Transacciones:
     
     def ProcesarPrecioFinal(self, idC):
         return 1
-    
-    def registrarTransaccion(self, idU,idC, precio):
-        controller = E_Movimientos()
-        controller.registrarMovimiento(idU, idC, precio)
 
     def actualizarSaldo(self, idU, precio):
         controller = E_Usuarios()
         controller.actualizarSaldo(idU, precio)
 
-    def RegistrarRetiro(self, card, cardType,idU, monto):
-        # proceso de enviar dinero a la tarjeta ...
-        controller = E_Movimientos()
-        controller.registrarMovimiento(idU, -1, -monto)
+    def registrarCompra(self, idU, idC, precio, d_des=None):
+        if d_des!=None:
+            uscont = E_Transacciones()
+            uscont.registrarCompra(idU,idC,precio,'compra')
+        else:
+            uscont = E_Regalos()
+            uscont.registrarRegalo(idU,idC,precio,'regalo',d_des)
 
-class C_Content:
+    def verificarContenido(self, idu, idc):
+        us_trans = E_Transacciones()
+        us_rega = E_Regalos()     
+        if us_trans.verificarContenido(idu,idu) or us_rega.verificarContenidoDestinatario(idu,idc):
+            return True
+        return False
+    
+class C_Contenidos:
     def get_id(self):
         return 1
     def registrarContenido(self, data):
@@ -704,14 +722,14 @@ class C_Usuario:
         return usuarios.obtenerUser(id_user)
 
     def Buscar(self, query,filters):
-        # content_manager = C_Content()
+        # content_manager = C_Contenidos()
         # return content_manager.consultarDatos(query,filters)
-        content_manager = C_Content()
+        content_manager = C_Contenidos()
         resultados = content_manager.solicitar_info_contenido(query, filters)
         return resultados
     
     def seleccionarContent(self, content_id):
-        content_manager = C_Content()
+        content_manager = C_Contenidos()
         return content_manager.getContent(content_id)
     
     def loginVerificar(self, username, password):
@@ -719,7 +737,7 @@ class C_Usuario:
         return usuarios.verificarLogin(username,password)
     
     def getContentView(self):
-        content_manager = C_Content()
+        content_manager = C_Contenidos()
         return content_manager.getContentView()
 
     def validarRegistro(self, user):
@@ -731,13 +749,13 @@ class C_Usuario:
         us.registrarUsuario(user,ps,em)
 
     def verificarContenido(self, idU, idC):
-        e_usContenido = E_UsuarioContenido()
-        content_manager = C_Content()
-        res = {'success':e_usContenido.verificarContenido(idU, idC), 
+        c_usContenido = C_Transacciones()
+        content_manager = C_Contenidos()
+        res = {'success':c_usContenido.verificarContenido(idU, idC), 
                'hasRated':content_manager.Obtener_Puntuacion(idU, idC)}
         return res
     def obtenerDescargasCliente(self, idU):
-        uscont = E_UsuarioContenido()
+        uscont = E_Transacciones()
         return uscont.obtenerDescargasCliente(idU)
     
     def obtenerRecargasCliente(self, idU):
@@ -745,7 +763,7 @@ class C_Usuario:
         return controller_trans.obtenerRecargasCliente(idU)
     
     def obtenerContenidoDescarga(self,content_id):
-        controller = C_Content()
+        controller = C_Contenidos()
         return controller.obtenerContenidoBinarios(content_id) 
 
 class C_Cliente(C_Usuario):
@@ -763,14 +781,10 @@ class C_Cliente(C_Usuario):
     def obtenerSaldo(self, id_user):
         usuarios = E_Usuarios()
         return usuarios.obtenerSaldo(id_user)
-    
-    def registrarCompra(self, idU, idC, type='compra'):
-        uscont = E_UsuarioContenido()
-        uscont.registrarCompra(idU,idC,type)
-        
+
     def pagarContenido(self, idU, idC, id_des=None):
         controller_trans = C_Transacciones()
-        controller_cont = C_Content()
+        controller_cont = C_Contenidos()
         saldo = self.obtenerSaldo(idU) 
 
         if controller_cont.verificarPromocion(idC):
@@ -781,21 +795,20 @@ class C_Cliente(C_Usuario):
 
         if saldo > precioFinal:
             controller_trans.actualizarSaldo(idU, -precioFinal)
-            controller_trans.registrarTransaccion(idU, idC, precioFinal)
         else:
             return False
         if id_des == None:
-            self.registrarCompra(idU, idC)
+            controller_trans.registrarCompra(idU, idC, precioFinal)
         else:
-            self.registrarCompra(id_des, idC, "regalo")
+            controller_trans.registrarCompra(idU, idC, precioFinal, id_des=id_des)
         return True
     
     def Obtener_Puntuacion(self, idU):
-        ctr = C_Content()
+        ctr = C_Contenidos()
         return ctr.Obtener_Puntuacion(idU)
     
     def Enviar_Puntuacion(self, idU, idC, score):
-       ctr = C_Content()
+       ctr = C_Contenidos()
        ctr.Enviar_Puntuacion(idU,idC,score)
 
     def Enviar_destinatario(self, idU, idC, destinatario):
@@ -805,8 +818,8 @@ class C_Cliente(C_Usuario):
         if id_des==-1:
             res['msg']="El destinatario no existe."
         else:
-            e_uscont = E_UsuarioContenido()
-            if e_uscont.verificarContenido(id_des, idC):
+            c_rega = C_Transacciones()
+            if c_rega.verificarContenido(id_des, idC):
                 res['msg'] = 'El destinatario ya tiene el contenido.'
             else:
                 if not self.pagarContenido(idU, idC,id_des=id_des):
@@ -839,7 +852,7 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         monto = usuarios.obtenerSaldo(idU)
         controller_trans = C_Transacciones()
-        controller_trans.RegistrarRetiro(card, cardType, idU, monto)
+        #controller_trans.RegistrarRetiro(card, cardType, idU, monto)
         usuarios.actualizarSaldo(idU, -monto)
         return True
     
@@ -861,18 +874,18 @@ class C_Administrador(C_Usuario):
         e_noti.registrarNotificacionRecarga(id_user,f"Recarga de ${cantidad} aprobada.")
 
     def ingresarAgregarContenido(self, datos):
-        content_manager = C_Content()
+        content_manager = C_Contenidos()
         content_manager.registrarContenido(datos)
 
     def actualizarContenido(self, datos):
-        content_manager = C_Content()
+        content_manager = C_Contenidos()
         content_manager.actualizarContenido(datos)
 
     def buscar_info(self, data):
         resultados = []
         filters = data['filters']
         if 'cliente' not in filters:
-            content_manager = C_Content()
+            content_manager = C_Contenidos()
             resultados = content_manager.solicitar_info_contenido(data['query'], filters)
         if not ('audio' in filters or 'video' in filters or 'imagen' in filters or 'author' in filters):
             usuarios = E_Usuarios()
