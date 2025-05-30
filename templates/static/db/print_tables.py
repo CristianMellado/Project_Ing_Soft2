@@ -21,11 +21,11 @@ imprimir_tabla('usuarios')
 imprimir_tabla('contenidos',columnas=['title','type','id','downloaded'])  # sin data_contenido
 # imprimir_tabla('categorias')
 imprimir_tabla('recargas')
-imprimir_tabla('movimientos')
+imprimir_tabla('regalos')
 imprimir_tabla('puntuaciones')
 imprimir_tabla('notificaciones')
 # imprimir_tabla('promociones')
-imprimir_tabla('usuarioContenido')
+imprimir_tabla('compras')
 
 
 # Cerrar conexiÃ³n

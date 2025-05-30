@@ -95,13 +95,13 @@ class E_Usuarios:
             })
         return lista
 
-class E_Transacciones:
+class E_Compras:
     def __init__(self):
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
     def verificarContenido(self, idu, idc):
-        query = "SELECT id_contenido, id_usuario FROM transacciones WHERE id_contenido = ? AND id_usuario = ?"
+        query = "SELECT id_contenido, id_usuario FROM compras WHERE id_contenido = ? AND id_usuario = ?"
         self.cursor.execute(query, (idc,idu,))
         result = self.cursor.fetchone()
         #print(result)
@@ -109,7 +109,7 @@ class E_Transacciones:
         return True
     
     def registrarCompra(self, idU, idC,precio, type_trans="compra"):
-        query = "INSERT INTO transacciones (id_usuario,id_contenido, precio, fecha, tipo_transaccion) VALUES (?, ?, ?, ?,?)"
+        query = "INSERT INTO compras (id_usuario,id_contenido, precio, fecha, tipo_transaccion) VALUES (?, ?, ?, ?,?)"
         fecha = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         self.cursor.execute(query, (idU, idC, precio, fecha,type_trans))
         transaccion_id = self.cursor.lastrowid  # obtiene el ID insertado
@@ -118,8 +118,8 @@ class E_Transacciones:
 
     def obtenerDescargasCliente(self, id_usuario):
         query = """
-            SELECT c.title, c.rating, c.type, c.author, c.id
-            FROM transacciones uc
+            SELECT c.title, c.rating, c.type, c.author, c.id, uc.tipo_transaccion
+            FROM compras uc
             JOIN contenidos c ON uc.id_contenido = c.id
             WHERE uc.id_usuario = ?
         """
@@ -132,30 +132,31 @@ class E_Transacciones:
                 "rating": row[1],
                 "type": row[2],
                 "author": row[3],
-                "id": row[4]
+                "id": row[4],
+                "tipo_trans": row[5]
             })
         return lista
 
-class E_Regalos(E_Transacciones):
+class E_Regalos(E_Compras):
     def __init__(self):
         super().__init__()
 
     def registrarRegalo(self, idU, idC, precio, type_trans, id_des):
         id_trans = self.registrarCompra(idU,idC,precio,type_trans)
-        query = "INSERT INTO regalos (id_transaccion, id_destinatario) VALUES (?, ?)"
+        query = "INSERT INTO regalos (id_compra, id_destinatario) VALUES (?, ?)"
         self.cursor.execute(query, (id_trans,id_des))
         self.conn.commit()
 
     def verificarContenidoDestinatario(self, id_des, idc):
         query = """
             SELECT 
-                t.id
+                c.id
             FROM 
-                transacciones t
+                compras c
             JOIN 
-                regalos r ON t.id = r.transaccion_id
+                regalos r ON c.id = r.id_compra
             WHERE 
-                t.id_contenido = ? AND r.destinatario_id = ?
+                c.id_contenido = ? AND r.id_destinatario = ?
         """
         self.cursor.execute(query, (idc, id_des))
         result = self.cursor.fetchone()
@@ -195,26 +196,26 @@ class E_Notificaciones:
         self.cursor = self.conn.cursor()
 
     def registrarNotificacionRegalo(self, idU, idC, msg):
-        query = "INSERT INTO notificaciones (id_usuario, id_contenido, messagge) VALUES (?, ?, ?)"
-        self.cursor.execute(query, (idU, idC, msg))
+        query="SELECT title, id FROM contenidos WHERE id = ?"
+        self.cursor.execute(query, (idC,))
+        result = self.cursor.fetchone()
+        full_msg = f"<strong>Title:<a href=item_view.html?id={result[1]}></strong> {result[0]}</a></p><p>{msg}"
+        query = "INSERT INTO notificaciones (id_usuario, messagge) VALUES (?, ?)"
+        self.cursor.execute(query, (idU, full_msg))
         self.conn.commit()
 
     def registrarNotificacionRecarga(self, idU, msg):
-        query = "INSERT INTO notificaciones (id_usuario, id_contenido, messagge) VALUES (?, ?, ?)"
-        self.cursor.execute(query, (idU, -1, msg))
+        query = "INSERT INTO notificaciones (id_usuario, messagge) VALUES (?, ?)"
+        self.cursor.execute(query, (idU, msg))
         self.conn.commit()
 
     def obtenerListaNotificaciones(self, idU):
         query = """
                 SELECT 
                     n.id,
-                    c.id, 
-                    c.title, 
                     n.messagge
                 FROM 
                     notificaciones n
-                JOIN 
-                    contenidos c ON c.id = n.id_contenido
                 WHERE 
                     n.id_usuario = ?
             """
@@ -222,29 +223,7 @@ class E_Notificaciones:
         result = self.cursor.fetchall()
 
         lista = [{"id_notificacion": row[0],
-                    "id_contenido": row[1],
-                    "title": row[2],
-                    "messagge": row[3]} for row in result]
-        return lista
-    
-    def obtenerListaNotificacionesRecargas(self, idU):
-        query = """
-                SELECT 
-                    id,
-                    id_contenido, 
-                    messagge
-                FROM 
-                    notificaciones
-                WHERE 
-                    id_usuario = ? AND id_contenido = -1
-            """
-        self.cursor.execute(query, (idU,))
-        result = self.cursor.fetchall()
-
-        lista = [{"id_notificacion": row[0],
-                    "id_contenido": row[1],
-                    "title": 0,
-                    "messagge": row[2]} for row in result]
+                    "messagge": row[1]} for row in result]
         return lista
         
     def aceptarNotificacion(self, id_noti):
@@ -548,18 +527,18 @@ class C_Transacciones:
         controller = E_Usuarios()
         controller.actualizarSaldo(idU, precio)
 
-    def registrarCompra(self, idU, idC, precio, d_des=None):
-        if d_des!=None:
-            uscont = E_Transacciones()
+    def registrarCompra(self, idU, idC, precio, id_des=None):
+        if id_des==None:
+            uscont = E_Compras()
             uscont.registrarCompra(idU,idC,precio,'compra')
         else:
             uscont = E_Regalos()
-            uscont.registrarRegalo(idU,idC,precio,'regalo',d_des)
+            uscont.registrarRegalo(idU,idC,precio,'regalo',id_des)
 
     def verificarContenido(self, idu, idc):
-        us_trans = E_Transacciones()
+        us_trans = E_Compras()
         us_rega = E_Regalos()     
-        if us_trans.verificarContenido(idu,idu) or us_rega.verificarContenidoDestinatario(idu,idc):
+        if us_trans.verificarContenido(idu,idc) or us_rega.verificarContenidoDestinatario(idu,idc):
             return True
         return False
     
@@ -755,7 +734,7 @@ class C_Usuario:
                'hasRated':content_manager.Obtener_Puntuacion(idU, idC)}
         return res
     def obtenerDescargasCliente(self, idU):
-        uscont = E_Transacciones()
+        uscont = E_Compras()
         return uscont.obtenerDescargasCliente(idU)
     
     def obtenerRecargasCliente(self, idU):
@@ -841,7 +820,7 @@ class C_Cliente(C_Usuario):
     def obtenerNotificaciones(self, idU):
         e_notifi = E_Notificaciones()
         res = e_notifi.obtenerListaNotificaciones(idU)
-        res.extend(e_notifi.obtenerListaNotificacionesRecargas(idU))
+        #res.extend(e_notifi.obtenerListaNotificacionesRecargas(idU))
         return res
     
     def aceptarNotificacion(self, idN):

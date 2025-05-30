@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     pswd TEXT,
     saldo DOUBLE DEFAULT 0.0,
     auth INTEGER DEFAULT 0,
-    estado_cuenta TEXT DEFAULT "cliente"
+    estado_cuenta TEXT DEFAULT "cliente",
     nombre TEXT DEFAULT "",
     apellido1 TEXT DEFAULT "",
     apellido2 TEXT DEFAULT ""
@@ -39,8 +39,8 @@ db = [
 
 for user in db:
     cursor.execute('''
-    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado, nombre, apellido1,apellido2)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado_cuenta, nombre, apellido1,apellido2)
+    VALUES (?, ?, ?, ?, ?, ?,?,?,?)
     ''', (user["email"], user["username"], user["pswd"], user["saldo"], user["auth"], user["estado"], user["nombre"],user["apellido1"], user["apellido2"]))
 
 
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS puntuaciones (
 # ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS transacciones (
+CREATE TABLE IF NOT EXISTS compras (
     id INTEGER PRIMARY KEY,
     id_usuario INTEGER,
     id_contenido INTEGER,
@@ -108,8 +108,8 @@ CREATE TABLE IF NOT EXISTS transacciones (
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT regalos (
-    id_transaccion INTEGER PRIMARY KEY REFERENCES transacciones(id),
+CREATE TABLE IF NOT EXISTS regalos (
+    id_compra INTEGER PRIMARY KEY REFERENCES compras(id),
     id_destinatario INTEGER NOT NULL
 );
 ''')
@@ -118,7 +118,6 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS notificaciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     messagge TEXT,
-    id_contenido INTEGER,
     id_usuario INTEGER,
     FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
 );

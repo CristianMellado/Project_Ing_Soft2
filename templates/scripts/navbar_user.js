@@ -136,19 +136,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.forEach(recarga => {
                     var recargaDiv = document.createElement('div');
                     recargaDiv.classList.add('recarga-item');
-                    if(recarga.id_contenido==-1){
-                        recargaDiv.innerHTML = `
-                        <p>${recarga.messagge}</p>
-                        <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Leída</button>
-                        `;
-                    }
-                    else{
-                        recargaDiv.innerHTML = `
-                        <p><strong>Title:<a href=item_view.html?id=${recarga.id_contenido}></strong> ${recarga.title}</a></p>
+                    recargaDiv.innerHTML = `
                         <p>${recarga.messagge}</p>
                         <button class="aceptar-notifi" data-id="${recarga.id_notificacion}">Aceptar</button>
                         `;                        
-                    }
                     recargasElement.appendChild(recargaDiv);
                 });
     

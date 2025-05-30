@@ -4,7 +4,7 @@ import json
 import os
 import cgi
 import uuid
-from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Content
+from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Contenidos
 
 session_store = {}
 
@@ -92,7 +92,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # [RF-0016] retorna los contenidos más descargados
         elif parsed_path.path == "/top_content_downloaded":
             self._set_headers()
-            self.wfile.write(json.dumps(C_Content.getTopContent()).encode("utf-8"))
+            self.wfile.write(json.dumps(C_Contenidos.getTopContent()).encode("utf-8"))
 
         # [RF-0018] retorna el saldo de cierto cliente.
         elif parsed_path.path == "/get_balance":
