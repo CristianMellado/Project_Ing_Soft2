@@ -23,8 +23,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ''')
 
 db = [
-    {"pswd": "ok", "auth": 0, "username": "alex", "saldo": 150, "estado": "cliente", "email": "abc@gmail.com"},
-    {"pswd": "123", "auth": 1, "username": "admi", "saldo": -1, "estado": "administrador", "email": "admi@gmail.com"}
+    {"pswd": "ok", "auth": 0, 
+     "username": "alex", "saldo": 150, 
+     "estado": "cliente", "email": "abc@gmail.com"},
+     
+    {"pswd": "123", "auth": 1, "username": "admi", 
+     "saldo": -1, "estado": "administrador", 
+     "email": "admi@gmail.com"}
 ]
 
 for user in db:
@@ -129,7 +134,8 @@ CREATE TABLE IF NOT EXISTS contenidos (
     category TEXT,
     rating DOUBLE DEFAULT 0.0,
     description TEXT,
-    type TEXT
+    type TEXT,
+    downloaded INTEGER DEFAULT 0
 );
 ''')
 

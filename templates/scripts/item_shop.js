@@ -1,5 +1,6 @@
-import {createImageContent, createAudioContent, createVideoContent} from './create_item.js';
+import {createContentType} from './create_item.js';
 
+// [RF-0031] Crea la parte gráfica del interfaz compra.
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -27,14 +28,8 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             if(data) {
                 itemDetails.innerHTML = '';
-                
-                if (data.type == "imagen") {
-                    createImageContent(data);
-                } else if (data.type == "audio") {
-                    createAudioContent(data);
-                } else {
-                    createVideoContent(data);
-                }
+                createContentType({data:data,linked:false});
+
                 buyButton.addEventListener('click', function () {
                     fetch('/pagarContenido', {
                         method: 'POST',

@@ -1,30 +1,43 @@
-import {createImageContent, createAudioContent, createVideoContent} from './create_item.js';
+import {createContentType} from './create_item.js';
 
 // [RF-0023] retorna el role del inicio de sesion, si es cliente, administrador, o un usuario.
 document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    fetch('/verificate_downloaded_content', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(response => response.json())
+        .then(respuesta => {
+            if (!respuesta.success) {
+                window.location.href = `item_shop.html?id=${id}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+    });
+
     var header = document.createElement('header');
     var scriptAdmi = document.createElement('script');
     var current_role = "Usuario";
-    scriptAdmi.type = 'text/javascript';
+
     fetch('/get_user_role')
         .then(response => response.json())
         .then(data => {
             console.log(data.role);
                 if (data.role == "Administrador") {
-                    scriptAdmi.src = '/scripts/navbar_admi.js';
                     current_role = "Administrador";
                 } else if (data.role == "Cliente") {
-                    scriptAdmi.src = '/scripts/navbar_user.js';
                     current_role = "Cliente";
-                } else {
-                    scriptAdmi.src = '/scripts/navbar.js';
                 }
                 console.log(current_role);
-                itemGen(current_role);
+                itemGen(current_role, id);
             })
-        .catch(error => {
-                console.error('Error al verificar rol:', error);
-                alert("Error al verificar tu rol.");
+    .catch(error => {
+        console.error('Error al verificar rol:', error);
+        alert("Error al verificar tu rol.");
     });
     header.appendChild(scriptAdmi);
     console.log(current_role);
@@ -32,10 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // [RF-0028] Solicita información de cierto contenido al servidor.
-function itemGen(current_role){
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-
+function itemGen(current_role, id){
     const itemDetails = document.querySelector('.container');
 
     if (!id) {
@@ -59,13 +69,7 @@ function itemGen(current_role){
             if (data) {
                 itemDetails.innerHTML = '';
                 
-                if (data.type == "imagen") {
-                    createImageContent(data,current_role);
-                } else if (data.type == "audio") {
-                    createAudioContent(data,current_role);
-                } else {
-                    createVideoContent(data,current_role);
-                }
+                createContentType({data:data,current_role:current_role, linked:false});
 
                 buyButton.addEventListener('click', function () {
                     alert("CONTENIDO DESCARGADO :D");
@@ -74,6 +78,10 @@ function itemGen(current_role){
                         showRatingPrompt(data.id);
                     } 
                 });
+
+                var Div = document.querySelector(".media-item");
+                Div.appendChild(buyButton);
+
                 if(current_role === "Cliente"){
                     var giftButton = document.createElement('button');
                     giftButton.textContent = 'Regalar';
@@ -83,10 +91,9 @@ function itemGen(current_role){
                         window.location.href = `item_shop.html?id=${data.id}&gift=1`;
                     });
                     console.log("gift");
+                    Div.appendChild(giftButton);
                 }
-                var Div = document.querySelector(".media-item");
-                Div.appendChild(buyButton);
-                Div.appendChild(giftButton);
+                
             } else {
                 itemDetails.innerHTML = "<p>No se encontró el item.</p>";
             }
@@ -160,7 +167,7 @@ function showRatingPrompt(contentId) {
     input.type = 'number';
     input.min = 1;
     input.max = 10;
-    input.placeholder = 'Ingresa una puntuación del 1 al 5';
+    input.placeholder = 'Ingresa una puntuación del 1 al 10';
     input.style.margin = '10px';
 
     const sendButton = document.createElement('button');

@@ -22,17 +22,27 @@
     grid-gap: 20px; /* Espacio entre cada elemento */
 }
 
-.media-item {
-    border: 1px solid #ccc; /* Borde alrededor de cada elemento */
-    padding: 10px; /* Espacio interno */
-}
 
-.media-item img,
-.media-item video,
-.media-item audio {
+.media-item img, .media-item.linked img,
+.media-item video, .media-item.linked video,
+.media-item audio, .media-item.linked audio {
     max-width: 100%; /* Asegura que las imágenes y videos no sobrepasen su contenedor */
 }
 
 .info {
     margin-top: 10px; /* Espacio entre la información y el contenido multimedia */
+}
+
+.media-item, .media-item.linked {
+    border: 1px solid #ccc; /* Borde alrededor de cada elemento */
+    padding: 10px; /* Espacio interno */    
+  transition: box-shadow 0.3s; 
+  margin-top: 10px; /* Espacio entre la información y el contenido multimedia */
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+.media-item.linked:hover {
+  box-shadow: 0 0 10px 3px limegreen;
+  display: block;
 }

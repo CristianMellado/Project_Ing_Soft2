@@ -379,31 +379,19 @@ class E_Contenidos:
         self.cursor.execute(query, tuple(valores))
         self.conn.commit()
 
-    def _generar_data_url(self, bin_data, tipo, extension):
-        # Parte	Explicación:
-        # data:	Esquema que indica que se trata de un Data URL.
-        # image/png	Tipo MIME del contenido (imagen en formato PNG en este caso).
-        # ;base64	Indica que los datos están codificados en Base64.
-        # iVBORw0KGgoAAA...	Los datos binarios del archivo codificados en Base64.
-        # data_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."
-        # <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..." />        
-        mime_types = {
-            "imagen": f"image/{extension}",
-            "audio": f"audio/{extension}",
-            "video": f"video/{extension}"
-        }
-        mime_type = mime_types.get(tipo, "application/octet-stream")
-        encoded = base64.b64encode(bin_data).decode("utf-8")
-        return f"data:{mime_type};base64,{encoded}"
+    def obtenerContenidos(self, top=False):
+        query = """
+            SELECT id, src, title, author, price, description, rating, type, category, extension, downloaded
+            FROM contenidos """
+        if top:
+            query += "ORDER BY downloaded DESC"
 
-    def obtenerContenidos(self):
-        query = "SELECT id, src, title, author, price, description, rating, type, category, extension FROM contenidos"
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         lista = []
         for row in result:
-            id_, src_bin, title, author, price, desc, rating, tipo, category, ext = row
-            data_url = self._generar_data_url(src_bin, tipo, ext)
+            id_, src_bin, title, author, price, desc, rating, tipo, category, ext, down = row
+            data_url = C_Content._generar_data_url(src_bin, tipo, ext)
             lista.append({
                 "id": id_,
                 "src": data_url,
@@ -413,7 +401,8 @@ class E_Contenidos:
                 "description": desc,
                 "rating": rating,
                 "type": tipo,
-                "category": category
+                "category": category,
+                "downloaded" : down
             })
         return lista
 
@@ -466,7 +455,7 @@ class E_Contenidos:
             content_dict = dict(zip(keys, row))
 
             # convertir binario a data URL
-            content_dict["src"] = self._generar_data_url(
+            content_dict["src"] = C_Content._generar_data_url(
                 content_dict["src"], content_dict["type"], content_dict["extension"]
             )
             return content_dict
@@ -491,6 +480,15 @@ class E_Contenidos:
                 "extension": row[2]  # etc.
             }
         return None
+    
+    def downloadCount(self, id):
+        query = """
+            UPDATE contenidos SET
+               downloaded = downloaded + 1
+            WHERE id = ?
+        """
+        self.cursor.execute(query, (id,))
+        self.conn.commit()
         
 class C_Puntuacion:
     def __init__(self):
@@ -588,11 +586,48 @@ class C_Content:
     def solicitar_info_contenido(self, query, filters):
         contenidos = E_Contenidos()
         return contenidos.Buscar_info(query,filters)
-     
+    
     @staticmethod
-    def getContentView():
+    def _generar_data_url(bin_data, tipo, extension):
+        # Parte	Explicación:
+        # data:	Esquema que indica que se trata de un Data URL.
+        # image/png	Tipo MIME del contenido (imagen en formato PNG en este caso).
+        # ;base64	Indica que los datos están codificados en Base64.
+        # iVBORw0KGgoAAA...	Los datos binarios del archivo codificados en Base64.
+        # data_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."
+        # <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..." />        
+        mime_types = {
+            "imagen": f"image/{extension}",
+            "audio": f"audio/{extension}",
+            "video": f"video/{extension}"
+        }
+        mime_type = mime_types.get(tipo, "application/octet-stream")
+        encoded = base64.b64encode(bin_data).decode("utf-8")
+        return f"data:{mime_type};base64,{encoded}"
+    
+    @staticmethod
+    def getTopContent():
         contenidos = E_Contenidos()
-        return contenidos.obtenerContenidos()
+        todos = contenidos.obtenerContenidos(top=True)
+
+        top_imagenes = []
+        top_audios = []
+        top_videos = []
+
+        for item in todos:
+            tipo = item['type']
+            if tipo == 'imagen' and len(top_imagenes) < 10:
+                top_imagenes.append(item)
+            elif tipo == 'audio' and len(top_audios) < 10:
+                top_audios.append(item)
+            elif tipo == 'video' and len(top_videos) < 10:
+                top_videos.append(item)
+
+            # Si ya tienes 10 de cada tipo, puedes salir del bucle
+            if len(top_imagenes) == 10 and len(top_audios) == 10 and len(top_videos) == 10:
+                break
+
+        return top_imagenes + top_audios + top_videos
     
     def getContent(self, content_id):
         contenidos = E_Contenidos()
@@ -617,6 +652,7 @@ class C_Content:
     def obtenerContenidoBinarios(self, idC):
         conte = E_Contenidos()
         contenido  = conte.obtenerBinarioPorID(idC)
+        conte.downloadCount(idC)
 
         if contenido:
             bin_data = contenido['src']

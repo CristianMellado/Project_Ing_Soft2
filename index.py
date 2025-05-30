@@ -64,6 +64,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                     return session_store.get(session_id)
         return Usuario()
     
+    # [RNF-0032] Función que retorna al interfaz un mensaje de permisos denegados con 403 y que no se autentico el usuario.
     def permises_web_current_user(self):
         self.send_response(403)
         self.end_headers()
@@ -91,7 +92,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         # [RF-0016] retorna los contenidos más descargados
         elif parsed_path.path == "/top_content_downloaded":
             self._set_headers()
-            self.wfile.write(json.dumps(C_Content.getContentView()).encode("utf-8"))
+            self.wfile.write(json.dumps(C_Content.getTopContent()).encode("utf-8"))
 
         # [RF-0018] retorna el saldo de cierto cliente.
         elif parsed_path.path == "/get_balance":
@@ -272,7 +273,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if current_usuario:
                 resultados = current_usuario.Buscar(data.get("query"), data.get("filters"))
                 self._set_headers()
-                self.wfile.write(json.dumps(resultados).encode("utf-8"))
+                self.wfile.write(json.dumps({'data':resultados, 'auth':isinstance(current_usuario, Administrador)}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
         
