@@ -96,7 +96,7 @@ export function createContentType({data = null, current_role = null, linked=true
                 }
             })
             .catch(error => {
-                alert('Error:', error);
+                //alert('Error:', error);
                 window.location.href = `register.html`;
             });
         });

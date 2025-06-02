@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     username TEXT,
     pswd TEXT,
     saldo DOUBLE DEFAULT 0.0,
-    auth INTEGER DEFAULT 0,
+    role INTEGER DEFAULT 0,
     estado_cuenta TEXT DEFAULT "cliente",
     nombre TEXT DEFAULT "",
     apellido1 TEXT DEFAULT "",
@@ -26,12 +26,12 @@ CREATE TABLE IF NOT EXISTS usuarios (
 ''')
 
 db = [
-    {"pswd": "ok", "auth": 0, 
+    {"pswd": "ok", " role": 0, 
      "username": "alex", "saldo": 150, 
      "estado": "cliente", "email": "abc@gmail.com","nombre":"Alexander",
      "apellido1":"Carpio","apellido2":"Mamani"},
      
-    {"pswd": "123", "auth": 1, "username": "admi", 
+    {"pswd": "123", " role": 1, "username": "admi", 
      "saldo": -1, "estado": "administrador", 
      "email": "admi@gmail.com","nombre":"Juan",
      "apellido1":"sancho","apellido2":"panza"}
@@ -39,9 +39,9 @@ db = [
 
 for user in db:
     cursor.execute('''
-    INSERT INTO usuarios (email, username, pswd, saldo, auth, estado_cuenta, nombre, apellido1,apellido2)
+    INSERT INTO usuarios (email, username, pswd, saldo,  role, estado_cuenta, nombre, apellido1,apellido2)
     VALUES (?, ?, ?, ?, ?, ?,?,?,?)
-    ''', (user["email"], user["username"], user["pswd"], user["saldo"], user["auth"], user["estado"], user["nombre"],user["apellido1"], user["apellido2"]))
+    ''', (user["email"], user["username"], user["pswd"], user["saldo"], user[" role"], user["estado"], user["nombre"],user["apellido1"], user["apellido2"]))
 
 
 # cursor.execute('''
@@ -103,13 +103,13 @@ CREATE TABLE IF NOT EXISTS compras (
     id_contenido INTEGER,
     fecha TEXT,
     precio DOUBLE,
-    tipo_transaccion TEXT DEFAULT 'compra'
+    tipo_compra TEXT DEFAULT 'compra'
 );
 ''')
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS regalos (
-    id_compra INTEGER PRIMARY KEY REFERENCES compras(id),
+    id_regalo INTEGER PRIMARY KEY REFERENCES compras(id),
     id_destinatario INTEGER NOT NULL
 );
 ''')
@@ -124,18 +124,29 @@ CREATE TABLE IF NOT EXISTS notificaciones (
 ''')
 
 cursor.execute('''
+CREATE TABLE IF NOT EXISTS descarga (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_contenido INTEGER,
+    id_usuario INTEGER,
+    downloaded INTEGER DEFAULT 0,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
+);
+''')
+
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS contenidos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    src BLOB,
-    title TEXT,
-    author TEXT,
-    price DOUBLE,
+    Archivo_bytes BLOB,
+    nombre_contenido TEXT,
+    autor TEXT,
+    precio DOUBLE,
     extension TEXT,
-    category TEXT,
+    categoria TEXT,
     rating DOUBLE DEFAULT 0.0,
-    description TEXT,
-    type TEXT,
-    downloaded INTEGER DEFAULT 0
+    descripcion TEXT,
+    tipo_contenido TEXT,
+    downloaded INTEGER DEFAULT 0,
+    id_promocion DEFAULT NULL
 );
 ''')
 
@@ -156,7 +167,7 @@ for ruta, titulo, autor, precio, ext, cat, rat, des, typ in archivos:
         with open(ruta, "rb") as f:
             binario = f.read()
         cursor.execute('''
-            INSERT INTO contenidos (src, title, author, price, extension, category, rating, description, type)
+            INSERT INTO contenidos (Archivo_bytes, nombre_contenido, autor, precio, extension, categoria, rating, descripcion, tipo_contenido)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (binario, titulo, autor, precio, ext, cat, rat, des, typ))
     except Exception as e:

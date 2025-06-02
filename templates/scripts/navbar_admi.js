@@ -72,7 +72,7 @@ function generateNavbarAdministrador() {
                     if (response.ok) {
                         window.location.href = 'login.html';
                     } else {
-                        alert('Error al cerrar sesión');
+                        //alert('Error al cerrar sesión');
                         window.location.href = '/';
                     }
                 })

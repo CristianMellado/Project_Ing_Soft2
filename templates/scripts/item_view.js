@@ -4,6 +4,8 @@ import {createContentType} from './create_item.js';
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
+    let hasRated = false;
+    
     fetch('/verificate_downloaded_content', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -13,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(respuesta => {
             if (!respuesta.success) {
                 window.location.href = `item_shop.html?id=${id}`;
+            }
+            else{
+                hasRated = respuesta.hasRated || false;
             }
         })
         .catch(error => {
@@ -33,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     current_role = "Cliente";
                 }
                 console.log(current_role);
-                itemGen(current_role, id);
+                itemGen(current_role, id, hasRated);
             })
     .catch(error => {
         console.error('Error al verificar rol:', error);
@@ -45,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // [RF-0028] Solicita información de cierto contenido al servidor.
-function itemGen(current_role, id){
+function itemGen(current_role, id, hasRated){
     const itemDetails = document.querySelector('.container');
 
     if (!id) {
@@ -74,9 +79,7 @@ function itemGen(current_role, id){
                 buyButton.addEventListener('click', function () {
                     alert("CONTENIDO DESCARGADO :D");
                     descargarContenido(data.id, data.title);
-                    if (current_role=='Cliente') {
-                        showRatingPrompt(data.id);
-                    } 
+                    //itemGen(current_role,id, hasRated);
                 });
 
                 var Div = document.querySelector(".media-item");
@@ -93,6 +96,18 @@ function itemGen(current_role, id){
                     console.log("gift");
                     Div.appendChild(giftButton);
                 }
+
+                if (current_role === "Cliente" && hasRated === true) {
+                    var rateButton = document.createElement('button');
+                    rateButton.textContent = 'Calificar contenido';
+                    rateButton.className = 'rate-button';
+                    rateButton.style.marginLeft = '10px';
+                    rateButton.addEventListener('click', function () {
+                        showRatingPrompt(data.id);
+                        //itemGen(current_role,id, hasRated);
+                    });
+                    Div.appendChild(rateButton);
+                }                
                 
             } else {
                 itemDetails.innerHTML = "<p>No se encontró el item.</p>";

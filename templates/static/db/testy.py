@@ -9,28 +9,28 @@ result = cursor.fetchone()
 print(-1 if result is None else result[0])
 
 
-def obtenerListaNotificaciones(idU):
+def obtenerComprasConDestinatario(id_usuario):
     query = """
-            SELECT 
-                n.id,
-                c.id, 
-                c.title, 
-                n.messagge
-            FROM 
-                notificaciones n
-            JOIN 
-                contenidos c ON c.id = n.id_contenido
-            WHERE 
-                n.id_usuario = ?
-        """
-    cursor.execute(query, (idU,))
-    result = cursor.fetchall()
+        SELECT 
+            c.nombre_contenido, 
+            c.rating, 
+            c.tipo_contenido, 
+            c.autor, 
+            c.id, 
+            uc.tipo_transaccion,
+            CASE 
+                WHEN uc.tipo_transaccion = 'regalo' THEN u.username 
+                ELSE NULL 
+            END AS destinatario_username
+        FROM compras uc
+        JOIN contenidos c ON uc.id_contenido = c.id
+        LEFT JOIN regalos r ON uc.tipo_transaccion = 'regalo' AND uc.id = r.id_regalo
+        LEFT JOIN usuarios u ON r.id_destinatario = u.id
+        WHERE uc.id_usuario = ?
+    """
+    cursor.execute(query, (id_usuario,))
+    return cursor.fetchall()
 
-    lista = [{"id_notificacion": row[0],
-                "id_contenido": row[1],
-                "title": row[2],
-                "messagge": row[3]} for row in result]
-    return lista
+print(obtenerComprasConDestinatario(1))
 
-print(obtenerListaNotificaciones(3))
 conn.close()

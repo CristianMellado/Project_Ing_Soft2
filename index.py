@@ -403,7 +403,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/verificate_downloaded_content":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
-                self.wfile.write(json.dumps({'success':True}).encode("utf-8"))
+                self.wfile.write(json.dumps({'success':True, "hasRated":False}).encode("utf-8"))
             elif current_usuario and isinstance(current_usuario, Cliente):
                 self._set_headers()
                 canDownload = current_usuario.verificarContenido(data.get("id"))

@@ -141,7 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
             li.innerHTML = `
                         <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
                         (${item.type})</h4>
-                        <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating}</p>
+                        <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating} | 
+                        <strong>Tipo:</strong> ${item.tipo_compra}</p>
             `;
             downloadsList.appendChild(li);
         });

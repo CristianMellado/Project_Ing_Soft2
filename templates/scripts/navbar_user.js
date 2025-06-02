@@ -77,13 +77,13 @@ function generateNavbarCliente() {
                     if (response.ok) {
                         window.location.href = 'login.html';
                     } else {
-                        alert('Error al cerrar sesión');
+                        //alert('Error al cerrar sesión');
                         window.location.href = '/';
                     }
                 })
                 .catch(error => {
                     console.error('Error durante logout:', error);
-                    alert('Error al cerrar sesión');
+                    //alert('Error al cerrar sesión');
                     window.location.href = '/';
                 });
             });
