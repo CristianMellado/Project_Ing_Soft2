@@ -98,7 +98,7 @@ function genRegaloBar(id){
         .then(res => res.json())
         .then(response => {
             if (response.success) {
-                alert("¡Contenido regalado exitosamente!");
+                alert("El regalo ha sido enviado con éxito.");
                 window.location.href = `user_view.html`;
             } 
             else{

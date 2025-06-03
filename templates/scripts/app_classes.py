@@ -128,14 +128,42 @@ class E_Compras:
         self.conn.commit()
         return transaccion_id
 
-    # [RF-0048] Retorna las compras de un cliente de la tabla compras.
+    # # [RF-0048] Retorna las compras de un cliente de la tabla compras.
+    # def obtenerDescargasCliente(self, id_usuario):
+    #     query = """
+    #         SELECT 
+    #             c.nombre_contenido, 
+    #             c.rating, 
+    #             c.tipo_contenido, 
+    #             c.autor, 
+    #             c.id, 
+    #             uc.tipo_compra,
+    #             CASE 
+    #                 WHEN uc.tipo_compra = 'regalo' THEN u.username 
+    #                 ELSE NULL 
+    #             END AS destinatario_username
+    #         FROM compras uc
+    #         JOIN contenidos c ON uc.id_contenido = c.id
+    #         LEFT JOIN regalos r ON uc.tipo_compra = 'regalo' AND uc.id = r.id_regalo
+    #         LEFT JOIN usuarios u ON r.id_destinatario = u.id
+    #         WHERE uc.id_usuario = ?
+    #     """
+    #     self.cursor.execute(query, (id_usuario,))
+    #     results = self.cursor.fetchall()
+    #     lista = []
+    #     for row in results:
+    #         lista.append({
+    #             "title": row[0],
+    #             "rating": row[1],
+    #             "type": row[2],
+    #             "author": row[3],
+    #             "id": row[4],
+    #             "tipo_compra": row[5] + " al usuario " + row[6] if row[6] else row[5]
+    #         })
+    #     return lista
+
+    # [RF-0048] Retorna las compras de un cliente de la tabla compras, incluyendo el número de descargas.
     def obtenerDescargasCliente(self, id_usuario):
-        # query = """
-        #     SELECT c.nombre_contenido, c.rating, c.tipo_contenido, c.autor, c.id, uc.tipo_compra
-        #     FROM compras uc
-        #     JOIN contenidos c ON uc.id_contenido = c.id
-        #     WHERE uc.id_usuario = ?
-        # """
         query = """
             SELECT 
                 c.nombre_contenido, 
@@ -147,11 +175,13 @@ class E_Compras:
                 CASE 
                     WHEN uc.tipo_compra = 'regalo' THEN u.username 
                     ELSE NULL 
-                END AS destinatario_username
+                END AS destinatario_username,
+                IFNULL(d.downloaded, 0) AS num_descargas
             FROM compras uc
             JOIN contenidos c ON uc.id_contenido = c.id
             LEFT JOIN regalos r ON uc.tipo_compra = 'regalo' AND uc.id = r.id_regalo
             LEFT JOIN usuarios u ON r.id_destinatario = u.id
+            LEFT JOIN descarga d ON d.id_usuario = uc.id_usuario AND d.id_contenido = c.id
             WHERE uc.id_usuario = ?
         """
         self.cursor.execute(query, (id_usuario,))
@@ -164,7 +194,8 @@ class E_Compras:
                 "type": row[2],
                 "author": row[3],
                 "id": row[4],
-                "tipo_compra": row[5] + " al usuario " + row[6] if row[6] else row[5]
+                "tipo_compra": row[5] + " al usuario " + row[6] if row[6] else row[5],
+                "descargas": row[7]
             })
         return lista
 
@@ -937,7 +968,7 @@ class C_Cliente(C_Usuario):
                 res['msg'] = 'El destinatario ya tiene el contenido.'
             else:
                 if not self.pagarContenido(idU, idC,id_des=id_des):
-                    res['msg'] = 'Dinero insuficiente para la compra.'
+                    res['msg'] = 'Saldo insuficiente.'
                 else:
                     res['success'] = True
                     e_notifi = E_Notificaciones()

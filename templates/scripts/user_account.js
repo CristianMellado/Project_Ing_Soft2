@@ -138,12 +138,23 @@ document.addEventListener("DOMContentLoaded", () => {
         data.forEach(item => {
             const li = document.createElement("li");
             li.classList.add("recarga-item");
-            li.innerHTML = `
-                        <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
-                        (${item.type})</h4>
-                        <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating} | 
-                        <strong>Tipo:</strong> ${item.tipo_compra}</p>
-            `;
+
+            // Construir el contenido base
+            let html = `
+                <a href="item_view.html?id=${item.id}"><h4>${item.title}</a>
+                (${item.type})</h4>
+                <p><strong>Autor:</strong> ${item.author} | 
+                <strong>Puntuación:</strong> ${item.rating} | 
+                <strong>Tipo:</strong> ${item.tipo_compra}`;
+
+            // Agregar descargas si es mayor a 0
+            if (item.descargas > 0) {
+                html += ` | <strong>Descargas:</strong> ${item.descargas}`;
+            }
+
+            html += `</p>`;
+
+            li.innerHTML = html;
             downloadsList.appendChild(li);
         });
     })
