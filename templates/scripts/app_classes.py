@@ -270,7 +270,7 @@ class E_Notificaciones:
         query="SELECT nombre_contenido, id FROM contenidos WHERE id = ?"
         self.cursor.execute(query, (idC,))
         result = self.cursor.fetchone()
-        full_msg = f"<strong>Title:<a href=item_view.html?id={result[1]}></strong> {result[0]}</a></p><p>{msg}"
+        full_msg = f"<strong>Titulo:<a href=item_view.html?id={result[1]}></strong> {result[0]}</a></p><p>{msg}"
         query = "INSERT INTO notificaciones (id_usuario, messagge) VALUES (?, ?)"
         self.cursor.execute(query, (idU, full_msg))
         self.conn.commit()
