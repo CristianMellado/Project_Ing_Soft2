@@ -159,6 +159,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     del_button(id);
+    button_info_promos();
+
+    // Agregar promoción (redireccionar o mostrar un modal, tú eliges)
+    document.getElementById("btn-agregar-promo").addEventListener("click", () => {
+        const form = document.getElementById("form-agregar-promo");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    // Usar promoción
+    document.getElementById("btn-usar-promo").addEventListener("click", function () {
+        designar_promocion(id);
+    });
 });
 
 
@@ -193,5 +205,70 @@ function del_button(id){
             console.error("Error:", err);
             alert("Error de conexión con el servidor.");
         });
+    });    
+}
+
+// [RF-0156] Funcion que hace un get de todas las promociones disponibles.
+function button_info_promos(){
+    const promoBtn = document.getElementById("send-promocion");
+    const promoContainer = document.getElementById("promocion-container");
+    const promoSelect = document.getElementById("promo-select");
+
+    promoBtn.addEventListener("click", function () {
+        // Mostrar/ocultar el menú
+        promoContainer.style.display = promoContainer.style.display === "none" ? "block" : "none";
+
+        // Solicitar promociones actuales
+        fetch("/get_promociones")  // Tu endpoint debe devolver un JSON con una lista de promociones
+            .then(res => res.json())
+            .then(data => {
+                // Limpiar y rellenar el select
+                promoSelect.innerHTML = `<option value="">Selecciona una promoción</option>`;
+                data.forEach(promo => {
+                    const option = document.createElement("option");
+                    option.value = promo.id;
+                    option.textContent = `${promo.titulo_de_descuento} - Descuento: ${Math.round(promo.descuento * 100)}%`;
+                    promoSelect.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error("Error cargando promociones:", err);
+                alert("Error al obtener promociones.");
+            });
+    });    
+}
+
+// [RF-0167] Función que asigna cierta promoción a un contenido.
+function designar_promocion(id){
+    const promoSelect = document.getElementById("promo-select");
+    const selectedPromoId = promoSelect.value;
+    if (!selectedPromoId) {
+        alert("Selecciona una promoción para usar.");
+        return;
+    }
+
+    if (!id) {
+        alert("Primero guarda el contenido para poder asignarle una promoción.");
+        return;
+    }
+
+    fetch("/asignar_promocion", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id_contenido: id, id_promocion: selectedPromoId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Promoción asignada correctamente.");
+        } else {
+            alert(data.message || "Error al asignar promoción.");
+        }
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        alert("Error al comunicar con el servidor.");
     });    
 }

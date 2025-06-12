@@ -8,7 +8,7 @@ export function createMediaInfo({data=null, Div=null}) {
     author.textContent = 'Autor: ' + data.author;
 
     var price = document.createElement('p');
-    price.textContent = 'Precio: ' + data.price;
+    price.innerHTML = `Precio: ${data.price}`;
 
     var extension = document.createElement('p');
     extension.textContent = 'Extensión de archivo: ' + data.extension;

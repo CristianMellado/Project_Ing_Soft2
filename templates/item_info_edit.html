@@ -44,6 +44,19 @@
         <div id="error-message" class="error"></div>
         
         <button type="button" id="send-promocion">Promoción</button><br>
+            <div id="promocion-container" style="display: none; margin-top: 10px;">
+                <select id="promo-select">
+                    <option value="">Selecciona una promoción</option>
+                </select>
+                <button type="button" id="btn-usar-promo">Usar promoción</button>
+                <button type="button" id="btn-agregar-promo">Agregar promoción</button>
+                    <div id="form-agregar-promo" style="display: none; margin-top: 10px;">
+                        <input type="text" id="promo-title" placeholder="Título de promoción"><br>
+                        <input type="number" id="promo-descuento" placeholder="Descuento %" min="0" max="100"><br>
+                        <input type="number" id="promo-dias" placeholder="Días hábiles"><br>
+                        <button type="button" id="btn-guardar-promo">Guardar promoción</button>
+                    </div>
+            </div>
         <button type="button" id="send-eliminar">Eliminar</button><br>
         <button type="submit" id="send-guardar">Guardar</button><br>
     </form>

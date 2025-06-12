@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 import base64
 
@@ -380,6 +380,34 @@ class E_Recargas:
             return id_user, monto
         return None, None
     
+class E_Promociones:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
+
+    # [RF-0162] Se retornan todas las promociones disponibles de la tabla promociones.
+    def obtenerPromociones(self):
+        self.cursor.execute('''
+            SELECT id, descuento, titulo_de_descuento,fecha_fin FROM promociones
+        ''')
+        
+        promociones = self.cursor.fetchall()
+        results = []
+        for promo in promociones:
+            results.append({
+                "id": promo[0],
+                "descuento": promo[1],
+                "titulo_de_descuento": promo[2],
+                "fecha_fin": promo[3]
+            })
+
+        return results
+    
+    # [RF-0165] Retorna el descuento de la tabla promociones de cierto id de promoción.
+    def ObtenerPromocion(self, idprom):
+        self.cursor.execute("SELECT descuento FROM promociones WHERE id = ?", (idprom,))
+        resultado_promo = self.cursor.fetchone()
+        return resultado_promo
 
 class E_Contenidos:
     def __init__(self):
@@ -453,18 +481,33 @@ class E_Contenidos:
     # [RF-0063] Obtiene contenidos con toda su información y con la opcion de retornar en orden del mas descargado al menos decargador.
     def obtenerContenidos(self, top=False):
         query = """
-            SELECT id, Archivo_bytes, nombre_contenido, autor, precio, descripcion, rating, tipo_contenido, categoria, extension, downloaded
+            SELECT id, Archivo_bytes, nombre_contenido, autor, precio, descripcion, rating,
+                tipo_contenido, categoria, extension, downloaded, id_promocion
             FROM contenidos WHERE estado='activo'
-            """
+        """
         if top:
-            query += "ORDER BY downloaded DESC"
+            query += " ORDER BY downloaded DESC"
 
         self.cursor.execute(query)
         result = self.cursor.fetchall()
         lista = []
+
         for row in result:
-            id_, src_bin, title, author, price, desc, rating, tipo, category, ext, down = row
+            (id_, src_bin, title, author, price, desc, rating,
+            tipo, category, ext, down, id_prom) = row
+
+            # Generar data URL para el contenido
             data_url = C_Contenidos._generar_data_url(src_bin, tipo, ext)
+
+            # Verificar si tiene promoción y modificar el precio si es necesario
+            if id_prom is not None:
+                self.cursor.execute("SELECT titulo_de_descuento, descuento FROM promociones WHERE id = ?", (id_prom,))
+                promo_row = self.cursor.fetchone()
+                if promo_row:
+                    titulo_prom,descuento = promo_row
+                    precio_final = round(float(price) * (1 - descuento), 2)
+                    price = f"<span style='color:green;'>{precio_final}</span> <s>{price}</s> ({titulo_prom})"
+
             lista.append({
                 "id": id_,
                 "src": data_url,
@@ -475,8 +518,9 @@ class E_Contenidos:
                 "rating": rating,
                 "type": tipo,
                 "category": category,
-                "downloaded" : down
+                "downloaded": down
             })
+
         return lista
 
     # [RF-0064] Retorna contenidos para cierta coincidencia con un query y con filtros de la tabla contenidos.
@@ -528,15 +572,27 @@ class E_Contenidos:
         query = "SELECT * FROM contenidos WHERE id = ?"
         self.cursor.execute(query, (content_id,))
         row = self.cursor.fetchone()
+        
         if row:
-            # keys = [desc[0] for desc in self.cursor.description]
-            keys = ['id','src','title','author','price','extension','category','rating','description','type','downloaded','estado','id_promocion']
+            keys = ['id', 'src', 'title', 'author', 'price', 'extension', 'category',
+                    'rating', 'description', 'type', 'downloaded', 'estado', 'id_promocion']
             content_dict = dict(zip(keys, row))
 
             # convertir binario a data URL
             content_dict["src"] = C_Contenidos._generar_data_url(
                 content_dict["src"], content_dict["type"], content_dict["extension"]
             )
+
+            # Verificar si tiene promoción
+            id_prom = content_dict.get("id_promocion")
+            if id_prom is not None:
+                self.cursor.execute("SELECT titulo_de_descuento, descuento FROM promociones WHERE id = ?", (id_prom,))
+                promo_row = self.cursor.fetchone()
+                if promo_row:
+                    titulo_prom,descuento = promo_row
+                    precio_final = round(float(content_dict["price"]) * (1 - descuento), 2)
+                    content_dict["price"] = f"<span style='color:green;'>{precio_final}</span> <s>{content_dict["price"]}</s> ({titulo_prom})"
+
             return content_dict
         else:
             return None
@@ -549,7 +605,11 @@ class E_Contenidos:
 
     # [RF-0067] Veritica si un contenido contiene una promoción en la tabla promociones.
     def verificarPromocion(self, idC):
-        return 0*idC
+        self.cursor.execute("SELECT id_promocion FROM contenidos WHERE id = ?", (idC,))
+        resultado = self.cursor.fetchone()
+        
+        # Retorna True si hay una promoción asociada, False si no
+        return resultado is not None and resultado[0] is not None
     
     # [RF-0068] Retorna el archivo binario de un contenido id para descargarlo.
     def obtenerBinarioPorID(self, idC):
@@ -624,7 +684,24 @@ class E_Contenidos:
         self.cursor.execute("UPDATE contenidos SET estado = ? WHERE id = ?", (nuevo_estado, idC))
         self.conn.commit()
         return resultado
-        
+    
+    # [RF-0163] Retorna de la tabla conteidos, el precio de un contenido y su id de promoción.
+    def get_Prom(self, idC):
+        self.cursor.execute("SELECT precio, id_promocion FROM contenidos WHERE id = ?", (idC,))
+        resultado = self.cursor.fetchone()
+        if resultado is None:
+            return None
+        return resultado
+    
+    # [RF-0171] La clase E_Contenidos le asignacion de una promocion a un contenido en su tabla contenidos.
+    def asignarPromocion(self, idC, idP):
+        try:
+            self.cursor.execute("UPDATE contenidos SET id_promocion = ? WHERE id = ?", (idP, idC))
+            self.conn.commit()
+            return True
+        except:
+            return False
+
 class C_Puntuacion:
     def __init__(self):
         pass
@@ -639,6 +716,21 @@ class C_Puntuacion:
        e_pun = E_Puntuaciones()
        e_pun.Registrar_Puntuacion(idU,idC,score)
 
+
+class C_Promociones:
+    def __init__(self):
+        pass
+
+    # [RF-161] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
+    def obtenerPromociones(self):
+        prom_manager = E_Promociones()
+        return prom_manager.obtenerPromociones()
+    
+    # [RF-0166] El controlador promociones solicita la promocion de cierto id promocion a la clase E_Promociones.
+    def ObtenerPromocion(self, idprom):
+        prom_manager = E_Promociones()
+        return prom_manager.ObtenerPromocion(idprom)        
+    
 class C_Transacciones:
     def __init__(self):
         pass
@@ -675,7 +767,18 @@ class C_Transacciones:
     
     # [RF-0077] Verifica en las respectivas clases de promociones y contenido para retornar el precio final de cierto contenido que tenga un descuento.
     def ProcesarPrecioFinal(self, idC):
-        return 1
+        man_cont = C_Contenidos()
+        precio_original, id_promocion = man_cont.get_Prom(idC)
+
+        if id_promocion is None:
+            return precio_original
+
+        man_prom = C_Promociones()
+        resultado_promo = man_prom.ObtenerPromocion(id_promocion)
+
+        descuento = resultado_promo[0]  # Esperado entre 0.0 y 1.0
+        precio_final = precio_original * (1 - descuento)
+        return round(precio_final, 2)
 
     # [RF-0078] Solicita a la clase usuarios la actualizacion del saldo de cierto cliente.
     def actualizarSaldo(self, idU, precio):
@@ -871,7 +974,22 @@ class C_Contenidos:
     def actualizarEstadoContenido(self, idC):
         e_con = E_Contenidos()
         return e_con.actualizarEstadoContenido(idC)
+    
+    # [RF-160] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
+    def obtenerPromociones(self):
+        prom_manager = C_Promociones()
+        return prom_manager.obtenerPromociones()   
 
+    # [RF-0164] el controlador conteidos solicita a la clase E_Contenidos cierto promocion por su id.
+    def get_Prom(self, idC):
+        e_con = E_Contenidos()
+        return e_con.get_Prom(idC)
+    
+    # [RF-0170] El controlador contenidos envia la clase E_Contenidos la asignacion de una promocion.
+    def asignarPromocion(self, idC, idP):
+        e_con = E_Contenidos()
+        return e_con.asignarPromocion(idC,idP)
+    
 class C_Usuario:
     def __init__(self):
         self.id = None
@@ -1090,6 +1208,16 @@ class C_Administrador(C_Usuario):
         content_manager = C_Contenidos()
         return {"success": True, "estado": content_manager.actualizarEstadoContenido(idC)}
     
+    # [RF-159] El Controlador Administrador solicita al controlador Contenidos todas las promociones actuales.
+    def obtenerPromociones(self):
+        content_manager = C_Contenidos()
+        return content_manager.obtenerPromociones()
+
+    # [RF-0169] El controlador administrador envia al controlador contenidos la asignacion de una promocion.
+    def asignarPromocion(self, idC, idP):
+        man_content = C_Contenidos()
+        return man_content.asignarPromocion(idC,idP)    
+    
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
         self.user = user
@@ -1233,3 +1361,11 @@ class Administrador(Usuario):
     # [RF-151] Envia id de un contenido para actulizar el estado de este al controlador Administrador.
     def actualizarEstadoContenido(self, idC):
         return self.controller.actualizarEstadoContenido(idC)
+    
+    # [RF-158] Solicita al controlador Administrador todas las promociones actuales.
+    def obtenerPromociones(self):
+        return self.controller.obtenerPromociones()
+    
+    # [RF-0168] El administrador enviar a su controlador administrador la asignacion de una promocion.
+    def asignarPromocion(self, idC, idP):
+        return self.controller.asignarPromocion(idC,idP)

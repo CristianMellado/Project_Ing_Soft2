@@ -177,6 +177,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 print(session_store)
             else:
                 self.permises_web_current_user()
+
+        # [RF-0157] Ruta que retorna todas las promociones al administrador.
+        elif parsed_path.path == "/get_promociones":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerPromociones()).encode("utf-8"))
+            else:
+                self.permises_web_current_user()                
         else:
             self.send_response(404)
             self.end_headers()
@@ -475,6 +483,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(current_usuario.actualizarEstadoContenido(data.get("id"))).encode("utf-8"))
             else:
                 self.permises_web_current_user()
+
+        # [RF-0167] Función que asigna cierta promoción a un contenido.     
+        elif parsed_path.path == "/asignar_promocion":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                a, b = data.get("id_contenido"), data.get("id_promocion")
+                self.wfile.write(json.dumps({'success':current_usuario.asignarPromocion(a,b)}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         else:
             self.send_response(404)
             self.end_headers()

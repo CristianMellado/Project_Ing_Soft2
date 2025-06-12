@@ -2,6 +2,7 @@ import sqlite3
 import csv
 import sys
 import os
+from datetime import datetime, timedelta
 # Conectar a la base de datos (o crearla si no existe)
 # csv.field_size_limit(sys.maxsize)
 conn = sqlite3.connect('downez.db')
@@ -85,16 +86,21 @@ CREATE TABLE IF NOT EXISTS puntuaciones (
 );
 ''')
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS promociones (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     id_contenido INTEGER,
-#     descuento DOUBLE,
-#     titulo_de_descuento TEXT,
-#     dias INTEGER,
-#     FOREIGN KEY (id_contenido) REFERENCES contenidos(id_contenido)
-# );
-# ''')
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS promociones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    descuento DOUBLE,
+    titulo_de_descuento TEXT,
+    fecha_fin TEXT
+);
+''')
+fecha_futura = datetime.now() + timedelta(days=7)
+fecha_str = fecha_futura.strftime("%Y-%m-%d")
+cursor.execute('''
+    INSERT INTO promociones (descuento, titulo_de_descuento, fecha_fin)
+    VALUES (?, ?, ?)
+    ''', (0.2, "-20% de Descuento!",fecha_str)
+    )
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS compras (

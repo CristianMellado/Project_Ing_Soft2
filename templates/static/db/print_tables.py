@@ -26,7 +26,7 @@ imprimir_tabla('recargas')
 imprimir_tabla('regalos')
 imprimir_tabla('puntuaciones')
 imprimir_tabla('notificaciones')
-# imprimir_tabla('promociones')
+imprimir_tabla('promociones')
 imprimir_tabla('compras')
 imprimir_tabla('descarga')
 
