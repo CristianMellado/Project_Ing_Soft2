@@ -167,6 +167,42 @@ document.addEventListener("DOMContentLoaded", function () {
         form.style.display = form.style.display === "none" ? "block" : "none";
     });
 
+    document.getElementById("btn-guardar-promo").addEventListener("click", () => {
+        const titulo = document.getElementById("promo-title").value.trim();
+        const descuento = parseFloat(document.getElementById("promo-descuento").value);
+        const dias = parseInt(document.getElementById("promo-dias").value);
+
+        if (!titulo || isNaN(descuento) || isNaN(dias) || descuento < 0 || descuento > 100 || dias <= 0) {
+            alert("Completa correctamente todos los campos de promoción.");
+            return;
+        }
+
+        fetch("/crear_promocion", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                titulo: titulo,
+                descuento: descuento,
+                dias: dias
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert("Promoción creada con éxito");
+                location.reload(); // o actualiza el select dinámicamente
+            } else {
+                alert(data.message || "Error al crear promoción");
+            }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("Error de conexión al guardar la promoción.");
+        });
+    });
+
     // Usar promoción
     document.getElementById("btn-usar-promo").addEventListener("click", function () {
         designar_promocion(id);
