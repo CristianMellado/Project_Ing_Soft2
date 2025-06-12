@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS contenidos (
     descripcion TEXT,
     tipo_contenido TEXT,
     downloaded INTEGER DEFAULT 0,
+    estado TEXT DEFAULT 'activo',
     id_promocion DEFAULT NULL
 );
 ''')

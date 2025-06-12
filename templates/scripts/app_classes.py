@@ -454,7 +454,8 @@ class E_Contenidos:
     def obtenerContenidos(self, top=False):
         query = """
             SELECT id, Archivo_bytes, nombre_contenido, autor, precio, descripcion, rating, tipo_contenido, categoria, extension, downloaded
-            FROM contenidos """
+            FROM contenidos WHERE estado='activo'
+            """
         if top:
             query += "ORDER BY downloaded DESC"
 
@@ -479,11 +480,14 @@ class E_Contenidos:
         return lista
 
     # [RF-0064] Retorna contenidos para cierta coincidencia con un query y con filtros de la tabla contenidos.
-    def Buscar_info(self, query="", filters=None):
+    def Buscar_info(self, query="", filters=None, admi=False):
         if filters is None:
             filters = []
 
-        sql = "SELECT id, nombre_contenido, autor, tipo_contenido FROM contenidos WHERE 1=1"
+        sql = "SELECT id, nombre_contenido, autor, tipo_contenido, estado FROM contenidos WHERE 1=1"
+        if not admi:
+            sql +=" AND estado='activo'"
+
         params = []
 
         tipos = [f.lower() for f in filters if f.lower() in ["imagen", "video", "audio"]]
@@ -515,7 +519,7 @@ class E_Contenidos:
                 "id": row[0],
                 "title": row[1],
                 "author": row[2],
-                "type": row[3],
+                "type": row[3]+"/"+row[4] if admi else row[3],
             })
         return lista
 
@@ -526,7 +530,7 @@ class E_Contenidos:
         row = self.cursor.fetchone()
         if row:
             # keys = [desc[0] for desc in self.cursor.description]
-            keys = ['id','src','title','author','price','extension','category','rating','description','type','downloaded','id_promocion']
+            keys = ['id','src','title','author','price','extension','category','rating','description','type','downloaded','estado','id_promocion']
             content_dict = dict(zip(keys, row))
 
             # convertir binario a data URL
@@ -559,7 +563,7 @@ class E_Contenidos:
             }
         return None
     
-    # [RF-0149] Verificar si ya existe registro en la tabla descarga
+    # [RF-0149] Verificar si ya existe registro en la tabla descarga.
     def downloadedContentVerificate(self, id_contenido, id_usuario):
         query_check_descarga = """
             SELECT downloaded FROM descarga
@@ -598,6 +602,28 @@ class E_Contenidos:
             self.cursor.execute(query_insert_descarga, (id_usuario, id_contenido))
 
         self.conn.commit()
+    
+    # [RF-0155] Se actualiza el estado de un contenido en la tabla contenidos.
+    def actualizarEstadoContenido(self, idC):
+        self.cursor.execute("SELECT estado FROM contenidos WHERE id = ?", (idC,))
+        row = self.cursor.fetchone()
+        
+        if not row:
+            print("Contenido no encontrado")
+            return None
+
+        estado_actual = row[0]
+        
+        if estado_actual.lower() == "activo":
+            nuevo_estado = "desactivado"
+            resultado = True
+        else:
+            nuevo_estado = "activo"
+            resultado = False
+
+        self.cursor.execute("UPDATE contenidos SET estado = ? WHERE id = ?", (nuevo_estado, idC))
+        self.conn.commit()
+        return resultado
         
 class C_Puntuacion:
     def __init__(self):
@@ -716,9 +742,9 @@ class C_Contenidos:
         return resultados
     
     # [RF-0084] Envia a la clase de entidad contenidos la busqueda de cierto contenido por query y filtros pero tambien por id, para la busqueda de informacion de un administrador.
-    def solicitar_info_contenido(self, query, filters):
+    def solicitar_info_contenido(self, query, filters, admi=False):
         contenidos = E_Contenidos()
-        return contenidos.Buscar_info(query,filters)
+        return contenidos.Buscar_info(query,filters, admi)
     
     # [RF-0085] Funcion que conbierte el contenido binario a Base64, leible para el frontend.
     @staticmethod
@@ -836,9 +862,15 @@ class C_Contenidos:
             return mime_type, bin_data, filename
         return None,None,None
     
+    # [RF-153] El controlador contenidos solicita a la tabla E_Contenidos, si cierto contenido fue descargado.
     def downloadedContentVerificate(self, idc, idu):
         e_con = E_Contenidos()
         return e_con.downloadedContentVerificate(idc,idu) is not None
+    
+    # [RF-154] El controlador contenidos solicita actualizar el estado de un contenido en su tabla de E_Contenidos.
+    def actualizarEstadoContenido(self, idC):
+        e_con = E_Contenidos()
+        return e_con.actualizarEstadoContenido(idC)
 
 class C_Usuario:
     def __init__(self):
@@ -1041,7 +1073,7 @@ class C_Administrador(C_Usuario):
         filters = data['filters']
         if 'cliente' not in filters:
             content_manager = C_Contenidos()
-            resultados = content_manager.solicitar_info_contenido(data['query'], filters)
+            resultados = content_manager.solicitar_info_contenido(data['query'], filters, True)
         if not ('audio' in filters or 'video' in filters or 'imagen' in filters or 'author' in filters):
             usuarios = E_Usuarios()
             resultados += usuarios.buscar_info_usuarios(data['query'])
@@ -1053,6 +1085,10 @@ class C_Administrador(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.obtenerUser(id)
 
+    # [RF-0152] Envia al controlador Contenidos la actualización de estado de un contenido.
+    def actualizarEstadoContenido(self, idC):
+        content_manager = C_Contenidos()
+        return {"success": True, "estado": content_manager.actualizarEstadoContenido(idC)}
     
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
@@ -1193,3 +1229,7 @@ class Administrador(Usuario):
     # [RF-0147] Solicita datos a su controlador Administrador: Obtener recargas realizadas por un cliente
     def obtenerRecargasCliente(self, idU):
         return self.controller.obtenerRecargasCliente(idU)
+    
+    # [RF-151] Envia id de un contenido para actulizar el estado de este al controlador Administrador.
+    def actualizarEstadoContenido(self, idC):
+        return self.controller.actualizarEstadoContenido(idC)

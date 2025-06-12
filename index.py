@@ -466,8 +466,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtenerRecargasCliente(data.get("id"))).encode("utf-8"))
             else:
-                self.permises_web_current_user()      
+                self.permises_web_current_user()
 
+        # [RF-0150] Función que controla el estado del botón eliminar o restaurar contenido.      
+        elif parsed_path.path == "/update_content_state":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.actualizarEstadoContenido(data.get("id"))).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
         else:
             self.send_response(404)
             self.end_headers()

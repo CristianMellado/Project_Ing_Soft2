@@ -25,6 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('content-price').value = data.price;
                 document.getElementById('content-category').value = data.category;
                 document.getElementById('content-description').value = data.description;
+                console.log(data.estado);
+                document.getElementById("send-eliminar").textContent = data.estado=="desactivado" ? "Restaurar" : "Eliminar";
 
                 // Mostrar preview del contenido existente
                 previewContainer.innerHTML = "";
@@ -155,4 +157,41 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(err => console.error("Error:", err));
     });
+
+    del_button(id);
 });
+
+
+// [RF-0150] Función que controla el estado del botón eliminar o restaurar contenido.
+function del_button(id){
+    let isDeleted = false;
+
+    document.getElementById("send-eliminar").addEventListener("click", function () {
+        if (!id) {
+            alert("No hay un contenido cargado para eliminar/restaurar.");
+            return;
+        }
+
+        fetch("/update_content_state", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id: id})
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                isDeleted = data.estado || false;
+                document.getElementById("send-eliminar").textContent = isDeleted ? "Restaurar" : "Eliminar";
+                alert(data.message || (isDeleted ? "Contenido eliminado" : "Contenido restaurado"));
+            } else {
+                alert(data.message || "Error en la operación.");
+            }
+        })
+        .catch(err => {
+            console.error("Error:", err);
+            alert("Error de conexión con el servidor.");
+        });
+    });    
+}
