@@ -409,6 +409,20 @@ class E_Promociones:
         resultado_promo = self.cursor.fetchone()
         return resultado_promo
 
+    # [RF-0177] Se registra una nueva promocion a la tabla promociones.
+    def agregarPromocion(self, data):
+        try:
+            fecha_futura = datetime.now() + timedelta(days=data.get("dias"))
+            fecha_str = fecha_futura.strftime("%Y-%m-%d")
+            descuento = float(data.get("descuento"))/100.0
+            query = "INSERT INTO promociones (titulo_de_descuento,descuento, fecha_fin) VALUES (?, ?, ?)"
+            self.cursor.execute(query, (data.get("titulo"), descuento, fecha_str))
+            self.conn.commit()
+            return True
+        except:
+            return False
+
+
 class E_Contenidos:
     def __init__(self):
         self.conn = get_connection()
@@ -731,6 +745,11 @@ class C_Promociones:
         prom_manager = E_Promociones()
         return prom_manager.ObtenerPromocion(idprom)        
     
+    # [RF-0176] El Controlador promociones enviar a la clase  E_Promociones la agregación de una promocion.
+    def agregarPromocion(self, data):
+        man_prom = E_Promociones()
+        return man_prom.agregarPromocion(data)   
+
 class C_Transacciones:
     def __init__(self):
         pass
@@ -990,6 +1009,11 @@ class C_Contenidos:
         e_con = E_Contenidos()
         return e_con.asignarPromocion(idC,idP)
     
+    # [RF-0175] El Controlador contenidos enviar a su controlador promociones la agregación de una promocion.
+    def agregarPromocion(self, data):
+        man_prom = C_Promociones()
+        return man_prom.agregarPromocion(data)   
+
 class C_Usuario:
     def __init__(self):
         self.id = None
@@ -1218,6 +1242,11 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.asignarPromocion(idC,idP)    
     
+    # [RF-0174] El Controlador administrador enviar a su controlador contenidos la agregación de una promocion.
+    def agregarPromocion(self, data):
+        man_content = C_Contenidos()
+        return man_content.agregarPromocion(data)   
+
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
         self.user = user
@@ -1369,3 +1398,7 @@ class Administrador(Usuario):
     # [RF-0168] El administrador enviar a su controlador administrador la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
         return self.controller.asignarPromocion(idC,idP)
+    
+    # [RF-0173] El administrador enviar a su controlador administrador la agregación de una promocion.
+    def agregarPromocion(self, data):
+        return self.controller.agregarPromocion(data)    

@@ -150,3 +150,44 @@ select {
     max-height: 300px;
     text-align: center;
 }
+
+
+
+/*PROMOCIONES*/
+#promocion-container button,
+#form-agregar-promo button {
+    background-color: #4CAF50; /* Verde */
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+    margin: 6px 4px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+#promocion-container button:hover,
+#form-agregar-promo button:hover {
+    background-color: #45a049;
+}
+
+#form-agregar-promo input {
+    padding: 8px 10px;
+    margin: 6px 0;
+    width: 95%;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+#form-agregar-promo input:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}

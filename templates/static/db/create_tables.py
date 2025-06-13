@@ -99,7 +99,7 @@ fecha_str = fecha_futura.strftime("%Y-%m-%d")
 cursor.execute('''
     INSERT INTO promociones (descuento, titulo_de_descuento, fecha_fin)
     VALUES (?, ?, ?)
-    ''', (0.2, "-20% de Descuento!",fecha_str)
+    ''', (0.2, "20% de Descuento!",fecha_str)
     )
 
 cursor.execute('''

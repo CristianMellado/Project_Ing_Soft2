@@ -493,6 +493,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.permises_web_current_user()
 
+        # [RF-0172] Función que envia y guarda los datos de una nueva categoria. 
+        elif parsed_path.path == "/crear_promocion":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                #a, b, c = data.get("titulo"), data.get("descuento"), data.get("dias")
+                #print(data)
+                self.wfile.write(json.dumps({'success':current_usuario.agregarPromocion(data)}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
         else:
             self.send_response(404)
             self.end_headers()

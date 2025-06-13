@@ -209,6 +209,7 @@ function showRatingPrompt(contentId) {
         .then(data => {
             if (data.success) {
                 alert("¡Gracias por tu puntuación!");
+                location.reload();
             } else {
                 alert("Hubo un error al enviar tu puntuación.");
             }
