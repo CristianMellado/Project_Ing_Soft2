@@ -414,7 +414,8 @@ function designar_categoria(id){
 async function enviar_nueva_categoria() {
     const titulo = document.getElementById("category-title").value.trim();
     const promoSelect = document.getElementById("category-select");
-    const selectedPromoId = promoSelect.value;
+    const selectedPromoIdRaw = promoSelect.value;
+    const selectedPromoId = selectedPromoIdRaw === '' ? null : selectedPromoIdRaw;
 
     if (!titulo) {
         alert("Completa correctamente el campo.");
