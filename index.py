@@ -184,7 +184,15 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtenerPromociones()).encode("utf-8"))
             else:
-                self.permises_web_current_user()                
+                self.permises_web_current_user()
+
+        # [RF-0193] Ruta que retorna todas las categorias al administrador.
+        elif parsed_path.path == "/get_categorys":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtener_categorias()).encode("utf-8"))
+            else:
+                self.permises_web_current_user()               
         else:
             self.send_response(404)
             self.end_headers()
@@ -497,12 +505,26 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/crear_promocion":
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
-                #a, b, c = data.get("titulo"), data.get("descuento"), data.get("dias")
-                #print(data)
                 self.wfile.write(json.dumps({'success':current_usuario.agregarPromocion(data)}).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 
+        # [RF-0194] Ruta que asignar una categoria a un contenido, solo permitida por el administrador.
+        elif parsed_path.path == "/asignar_category":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                a, b = data.get("id_contenido"), data.get("id_categoria")
+                self.wfile.write(json.dumps({'success':current_usuario.asignarCategoria(a,b)}).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        # [RF-0195] Ruta que crea una nueva categoria, solo permitida por el administrador.
+        elif parsed_path.path == "/crear_category":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.agregarCategoria(data)).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
         else:
             self.send_response(404)
             self.end_headers()

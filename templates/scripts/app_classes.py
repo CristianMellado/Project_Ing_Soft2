@@ -437,7 +437,7 @@ class E_Contenidos:
                 autor,
                 precio,
                 extension,
-                categoria,
+                categoria_id,
                 rating,
                 descripcion,
                 tipo_contenido
@@ -464,7 +464,6 @@ class E_Contenidos:
             "autor": data.get("author"),
             "precio": float(data["price"]) if data.get("price") is not None else None,
             "extension": data.get("extension"),
-            "categoria": data.get("category"),
             "rating": float(data["rating"]) if data.get("rating") is not None else None,
             "descripcion": data.get("description"),
             "tipo_contenido": data.get("type")
@@ -495,12 +494,16 @@ class E_Contenidos:
     # [RF-0063] Obtiene contenidos con toda su información y con la opcion de retornar en orden del mas descargado al menos decargador.
     def obtenerContenidos(self, top=False):
         query = """
-            SELECT id, Archivo_bytes, nombre_contenido, autor, precio, descripcion, rating,
-                tipo_contenido, categoria, extension, downloaded, id_promocion
-            FROM contenidos WHERE estado='activo'
+            SELECT 
+                c.id, c.Archivo_bytes, c.nombre_contenido, c.autor, c.precio, c.descripcion,
+                c.rating, c.tipo_contenido, cat.ruta, c.extension, c.downloaded,
+                c.id_promocion
+            FROM contenidos c
+            LEFT JOIN categorias cat ON c.categoria_id = cat.id
+            WHERE c.estado = 'activo'
         """
         if top:
-            query += " ORDER BY downloaded DESC"
+            query += " ORDER BY c.downloaded DESC"
 
         self.cursor.execute(query)
         result = self.cursor.fetchall()
@@ -508,7 +511,7 @@ class E_Contenidos:
 
         for row in result:
             (id_, src_bin, title, author, price, desc, rating,
-            tipo, category, ext, down, id_prom) = row
+            tipo, ruta_categoria, ext, down, id_prom) = row
 
             # Generar data URL para el contenido
             data_url = C_Contenidos._generar_data_url(src_bin, tipo, ext)
@@ -518,7 +521,7 @@ class E_Contenidos:
                 self.cursor.execute("SELECT titulo_de_descuento, descuento FROM promociones WHERE id = ?", (id_prom,))
                 promo_row = self.cursor.fetchone()
                 if promo_row:
-                    titulo_prom,descuento = promo_row
+                    titulo_prom, descuento = promo_row
                     precio_final = round(float(price) * (1 - descuento), 2)
                     price = f"<span style='color:green;'>{precio_final}</span> <s>{price}</s> ({titulo_prom})"
 
@@ -531,7 +534,7 @@ class E_Contenidos:
                 "description": desc,
                 "rating": rating,
                 "type": tipo,
-                "category": category,
+                "category": ruta_categoria,
                 "downloaded": down
             })
 
@@ -583,16 +586,24 @@ class E_Contenidos:
 
     # [RF-0065] Retorna cierto contenido por su Id de la tabla contenidos.
     def getContent(self, content_id):
-        query = "SELECT * FROM contenidos WHERE id = ?"
+        query = '''
+            SELECT 
+                c.id, c.Archivo_bytes, c.nombre_contenido, c.autor, c.precio,
+                c.extension, cat.ruta, c.rating, c.descripcion, c.tipo_contenido,
+                c.downloaded, c.estado, c.id_promocion
+            FROM contenidos c
+            LEFT JOIN categorias cat ON c.categoria_id = cat.id
+            WHERE c.id = ?
+        '''
         self.cursor.execute(query, (content_id,))
         row = self.cursor.fetchone()
-        
+
         if row:
             keys = ['id', 'src', 'title', 'author', 'price', 'extension', 'category',
                     'rating', 'description', 'type', 'downloaded', 'estado', 'id_promocion']
             content_dict = dict(zip(keys, row))
 
-            # convertir binario a data URL
+            # Convertir binario a data URL
             content_dict["src"] = C_Contenidos._generar_data_url(
                 content_dict["src"], content_dict["type"], content_dict["extension"]
             )
@@ -603,9 +614,9 @@ class E_Contenidos:
                 self.cursor.execute("SELECT titulo_de_descuento, descuento FROM promociones WHERE id = ?", (id_prom,))
                 promo_row = self.cursor.fetchone()
                 if promo_row:
-                    titulo_prom,descuento = promo_row
+                    titulo_prom, descuento = promo_row
                     precio_final = round(float(content_dict["price"]) * (1 - descuento), 2)
-                    content_dict["price"] = f"<span style='color:green;'>{precio_final}</span> <s>{content_dict["price"]}</s> ({titulo_prom})"
+                    content_dict["price"] = f"<span style='color:green;'>{precio_final}</span> <s>{content_dict['price']}</s> ({titulo_prom})"
 
             return content_dict
         else:
@@ -715,7 +726,16 @@ class E_Contenidos:
             return True
         except:
             return False
-
+    
+    # [RF-0186] La clase E_Contenidos asigna una categoria una categoria a un contenido en la tabla contenidos. 
+    def asignarCategoria(self, idC, idcat):
+        try:
+            self.cursor.execute("UPDATE contenidos SET categoria_id = ? WHERE id = ?", (idcat, idC))
+            self.conn.commit()
+            return True
+        except:
+            return False
+        
 class C_Puntuacion:
     def __init__(self):
         pass
@@ -730,7 +750,77 @@ class C_Puntuacion:
        e_pun = E_Puntuaciones()
        e_pun.Registrar_Puntuacion(idU,idC,score)
 
+class E_Categorias:
+    def __init__(self):
+        self.conn = get_connection()
+        self.cursor = self.conn.cursor()
 
+    # [RF-0188] La clase E_Categorias retorna todas las categorias disponibles.
+    def obtener_categorias(self):
+        self.cursor.execute("SELECT id, ruta FROM categorias")
+        res = []
+        for id, ruta in self.cursor.fetchall():
+            res.append({'id':id,'category':ruta})
+        return res
+    
+    # [RF-0187] La clase E_Categorias genera y actualiza la ruta de una categoria segun su id.
+    def gen_ruta(self, id):
+        camino = []
+        while id:
+            self.cursor.execute("SELECT nombre, id_padre FROM categorias WHERE id = ?", (id,))
+            fila = self.cursor.fetchone()
+            if not fila:
+                break
+            nombre, id = fila
+            camino.append(nombre)
+        return ">".join(reversed(camino))
+    
+    # [RF-0182] La clase E_Categorias añade a la tabla categorias la agregación de una categoria.
+    def agregarCategoria(self, data):
+        try:
+            nombre = data.get("titulo")
+            id_padre = data.get("id_padre")
+
+            # Verificar si ya existe una categoría con el mismo nombre y padre
+            self.cursor.execute("""
+                SELECT id FROM categorias WHERE nombre = ? AND 
+                (id_padre IS ? OR id_padre = ?)
+            """, (nombre, id_padre, id_padre))
+
+            if self.cursor.fetchone():
+                return {'success':False, 'message':"Error: La categoria ya existe para esa rama."}
+
+            # Insertar la nueva categoría
+            query = "INSERT INTO categorias (nombre, id_padre) VALUES (?, ?)"
+            self.cursor.execute(query, (nombre, id_padre))
+
+            nuevo_id = self.cursor.lastrowid
+
+            # Generar y guardar la ruta
+            ruta = self.gen_ruta(nuevo_id)
+            self.cursor.execute("UPDATE categorias SET ruta = ? WHERE id = ?", (ruta, nuevo_id))
+
+            self.conn.commit()
+            return {'success':True}
+
+        except Exception as e:
+            print(f"Error al agregar categoría: {e}")
+            return False
+
+class C_Categorias:
+    def __init__(self):
+        pass
+    
+    # [RF-0189] El Controlador categorias enviar a su clase E_Categorias la petición de optener todas las categorias disponibles.
+    def obtener_categorias(self):
+        man_cat = E_Categorias()
+        return man_cat.obtener_categorias()
+    
+    # [RF-0181] El Controlador categorias enviar a su clase E_Categorias la agregación de una categoria.
+    def agregarCategoria(self, data):
+        man_cat = E_Categorias()
+        return man_cat.agregarCategoria(data)
+    
 class C_Promociones:
     def __init__(self):
         pass
@@ -1013,7 +1103,22 @@ class C_Contenidos:
     def agregarPromocion(self, data):
         man_prom = C_Promociones()
         return man_prom.agregarPromocion(data)   
+        
+    # [RF-0180] El Controlador contenidos enviar a su controlador categorias la agregación de una categoria.
+    def agregarCategoria(self, data):
+        man_cat = C_Categorias()
+        return man_cat.agregarCategoria(data)
 
+    # [RF-0185] El Controlador contenidos enviar a su clase  E_Contenidos la asignacion de una categoria.
+    def asignarCategoria(self, idC,idcat):
+        man_content = E_Contenidos()
+        return man_content.asignarCategoria(idC,idcat)
+
+    # [RF-0192] El Controlador contenidos enviar a su controlador categorias la obtencion de todas las categorías.
+    def obtener_categorias(self):
+        man_cat = C_Categorias()
+        return man_cat.obtener_categorias()
+            
 class C_Usuario:
     def __init__(self):
         self.id = None
@@ -1246,7 +1351,22 @@ class C_Administrador(C_Usuario):
     def agregarPromocion(self, data):
         man_content = C_Contenidos()
         return man_content.agregarPromocion(data)   
+    
+    # [RF-0179] El Controlador administrador enviar a su controlador contenidos la agregación de una categoria.
+    def agregarCategoria(self, data):
+        man_content = C_Contenidos()
+        return man_content.agregarCategoria(data)
+    
+    # [RF-0184] El Controlador administrador enviar a su controlador contenidos la asignacion de una categoria.
+    def asignarCategoria(self, idC,idcat):
+        man_content = C_Contenidos()
+        return man_content.asignarCategoria(idC,idcat)
 
+    # [RF-0191] El Controlador administrador enviar a su controlador contenidos la obtencion de todas las categorías.
+    def obtener_categorias(self):
+        man_content = C_Contenidos()
+        return man_content.obtener_categorias()
+        
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
         self.user = user
@@ -1401,4 +1521,16 @@ class Administrador(Usuario):
     
     # [RF-0173] El administrador enviar a su controlador administrador la agregación de una promocion.
     def agregarPromocion(self, data):
-        return self.controller.agregarPromocion(data)    
+        return self.controller.agregarPromocion(data)
+    
+    # [RF-0190] El administrador enviar a su controlador administrador obtencion de todas las categorías.
+    def obtener_categorias(self):
+        return self.controller.obtener_categorias()
+    
+    # [RF-0183] El administrador enviar a su controlador administrador la agreasignacion de una categoría.
+    def asignarCategoria(self, idC,idcat):
+        return self.controller.asignarCategoria(idC,idcat)
+    
+    # [RF-0178] El administrador enviar a su controlador administrador la agregación de una categoría.
+    def agregarCategoria(self, data):
+        return self.controller.agregarCategoria(data)

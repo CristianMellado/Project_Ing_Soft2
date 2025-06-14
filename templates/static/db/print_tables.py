@@ -21,7 +21,7 @@ imprimir_tabla('usuarios')
 imprimir_tabla('contenidos',columnas=['nombre_contenido',
                                       'tipo_contenido','id',
                                       'downloaded','estado'])  # sin data_contenido
-# imprimir_tabla('categorias')
+imprimir_tabla('categorias')
 imprimir_tabla('recargas')
 imprimir_tabla('regalos')
 imprimir_tabla('puntuaciones')
@@ -30,6 +30,4 @@ imprimir_tabla('promociones')
 imprimir_tabla('compras')
 imprimir_tabla('descarga')
 
-
-# Cerrar conexiÃ³n
 conn.close()

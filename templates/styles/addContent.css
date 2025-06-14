@@ -40,7 +40,8 @@
 }
 
 /* Estilos para los botones */
-#send-button, #send-promocion, #send-eliminar, #send-guardar {
+#send-button, #send-promocion, #send-eliminar, 
+#send-guardar, #send-category, #btn-agregar-category {
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
@@ -52,7 +53,8 @@
 }
 
 /* Efecto hover para el botón */
-#send-button:hover, #send-promocion:hover, #send-eliminar:hover, #send-guardar:hover {
+#send-button:hover, #send-promocion:hover, #send-eliminar:hover, 
+#send-guardar:hover,#send-category:hover,#btn-agregar-category:hover {
     background-color: #45a049;
 }
 
@@ -154,8 +156,8 @@ select {
 
 
 /*PROMOCIONES*/
-#promocion-container button,
-#form-agregar-promo button {
+#promocion-container button,#category-container button,
+#form-agregar-category button, #form-agregar-promo button {
     background-color: #4CAF50; /* Verde */
     border: none;
     color: white;
@@ -171,11 +173,12 @@ select {
 }
 
 #promocion-container button:hover,
-#form-agregar-promo button:hover {
+#form-agregar-promo button:hover,#category-container button:hover,
+#form-agregar-category button:hover  {
     background-color: #45a049;
 }
 
-#form-agregar-promo input {
+#form-agregar-promo input,#form-agregar-category input {
     padding: 8px 10px;
     margin: 6px 0;
     width: 95%;
@@ -186,7 +189,7 @@ select {
     transition: border-color 0.2s ease;
 }
 
-#form-agregar-promo input:focus {
+#form-agregar-promo input:focus,#form-agregar-category input:focus {
     border-color: #4CAF50;
     outline: none;
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);

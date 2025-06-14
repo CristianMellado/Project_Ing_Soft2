@@ -45,13 +45,34 @@ for user in db:
     ''', (user["email"], user["username"], user["pswd"], user["saldo"], user[" role"], user["estado"], user["nombre"],user["apellido1"], user["apellido2"]))
 
 
-# cursor.execute('''
-# CREATE TABLE IF NOT EXISTS categorias (
-#     id INTEGER PRIMARY KEY AUTOINCREMENT,
-#     nombre_categoria TEXT,
-#     descripcion TEXT
-# );
-# ''')
+cursor.execute('''
+CREATE TABLE categorias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    id_padre INTEGER DEFAULT NULL,
+    ruta TEXT DEFAULT NULL,
+    FOREIGN KEY (id_padre) REFERENCES categorias(id)
+);
+''')
+
+cursor.execute('''
+    INSERT INTO categorias (nombre,ruta) VALUES (?,?)''', ("Arte","Arte")
+)
+
+cursor.execute('''
+    INSERT INTO categorias (nombre,id_padre,ruta) VALUES (?,?,?)''', ("Music",1,"Arte>Music")
+)
+
+cursor.execute('''
+    INSERT INTO categorias (nombre,id_padre,ruta) VALUES (?,?,?)''', ("Rock",2,"Arte>Music>Rock")
+)
+cursor.execute('''
+    INSERT INTO categorias (nombre,id_padre,ruta) VALUES (?,?,?) ''', ("Meme",1,"Arte>Meme")
+)
+cursor.execute('''
+    INSERT INTO categorias (nombre,ruta) VALUES (?,?)''', ("Deporte","Deporte")
+)
+
 
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS recargas (
@@ -147,7 +168,7 @@ CREATE TABLE IF NOT EXISTS contenidos (
     autor TEXT,
     precio DOUBLE,
     extension TEXT,
-    categoria TEXT,
+    categoria_id INTEGER,
     rating DOUBLE DEFAULT 0.0,
     descripcion TEXT,
     tipo_contenido TEXT,
@@ -158,25 +179,27 @@ CREATE TABLE IF NOT EXISTS contenidos (
 ''')
 
 archivos = [
-    ("../audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3','rock', 0.0,'awesome','audio'),
-    ("../image/monalisa.png", "Monalisa", "van", 15.50,'png','art', 0.0,'awesome','imagen'),
-    ("../image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png','art', 0.0,'awesome','imagen'),
-    ("../video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4','game', 0.0,'awesome','video'),
-    ("../video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4','accion', 0.0,'awesome','video'),
-    ("../audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3','techno', 0.0,'awesome','audio'),
-    ("../video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4", "Categoría del video",  0.0, "Descripción del video", "video"),
-    ("../audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", "Categoría del video",  0.0, "Descripción del video", "audio"),
-    ("../audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3", "Categoría del sonido",  0.0, "Descripción del audio", "audio")
+    ("../audio/cuentame.mp3", "Cuentame", "pedro", 5.99,'mp3', 0.0,'awesome','audio',3),
+    ("../image/monalisa.png", "Monalisa", "van", 15.50,'png', 0.0,'awesome','imagen',1),
+    ("../image/nocheestrellada.png", "Noche Estrellada", "govh", 10.75,'png', 0.0,'awesome','imagen',1),
+    ("../video/soccervideogame.mp4", "Soccer Video Game", "ryzse", 29.99,'mp4', 0.0,'awesome','video',5),
+    ("../video/spiderman.mp4", "Spiderman", "sonyc", 19.99,'mp4', 0.0,'awesome','video',1),
+    ("../audio/techno.mp3", "Techno Music", "technofell", 3.50,'mp3', 0.0,'awesome','audio',2),
+    ("../video/1.mp4", "lol gameplay warwick", "franciso bejar", 10.0, "mp4",  0.0, "Descripción del video", "video",4),
+    ("../audio/1.mp3", "Married life", "francete moriarty", 10.0, "mp3", 0.0, "Descripción del video", "audio",2),
+    ("../audio/2.mp3", "Lefestin", "charles de jumps", 15.0, "mp3",  0.0, "Descripción del audio", "audio",2)
 ]
 
-for ruta, titulo, autor, precio, ext, cat, rat, des, typ in archivos:
+print(1)
+for ruta, titulo, autor, precio, ext, rat, des, typ,cat in archivos:
     try:
         with open(ruta, "rb") as f:
             binario = f.read()
         cursor.execute('''
-            INSERT INTO contenidos (Archivo_bytes, nombre_contenido, autor, precio, extension, categoria, rating, descripcion, tipo_contenido)
+            INSERT INTO contenidos (Archivo_bytes, nombre_contenido, autor, precio, 
+                       extension, rating, descripcion, tipo_contenido, categoria_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (binario, titulo, autor, precio, ext, cat, rat, des, typ))
+        ''', (binario, titulo, autor, precio, ext, rat, des, typ,cat))
     except Exception as e:
         print(f"Error al leer o insertar {ruta}: {e}")
 
