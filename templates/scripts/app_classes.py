@@ -2196,11 +2196,23 @@ class C_Administrador(C_Usuario):
     
     # [RF-0114] Solicita a la clase controlador transacciones, obtener la lista de recargas.
     def getRecargas(self):
+        """
+        Administrador: Solicita todas las peticiones de recarga pendientes.
+
+        Retorna:
+            list: Lista de solicitudes de recarga.
+        """    
         controller = C_Transacciones()
         return controller.obtenerListaPeticiones()
     
     # [RF-0115] Envia a la clase controlador transacciones y entidad notifaciones, la aprobación de cierta recarga.
     def aprobarRecarga(self, id_recarga):
+        """
+        Administrador: Aprueba una recarga y actualiza el saldo del usuario correspondiente.
+
+        Parámetros:
+            id_recarga (int): ID de la solicitud de recarga.
+        """        
         controller = C_Transacciones()
         id_user,cantidad = controller.aprobarRecarga(id_recarga)
         controller.actualizarSaldo(id_user,cantidad)
@@ -2212,16 +2224,37 @@ class C_Administrador(C_Usuario):
 
     # [RF-0116] Envia a la clase controlador contenidos, un contenido nuevo a registrar.
     def ingresarAgregarContenido(self, datos):
+        """
+        Administrador: Envía los datos necesarios para registrar un nuevo contenido.
+
+        Parámetros:
+            datos (dict): Información del nuevo contenido.
+        """        
         content_manager = C_Contenidos()
         content_manager.registrarContenido(datos)
 
     # [RF-0117] Envia a la clase controlador contenidos, actualizar un contenido existente.
     def actualizarContenido(self, datos):
+        """
+        Administrador: Envía la actualización de datos para un contenido existente.
+
+        Parámetros:
+            datos (dict): Datos actualizados del contenido.
+        """        
         content_manager = C_Contenidos()
         content_manager.actualizarContenido(datos)
 
     # [RF-0118] Solicita a la clase controlador contenidos y entidad usuarios, buscar información sobre estos.
     def buscar_info(self, data):
+        """
+        Administrador: Realiza una búsqueda combinada en contenidos y usuarios según filtros.
+
+        Parámetros:
+            data (dict): Contiene 'query' (str) y 'filters' (list) para la búsqueda.
+
+        Retorna:
+            list: Resultados combinados de la búsqueda.
+        """        
         resultados = []
         filters = data['filters']
         if 'cliente' not in filters:
@@ -2235,78 +2268,214 @@ class C_Administrador(C_Usuario):
     
     # [RF-0119] Solicita a la clase entidad usuarios, obtener datos de cierto usuario según su id.
     def seleccionarUser(self, id):
+        """
+        Administrador: Solicita los datos de un usuario según su ID.
+
+        Parámetros:
+            id (int): ID del usuario.
+
+        Retorna:
+            dict: Información del usuario.
+        """        
         usuarios = E_Usuarios()
         return usuarios.obtenerUser(id)
 
     # [RF-0152] Envia al controlador Contenidos la actualización de estado de un contenido.
     def actualizarEstadoContenido(self, idC):
+        """
+        Administrador: Cambia el estado de un contenido (activo/inactivo).
+
+        Parámetros:
+            idC (int): ID del contenido.
+
+        Retorna:
+            dict: Estado actualizado del contenido.
+        """        
         content_manager = C_Contenidos()
         return {"success": True, "estado": content_manager.actualizarEstadoContenido(idC)}
     
     # [RF-159] El Controlador Administrador solicita al controlador Contenidos todas las promociones actuales.
     def obtenerPromociones(self):
+        """
+        Administrador: Solicita todas las promociones registradas.
+
+        Retorna:
+            list: Lista de promociones.
+        """        
         content_manager = C_Contenidos()
         return content_manager.obtenerPromociones()
 
     # [RF-0169] El controlador administrador envia al controlador contenidos la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
+        """
+        Administrador: Asigna una promoción a un contenido específico.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            idP (int): ID de la promoción.
+
+        Retorna:
+            bool: True si la asignación fue exitosa.
+        """        
         man_content = C_Contenidos()
         return man_content.asignarPromocion(idC,idP)    
     
     # [RF-0174] El Controlador administrador enviar a su controlador contenidos la agregación de una promocion.
     def agregarPromocion(self, data):
+        """
+        Administrador: Agrega una nueva promoción con los datos proporcionados.
+
+        Parámetros:
+            data (dict): Información de la nueva promoción.
+
+        Retorna:
+            bool: True si la promoción fue agregada exitosamente.
+        """        
         man_content = C_Contenidos()
         return man_content.agregarPromocion(data)   
     
     # [RF-0179] El Controlador administrador enviar a su controlador contenidos la agregación de una categoria.
     def agregarCategoria(self, data):
+        """
+        Administrador: Agrega una nueva categoría al sistema.
+
+        Parámetros:
+            data (dict): Información de la categoría a agregar.
+
+        Retorna:
+            bool: True si la categoría fue agregada exitosamente.
+        """        
         man_content = C_Contenidos()
         return man_content.agregarCategoria(data)
     
     # [RF-0184] El Controlador administrador enviar a su controlador contenidos la asignacion de una categoria.
     def asignarCategoria(self, idC,idcat):
+        """
+        Administrador: Asigna una categoría a un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            idcat (int): ID de la categoría.
+
+        Retorna:
+            bool: True si la asignación fue exitosa.
+        """        
         man_content = C_Contenidos()
         return man_content.asignarCategoria(idC,idcat)
 
     # [RF-0191] El Controlador administrador enviar a su controlador contenidos la obtencion de todas las categorías.
     def obtener_categorias(self):
+        """
+        Administrador: Solicita todas las categorías registradas.
+
+        Retorna:
+            list: Lista de categorías.
+        """        
         man_content = C_Contenidos()
         return man_content.obtener_categorias()
         
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
+        """
+        Inicializa un objeto Usuario.
+
+        Parámetros:
+            user (str): Nombre de usuario.
+            id (int): ID del usuario.
+            ctr (C_Usuario): Controlador asociado al usuario.
+        """ 
         self.user = user
         self.id = id
         self.controller = ctr
 
     # [RF-0120] Envía credenciales a su controlador Usuario: Iniciar sesión del usuario
     def iniciar_sesion(self, username, password):
+        """
+        Usuario: Inicia sesión con nombre de usuario y contraseña.
+
+        Parámetros:
+            username (str): Nombre de usuario.
+            password (str): Contraseña del usuario.
+
+        Retorna:
+            bool: True si la autenticación es exitosa.
+        """   
         auth, self.id = self.controller.loginVerificar(username, password)
         return auth
 
     # [RF-0121] Solicita datos a su controlador Usuario: Buscar contenidos con filtros
     def Buscar(self, query, filters):
+        """
+        Usuario: Busca contenidos con filtros específicos.
+
+        Parámetros:
+            query (str): Término de búsqueda.
+            filters (dict): Filtros aplicados.
+
+        Retorna:
+            list: Lista de contenidos encontrados.
+        """ 
         print(self.user, self.id)
         return self.controller.Buscar(query, filters)
 
     # [RF-0122] Envía solicitud a su controlador Usuario: Seleccionar un contenido específico
     def seleccionar(self, content_id):
+        """
+        Usuario: Selecciona un contenido específico.
+        Parámetros:
+            content_id (int): ID del contenido.
+
+        Retorna:
+            dict: Información del contenido seleccionado.
+        """        
         return self.controller.seleccionarContent(content_id)
 
     # [RF-0123] Solicita información a su controlador Usuario: Obtener los datos del usuario
     def getDataUser(self):
+        """
+        Usuario: Obtiene los datos del usuario.
+
+        Retorna:
+            dict: Información del usuario.
+        """        
         return self.controller.getDataUser(self.id)
 
     # [RF-0124] Envía datos a su controlador Usuario: Registrar un nuevo usuario (placeholder)
     def registrarU(self, data):
+        """
+        Usuario: Placeholder para registrar un nuevo usuario.
+
+        Parámetros:
+            data (dict): Datos del nuevo usuario.
+
+        Retorna:
+            int: Código de éxito o error.
+        """
         return 1
 
     # [RF-0125] Solicita información a su controlador Usuario: Obtener contenidos destacados o generales
     def getContentView(self):
+        """
+        Usuario: Obtiene los contenidos destacados o generales.
+
+        Retorna:
+            list: Lista de contenidos.
+        """        
         return self.controller.getContentView()
 
     # [RF-0126] Envía datos a su controlador Usuario: Validar y registrar un nuevo usuario
     def validarRegistro(self, us, ps, em):
+        """
+        Usuario: Valida y registra un nuevo usuario.
+
+        Parámetros:
+            us (str): Nombre de usuario.
+            ps (str): Contraseña.
+            em (str): Correo electrónico.
+
+        Retorna:
+            int: 1 si el registro es exitoso, 0 si el usuario ya existe.
+        """        
         if not self.controller.validarRegistro(us):
             return 0
         self.controller.registrarUsuario(us, ps, em)
@@ -2314,45 +2483,127 @@ class Usuario:
 
     # [RF-0127] Verifica existencia a su controlador Usuario: Verificar si el usuario ya tiene un contenido
     def verificarContenido(self, idC):
+        """
+        Usuario: Verifica si ya posee cierto contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+
+        Retorna:
+            bool: True si el contenido ya fue adquirido.
+        """        
         return self.controller.verificarContenido(self.id, idC)
 
     # [RF-0128] Envía respuesta a su controlador Usuario: Aceptar una notificación
     def aceptarNotificacion(self, idN):
+        """
+        Usuario: Acepta una notificación.
+
+        Parámetros:
+            idN (int): ID de la notificación.
+        """        
         self.controller.aceptarNotificacion(idN)
 
     # [RF-0129] Solicita contenido a su controlador Usuario: Obtener contenido para descargar
     def obtenerContenidoDescarga(self, content_id):
+        """
+        Usuario: Solicita el contenido para descarga.
+
+        Parámetros:
+            content_id (int): ID del contenido.
+
+        Retorna:
+            dict: Información para la descarga.
+        """        
         return self.controller.obtenerContenidoDescarga(content_id, self.id)
 
 
 class Cliente(Usuario):
     def __init__(self, username, id):
+        """
+        Inicializa un objeto Cliente.
+
+        Parámetros:
+            username (str): Nombre de usuario.
+            id (int): ID del cliente.
+        """        
         super().__init__(user=username, id=id, ctr=C_Cliente())
         self.saldo = None
         self.estado_cuenta = None
 
     # [RF-0130] Envía solicitud a su controlador Cliente: Solicitar recarga de saldo con tarjeta
     def ingresarMontoSolicitar(self, Ncard, amount, cardType):
+        """
+        Cliente: Solicita una recarga con tarjeta.
+
+        Parámetros:
+            Ncard (str): Número de tarjeta.
+            amount (float): Monto a recargar.
+            cardType (str): Tipo de tarjeta.
+
+        Retorna:
+            bool: True si la solicitud fue enviada correctamente.
+        """        
         return self.controller.enviarSolicitud(Ncard, amount, cardType, self.id)
 
     # [RF-0131] Solicita información a su controlador Cliente: Obtener el saldo actual del cliente
     def getSaldo(self):
+        """
+        Cliente: Obtiene el saldo actual.
+
+        Retorna:
+            float: Saldo del cliente.
+        """        
         return self.controller.obtenerSaldo(self.id)
 
     # [RF-0132] Envía pago a su controlador Cliente: Realizar el pago de un contenido
     def pagarContenido(self, idC):
+        """
+        Cliente: Realiza el pago por un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+
+        Retorna:
+            bool: True si el pago fue exitoso.
+        """        
         return self.controller.pagarContenido(self.id, idC)
 
     # [RF-0133] Solicita información a su controlador Cliente: Obtener descargas realizadas por el cliente
     def obtenerDescargasCliente(self):
+        """
+        Cliente: Obtiene la lista de descargas realizadas.
+
+        Retorna:
+            list: Lista de descargas.
+        """        
         return self.controller.obtenerDescargasCliente(self.id)
 
     # [RF-0134] Solicita puntuación a su controlador Cliente: Obtener puntuación de contenido dada por un cliente
     def Obtener_Puntuacion(self, idU):
+        """
+        Cliente: Obtiene la puntuación que dio a un contenido.
+
+        Parámetros:
+            idU (int): ID del usuario.
+
+        Retorna:
+            int: Puntuación del contenido.
+        """        
         return self.controller.Obtener_Puntuacion(idU)
 
     # [RF-0135] Envía puntuación a su controlador Cliente: Enviar una puntuación para un contenido
     def Enviar_Puntuacion(self, idC, score):
+        """
+        Cliente: Envía una puntuación para un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            score (int): Puntuación del 1 al 5.
+
+        Retorna:
+            bool: True si la puntuación fue enviada correctamente.
+        """        
         try:
             self.controller.Enviar_Puntuacion(self.id, idC, score)
         except Exception as e:
@@ -2362,81 +2613,239 @@ class Cliente(Usuario):
 
     # [RF-0136] Envía regalo a su controlador Cliente: Enviar un contenido a otro usuario como regalo
     def Enviar_destinatario(self, idC, destinatario):
+        """
+        Cliente: Envía un contenido como regalo a otro usuario.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            destinatario (str): Usuario destinatario.
+
+        Retorna:
+            bool: True si el regalo fue enviado correctamente.
+        """        
         return self.controller.Enviar_destinatario(self.id, idC, destinatario)
 
     # [RF-0137] Solicita notificaciones a su controlador Cliente: Obtener notificaciones del cliente
     def obtenerNotificaciones(self):
+        """
+        Cliente: Obtiene notificaciones pendientes.
+
+        Retorna:
+            list: Lista de notificaciones.
+        """        
         return self.controller.obtenerNotificaciones(self.id)
 
     # [RF-0138] Solicita validación a su controlador Cliente: Solicitar validación del saldo disponible
     def SolicitarValidarSaldo(self):
+        """
+        Cliente: Solicita validación de saldo disponible.
+
+        Retorna:
+            bool: True si hay saldo suficiente.
+        """        
         return self.controller.SolicitarValidarSaldo(self.id)
 
     # [RF-0139] Envía solicitud a su controlador Cliente: Retirar saldo a una tarjeta del cliente
     def Retirar_Saldo(self, card, cardType):
+        """
+        Cliente: Retira saldo hacia una tarjeta.
+
+        Parámetros:
+            card (str): Número de tarjeta.
+            cardType (str): Tipo de tarjeta.
+
+        Retorna:
+            bool: True si el retiro fue exitoso.
+        """        
         return self.controller.Retirar_Saldo(card, cardType, self.id)
 
 
 class Administrador(Usuario):
     def __init__(self, username, id):
+        """
+        Inicializa un objeto Administrador.
+
+        Parámetros:
+            username (str): Nombre de usuario.
+            id (int): ID del administrador.
+        """        
         super().__init__(user=username, id=id, ctr=C_Administrador())
 
     # [RF-0140] Solicita lista a su controlador Administrador: Obtener lista de solicitudes de recargas pendientes
     def obtenerRecargas(self):
+        """
+        Administrador: Obtiene las solicitudes de recarga pendientes.
+
+        Retorna:
+            list: Lista de recargas pendientes.
+        """        
         return self.controller.getRecargas()
 
     # [RF-0141] Envía aprobación a su controlador Administrador: Aprobar la recarga de saldo de un cliente
     def aprobarSaldoCliente(self, id_recarga):
+        """
+        Administrador: Aprueba la recarga de saldo.
+
+        Parámetros:
+            id_recarga (int): ID de la recarga.
+        """        
         self.controller.aprobarRecarga(id_recarga)
 
     # [RF-0142] Envía datos a su controlador Administrador: Registrar nuevo contenido en el sistema
     def ingresarAgregarContenido(self, datos):
+        """
+        Administrador: Agrega un nuevo contenido al sistema.
+
+        Parámetros:
+            datos (dict): Información del contenido.
+        """        
         self.controller.ingresarAgregarContenido(datos)
 
     # [RF-0143] Envía datos a su controlador Administrador: Actualizar información de contenido existente
     def actualizarContenido(self, datos):
+        """
+        Administrador: Actualiza un contenido existente.
+
+        Parámetros:
+            datos (dict): Información actualizada.
+        """        
         self.controller.actualizarContenido(datos)
 
     # [RF-0144] Solicita información a su controlador Administrador: Buscar información general sobre contenidos
     def buscar_info(self, data):
+        """
+        Administrador: Busca información sobre contenidos.
+
+        Parámetros:
+            data (str): Parámetro de búsqueda.
+
+        Retorna:
+            list: Resultados encontrados.
+        """        
         return self.controller.buscar_info(data)
 
     # [RF-0145] Solicita selección a su controlador Administrador: Seleccionar un usuario específico por ID
     def seleccionar_user(self, id):
+        """
+        Administrador: Selecciona un usuario por ID.
+
+        Parámetros:
+            id (int): ID del usuario.
+
+        Retorna:
+            dict: Información del usuario.
+        """     
         return self.controller.seleccionarUser(id)
 
     # [RF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
     def obtenerDescargasCliente(self, idU):
+        """
+        Administrador: Obtiene descargas realizadas por un cliente.
+
+        Parámetros:
+            idU (int): ID del cliente.
+
+        Retorna:
+            list: Lista de descargas.
+        """    
         return self.controller.obtenerDescargasCliente(idU)
 
     # [RF-0147] Solicita datos a su controlador Administrador: Obtener recargas realizadas por un cliente
     def obtenerRecargasCliente(self, idU):
+        """
+        Administrador: Obtiene recargas realizadas por un cliente.
+
+        Parámetros:
+            idU (int): ID del cliente.
+
+        Retorna:
+            list: Lista de recargas.
+        """ 
         return self.controller.obtenerRecargasCliente(idU)
     
     # [RF-151] Envia id de un contenido para actulizar el estado de este al controlador Administrador.
     def actualizarEstadoContenido(self, idC):
+        """
+        Administrador: Actualiza el estado de un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+
+        Retorna:
+            bool: True si el estado fue actualizado correctamente.
+        """   
         return self.controller.actualizarEstadoContenido(idC)
     
     # [RF-158] Solicita al controlador Administrador todas las promociones actuales.
     def obtenerPromociones(self):
+        """
+        Administrador: Obtiene todas las promociones disponibles.
+
+        Retorna:
+            list: Lista de promociones.
+        """
         return self.controller.obtenerPromociones()
     
     # [RF-0168] El administrador enviar a su controlador administrador la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
+        """
+        Administrador: Asigna una promoción a un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            idP (int): ID de la promoción.
+
+        Retorna:
+            bool: True si se asignó correctamente.
+        """        
         return self.controller.asignarPromocion(idC,idP)
     
     # [RF-0173] El administrador enviar a su controlador administrador la agregación de una promocion.
     def agregarPromocion(self, data):
+        """
+        Administrador: Agrega una nueva promoción.
+
+        Parámetros:
+            data (dict): Datos de la promoción.
+
+        Retorna:
+            bool: True si se agregó exitosamente.
+        """        
         return self.controller.agregarPromocion(data)
     
     # [RF-0190] El administrador enviar a su controlador administrador obtencion de todas las categorías.
     def obtener_categorias(self):
+        """
+        Administrador: Obtiene todas las categorías existentes.
+
+        Retorna:
+            list: Lista de categorías.
+        """        
         return self.controller.obtener_categorias()
     
     # [RF-0183] El administrador enviar a su controlador administrador la agreasignacion de una categoría.
     def asignarCategoria(self, idC,idcat):
+        """
+        Administrador: Asigna una categoría a un contenido.
+
+        Parámetros:
+            idC (int): ID del contenido.
+            idcat (int): ID de la categoría.
+
+        Retorna:
+            bool: True si se asignó correctamente.
+        """        
         return self.controller.asignarCategoria(idC,idcat)
     
     # [RF-0178] El administrador enviar a su controlador administrador la agregación de una categoría.
     def agregarCategoria(self, data):
+        """
+        Administrador: Agrega una nueva categoría al sistema.
+
+        Parámetros:
+            data (dict): Información de la categoría a agregar.
+
+        Retorna:
+            bool: True si la categoría fue agregada exitosamente.
+        """        
         return self.controller.agregarCategoria(data)

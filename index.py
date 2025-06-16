@@ -9,6 +9,12 @@ from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Conten
 session_store = {}
 
 def generate_session_id():
+    """
+    Genera un identificador único de sesión.
+
+    Retorna:
+        str: UUID generado como cadena.
+    """    
     return str(uuid.uuid4())
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +26,16 @@ paths_ulr = ["/login.html","/register.html", "/user_view.html",
 
 # [RF-0001] parte del loguin, para designar un role.
 def autenticar(username, password):
+    """
+    Autentica al usuario y asigna el rol correspondiente.
+
+    Parámetros:
+        username (str): Nombre de usuario.
+        password (str): Contraseña del usuario.
+
+    Retorna:
+        Usuario: Objeto de tipo Administrador, Cliente o Usuario (por defecto si falla).
+    """    
     temp_user = Usuario()
     auth = temp_user.iniciar_sesion(username, password)
     
@@ -33,8 +49,18 @@ def autenticar(username, password):
     return user
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
-
+    """
+    Manejador HTTP personalizado para servir archivos estáticos, autenticar usuarios
+    y responder a solicitudes GET del sistema.
+    """
     def _set_headers(self, content_type="application/json", extra_headers=None):
+        """
+        Configura los encabezados HTTP de la respuesta.
+
+        Parámetros:
+            content_type (str): Tipo de contenido (por defecto 'application/json').
+            extra_headers (dict): Encabezados adicionales opcionales.
+        """        
         self.send_response(200)
         self.send_header("Content-type", content_type)
         if extra_headers:
@@ -43,6 +69,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def serve_file(self, path, content_type="text/html"):
+        """
+        Sirve un archivo desde el sistema de archivos.
+
+        Parámetros:
+            path (str): Ruta del archivo a servir.
+            content_type (str): Tipo de contenido (por defecto 'text/html').
+        """        
         try:
             with open(path, "rb") as f:
                 self.send_response(200)
@@ -56,6 +89,12 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # [RNF-0035] verifica desde los cookies de la pagina el id de la sesión para verificar a los distintos usuarios usando el aplicativo.
     def get_current_user(self):
+        """
+        Obtiene el usuario actual en base al ID de sesión guardado en las cookies.
+
+        Retorna:
+            Usuario: Usuario autenticado o una instancia vacía si no hay sesión válida.
+        """        
         cookie = self.headers.get("Cookie")
         if cookie:
             for item in cookie.split(";"):
@@ -66,11 +105,18 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     
     # [RNF-0032] Función que retorna al interfaz un mensaje de permisos denegados con 403 y que no se autentico el usuario.
     def permises_web_current_user(self):
+        """
+        Devuelve una respuesta HTTP 403 indicando que el usuario no está autenticado.
+        """        
         self.send_response(403)
         self.end_headers()
         self.wfile.write(b"Usuario no autenticado")
         
     def do_GET(self):
+        """
+        Maneja las solicitudes HTTP GET, sirve archivos estáticos,
+        páginas HTML y rutas de API.
+        """        
         parsed_path = urlparse(self.path)
 
         current_usuario = self.get_current_user()
@@ -200,6 +246,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     # [RNF-0033] Función que leé en binario la información enviada por el método post con archivos subidos de tipo contenido.
     def recibirContenidoDesdeFrontend(self, id=False):
+            """
+            Recibe y procesa archivos de contenido enviados desde el frontend vía POST.
+
+            Parámetros:
+                id (bool): Si es True, se incluye el ID del contenido (modo edición).
+
+            Retorna:
+                tuple: Un diccionario con el estado de la operación y un objeto `new_item` con la información del contenido.
+                    En caso de error, el segundo valor es None.
+            """            
             form = cgi.FieldStorage(
                     fp=self.rfile,
                     headers=self.headers,
@@ -247,6 +303,10 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 return {"success": False, "message": "No se recibió archivo"}, None
 
     def do_POST(self):
+        """
+        Maneja solicitudes HTTP POST. Dependiendo del path, ejecuta funciones de autenticación,
+        carga de contenido u otros procesos definidos en el backend.
+        """
         parsed_path = urlparse(self.path)
         content_type = self.headers.get('Content-Type', '')
 
@@ -532,6 +592,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):
+    """
+    Inicia un servidor HTTP en el puerto 3000 usando la clase de manejador especificada.
+
+    Parámetros:
+        server_class (HTTPServer): Clase del servidor a usar (por defecto, HTTPServer).
+        handler_class (BaseHTTPRequestHandler): Clase del manejador de solicitudes (por defecto, SimpleHTTPRequestHandler).
+
+    Comportamiento:
+        El servidor se ejecuta de forma indefinida hasta que se interrumpa manualmente.
+    """    
     server_address = ('', 3000)
     httpd = server_class(server_address, handler_class)
     print("Servidor corriendo en http://localhost:3000/")

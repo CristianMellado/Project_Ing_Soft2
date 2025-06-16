@@ -22,7 +22,8 @@ document.getElementById("content-form").addEventListener("submit", function (e) 
         alert("Por favor, ingresa un precio válido (número positivo).");
         return;
     }
-
+    
+    // Enviar al servidor como FormData (incluye binario + campos)
     const formData = new FormData(this);
 
     fetch("/save_content", {
