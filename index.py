@@ -453,7 +453,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
         # [RF-0002] apartado que recibe los datos de un usuario para registrarlo.
         elif parsed_path.path == "/register":
-            name = data.get("name")
+            name = data.get("username")
             password = data.get("password")
             email = data.get("email")
 
@@ -463,7 +463,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
             new_user = Usuario()
             print(name, password, email)
-            resultado = new_user.validarRegistro(name, password, email)
+            resultado = new_user.validarRegistro(data)
 
             if resultado == 0:
                 response = {"success": False, "message": "El usuario ya existe."}
@@ -533,6 +533,14 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             if current_usuario and isinstance(current_usuario, Administrador):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtenerDescargasCliente(data.get("id"))).encode("utf-8"))
+            else:
+                self.permises_web_current_user()
+
+        # [RF-0027] solicita informacion del historial de compras de un cliente.
+        elif parsed_path.path == "/get_user_downloads_info_time":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerDescargasClienteTime(data.get("id"))).encode("utf-8"))
             else:
                 self.permises_web_current_user()
 

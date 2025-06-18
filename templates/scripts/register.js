@@ -1,25 +1,35 @@
 document.addEventListener('DOMContentLoaded', function () {
-    var nameInput = document.getElementById('name');
-    var emailInput = document.getElementById('email');
-    var password = document.getElementById('password');
-    var repeatPassword = document.getElementById('repeat-password');
-    var errorMessage = document.getElementById('error-message');
-    var submitButton = document.querySelector('button[type="submit"]');
+    const usernameInput = document.getElementById('username');
+    const nombreInput = document.getElementById('nombre');
+    const apellidoPInput = document.getElementById('apellido-paterno');
+    const apellidoMInput = document.getElementById('apellido-materno');
+    const emailInput = document.getElementById('email');
+    const password = document.getElementById('password');
+    const repeatPassword = document.getElementById('repeat-password');
+    const errorMessage = document.getElementById('error-message');
+    const submitButton = document.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-    
+
     function checkEmptyFields() {
-        if (nameInput.value === "" || emailInput.value === "" || password.value === "" || repeatPassword.value === "") {
+        if (
+            usernameInput.value === "" ||
+            nombreInput.value === "" ||
+            apellidoPInput.value === "" ||
+            apellidoMInput.value === "" ||
+            emailInput.value === "" ||
+            password.value === "" ||
+            repeatPassword.value === ""
+        ) {
             submitButton.disabled = true;
         } else {
             submitButton.disabled = false;
         }
     }
 
-    function validateName() {
-        var namePattern = /^[a-zA-Z]+$/; // Patrón para nombres que solo contienen letras
-
-        if (!namePattern.test(nameInput.value)) {
-            errorMessage.textContent = "Por favor, ingresa un nombre válido sin espacios";
+    function validateNameCampo(input) {
+        const namePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (!namePattern.test(input.value)) {
+            errorMessage.textContent = "Nombres y apellidos solo deben contener letras";
             submitButton.disabled = true;
         } else {
             errorMessage.textContent = "";
@@ -28,10 +38,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validateEmail() {
-        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Patrón para direcciones de correo electrónico válidas
-
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(emailInput.value)) {
-            errorMessage.textContent = "Por favor, ingresa una dirección de correo electrónico válida";
+            errorMessage.textContent = "Correo electrónico inválido";
             submitButton.disabled = true;
         } else {
             errorMessage.textContent = "";
@@ -49,37 +58,41 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    repeatPassword.addEventListener('input', validatePasswords);
-    nameInput.addEventListener('input', validateName);
+    // Validaciones
+    nombreInput.addEventListener('input', () => validateNameCampo(nombreInput));
+    apellidoPInput.addEventListener('input', () => validateNameCampo(apellidoPInput));
+    apellidoMInput.addEventListener('input', () => validateNameCampo(apellidoMInput));
     emailInput.addEventListener('input', validateEmail);
+    repeatPassword.addEventListener('input', validatePasswords);
+    usernameInput.addEventListener('input', checkEmptyFields);
+
     checkEmptyFields();
-    
-    var form = document.querySelector('form');
-    
-    // [RF-0002] envia los datos de un usuario para registrarlo.
-    form.addEventListener('submit', function(event) {
+
+    const form = document.querySelector('form');
+
+    // [RF-0002] Envía los datos de un usuario para registrarlo.
+    form.addEventListener('submit', function (event) {
         event.preventDefault();
 
-        var name = document.getElementById('name').value;
-        var password = document.getElementById('password').value;
-        var email = document.getElementById('email').value;
-
-        var requestData = {
-            name: name,
-            password: password,
-            email: email
+        const requestData = {
+            username: usernameInput.value,
+            nombre: nombreInput.value,
+            apellido_paterno: apellidoPInput.value,
+            apellido_materno: apellidoMInput.value,
+            password: password.value,
+            email: emailInput.value
         };
 
-        var xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.open('POST', '/register');
         xhr.setRequestHeader('Content-Type', 'application/json');
 
-        xhr.onload = function() {
+        xhr.onload = function () {
             if (xhr.status === 200) {
-                var responseData = JSON.parse(xhr.responseText);
-                if(responseData.success)
+                const responseData = JSON.parse(xhr.responseText);
+                if (responseData.success) {
                     window.location.href = "login.html";
-                else{
+                } else {
                     errorMessage.textContent = "Ya existe un usuario con ese nombre de cuenta.";
                 }
             } else {
@@ -87,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         };
 
-        xhr.onerror = function() {
+        xhr.onerror = function () {
             console.error('Error de red al intentar enviar la solicitud.');
         };
 

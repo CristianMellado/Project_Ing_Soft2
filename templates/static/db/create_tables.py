@@ -156,6 +156,7 @@ CREATE TABLE IF NOT EXISTS descarga (
     id_contenido INTEGER,
     id_usuario INTEGER,
     downloaded INTEGER DEFAULT 0,
+    fecha TEXT,
     FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
 );
 ''')

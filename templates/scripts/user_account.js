@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(data);
             userInfoDiv.innerHTML = `
                 <p><strong>Usuario:</strong> ${data.username}</p>
+                <p><strong>Nombre Completo:</strong> ${data.fullname}</p>
                 <p><strong>Email:</strong> ${data.email}</p>
                 <p><strong>ID:</strong> ${data.id}</p>
             `;

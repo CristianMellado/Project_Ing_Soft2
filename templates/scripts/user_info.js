@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data) {
                 itemDetails.innerHTML = `
                 <p><strong>Usuario:</strong> ${data.username}</p>
+                <p><strong>Nombre Completo:</strong> ${data.fullname}</p>
                 <p><strong>Email:</strong> ${data.email}</p>
                 <p><strong>ID:</strong> ${id}</p>
                 <p><strong>saldo:</strong> ${data.saldo}</p>
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const li = document.createElement("li");
             li.classList.add("recarga-item");
             li.innerHTML = `
-                        <a href=item_view.html?id=${item.id}><h4>${item.title}</a>
+                        <a href=item_view_admi.html?id=${item.id}><h4>${item.title}</a>
                         (${item.type})</h4>
                         <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating}</p>
             `;
@@ -71,6 +72,38 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error(err);
     });
 
+    const downloadstime = document.getElementById("downloads-list-time");
+    downloadsList.innerHTML = '';
+
+    fetch("/get_user_downloads_info_time", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.length === 0) {
+            downloadstime.innerHTML = '<li>No hay contenidos descargados.</li>';
+            return;
+        }
+
+        data.forEach(item => {
+            const li = document.createElement("li");
+            li.classList.add("recarga-item");
+            li.innerHTML = `
+                        <a href=item_view_admi.html?id=${item.id}><h4>${item.title}</a>
+                        (${item.type})</h4>
+                        <p><strong>Autor:</strong> ${item.author} | <strong>Puntuación:</strong> ${item.rating}</p>
+            `;
+            downloadstime.appendChild(li);
+        });
+    })
+    .catch(err => {
+        downloadstime.innerHTML = '<li style="color:red">Error al cargar contenidos.</li>';
+        console.error(err);
+    });
 
     const recargaslist = document.getElementById("recargas-list");
     recargaslist.innerHTML = '';

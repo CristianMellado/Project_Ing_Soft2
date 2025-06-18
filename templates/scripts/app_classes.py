@@ -57,9 +57,9 @@ class E_Usuarios:
         Retorna información del usuario dado su ID.
 
         Retorna:
-            dict: contiene username, email, saldo y estado de cuenta. None si no existe.
+            dict: contiene username, email, saldo, full name, y estado de cuenta. None si no existe.
         """        
-        query="SELECT username, email, saldo, estado_cuenta FROM usuarios WHERE id = ?"
+        query="SELECT username, email, saldo, estado_cuenta,nombre,apellido1,apellido2 FROM usuarios WHERE id = ?"
         self.cursor.execute(query, (id_usuario,))
         resultado = self.cursor.fetchone()
 
@@ -68,7 +68,8 @@ class E_Usuarios:
                 "username": resultado[0],
                 "email": resultado[1],  
                 "saldo": resultado[2],
-                "estado":resultado[3]
+                "estado":resultado[3],
+                "fullname":resultado[4] + " " + resultado[5] + " " + resultado[6]
             }
         return None
 
@@ -128,18 +129,28 @@ class E_Usuarios:
         return -1 if result is None else result[0]
     
     # [RF-0044] Registra un usuario a la tabla usuarios.
-    def registrarUsuario(self, username, password, email):
+    def registrarUsuario(self, data):
         """
         Inserta un nuevo usuario en la tabla.
 
         Parámetros:
-            username (str): Nombre de usuario.
-            password (str): Contraseña.
-            email (str): Correo electrónico.
-        """        
-        query = "INSERT INTO usuarios (username, pswd, email) VALUES (?, ?, ?)"
+            un diccionario que contiene:
+                username (str): Nombre de usuario.
+                password (str): Contraseña.
+                email (str): Correo electrónico.
+                nombre (str): nombre del usuario.
+                apellido_paterno (str): apelledio paterno del usuario.
+                apellido_materno (str): apelledio materno del usuario.
+        """
+        username = data.get("username")
+        password = data.get("password")
+        email = data.get("email")
+        nombre = data.get("nombre")
+        apellido1 = data.get("apellido_paterno")
+        apellido2 = data.get("apellido_materno")
+        query = "INSERT INTO usuarios (username, pswd, email,nombre, apellido1,apellido2) VALUES (?,?,?,?,?,?)"
         print("A")
-        self.cursor.execute(query, (username, password, email))
+        self.cursor.execute(query, (username, password, email,nombre,apellido1,apellido2))
         self.conn.commit()
     
     # [RF-0045] Retorna información de varios usuarios por coincidencia de id's o usernames, solo para administradores.
@@ -791,44 +802,66 @@ class E_Contenidos:
     # [RF-0064] Retorna contenidos para cierta coincidencia con un query y con filtros de la tabla contenidos.
     def Buscar_info(self, query="", filters=None, admi=False):
         """
-        Realiza búsqueda de contenidos con filtros de tipo o campo.
+        Realiza búsqueda de contenidos con filtros de tipo, autor, id o categoría.
+        Si no hay filtros, busca solo por nombre_contenido.
 
         Parámetros:
             query (str): Texto a buscar.
-            filters (list): Filtros aplicados (tipo, campo).
-            admi (bool): Si es True, también muestra desactivados.
+            filters (list): Lista de filtros marcados (tipo, autor, id, categorias...).
+            admi (bool): Si es True, también muestra contenidos inactivos.
 
         Retorna:
-            list: Lista de resultados (id, título, autor, tipo).
-        """        
+            list: Lista de resultados (id, título, autor, tipo, categoría).
+        """
         if filters is None:
             filters = []
 
-        sql = "SELECT id, nombre_contenido, autor, tipo_contenido, estado FROM contenidos WHERE 1=1"
+        # JOIN para acceder al nombre de categoría
+        sql = """
+            SELECT c.id, c.nombre_contenido, c.autor, c.tipo_contenido, c.estado, cat.nombre
+            FROM contenidos c
+            LEFT JOIN categorias cat ON c.categoria_id = cat.id
+            WHERE 1=1
+        """
+
         if not admi:
-            sql +=" AND estado='activo'"
+            sql += " AND c.estado='activo'"
 
         params = []
-
-        tipos = [f.lower() for f in filters if f.lower() in ["imagen", "video", "audio"]]
-        if tipos:
-            placeholders = ", ".join(["?"] * len(tipos))
-            sql += f" AND LOWER(tipo_contenido) IN ({placeholders})"
-            params.extend(tipos)
-
         filters_lower = [f.lower() for f in filters]
 
+        # Filtro por tipo de contenido
+        tipos = [f for f in filters_lower if f in ["imagen", "video", "audio"]]
+        if tipos:
+            placeholders = ", ".join(["?"] * len(tipos))
+            sql += f" AND LOWER(c.tipo_contenido) IN ({placeholders})"
+            params.extend(tipos)
+
+        # Filtros de texto
         if query:
-            if "id" in filters_lower:
-                sql += " AND CAST(id AS TEXT) LIKE ?"
-                params.append(f"%{query}%")
+            condiciones = []
+
+            if not filters_lower:
+                # Sin filtros: solo por nombre
+                condiciones.append("LOWER(c.nombre_contenido) LIKE ?")
+                params.append(f"%{query.lower()}%")
             else:
+                if "id" in filters_lower:
+                    condiciones.append("CAST(c.id AS TEXT) LIKE ?")
+                    params.append(f"%{query}%")
                 if "author" in filters_lower:
-                    sql += " AND LOWER(autor) LIKE ?"
+                    condiciones.append("LOWER(c.autor) LIKE ?")
                     params.append(f"%{query.lower()}%")
-                else:
-                    sql += " AND (LOWER(nombre_contenido) LIKE ? OR CAST(id AS TEXT) LIKE ? OR LOWER(autor) LIKE ?)"
-                    params.extend([f"%{query.lower()}%", f"%{query.lower()}%", f"%{query.lower()}%"])
+                if "categorias" in filters_lower:
+                    condiciones.append("LOWER(cat.nombre) LIKE ?")
+                    params.append(f"%{query.lower()}%")
+                if not any(f in ["id", "author", "categorias"] for f in filters_lower):
+                    # Si los filtros no incluyen campos de texto específicos
+                    condiciones.append("LOWER(c.nombre_contenido) LIKE ?")
+                    params.append(f"%{query.lower()}%")
+
+            if condiciones:
+                sql += " AND (" + " OR ".join(condiciones) + ")"
 
         self.cursor.execute(sql, params)
         result = self.cursor.fetchall()
@@ -839,9 +872,12 @@ class E_Contenidos:
                 "id": row[0],
                 "title": row[1],
                 "author": row[2],
-                "type": row[3]+"/"+row[4] if admi else row[3],
+                "type": row[3] + "/" + row[4] if admi else row[3],
+                "category": row[5]
             })
+
         return lista
+
 
     # [RF-0065] Retorna cierto contenido por su Id de la tabla contenidos.
     def getContent(self, content_id):
@@ -982,22 +1018,23 @@ class E_Contenidos:
         self.cursor.execute(query_update_contenido, (id_contenido,))
         self.conn.commit()
         
-
-        if self.downloadedContentVerificate(id_contenido,id_usuario):
-            # Ya existe, actualizar descargado
+        fecha_actual = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if self.downloadedContentVerificate(id_contenido, id_usuario):
+            # Ya existe, actualizar contador y fecha
             query_update_descarga = """
                 UPDATE descarga SET
-                    downloaded = downloaded + 1
+                    downloaded = downloaded + 1,
+                    fecha = ?
                 WHERE id_usuario = ? AND id_contenido = ?
             """
-            self.cursor.execute(query_update_descarga, (id_usuario, id_contenido))
+            self.cursor.execute(query_update_descarga, (fecha_actual, id_usuario, id_contenido))
         else:
-            # No existe, insertar nuevo registro
+            # No existe, insertar nuevo registro con fecha
             query_insert_descarga = """
-                INSERT INTO descarga (id_usuario, id_contenido, downloaded)
-                VALUES (?, ?, 1)
+                INSERT INTO descarga (id_usuario, id_contenido, downloaded, fecha)
+                VALUES (?, ?, 1, ?)
             """
-            self.cursor.execute(query_insert_descarga, (id_usuario, id_contenido))
+            self.cursor.execute(query_insert_descarga, (id_usuario, id_contenido, fecha_actual))
 
         self.conn.commit()
     
@@ -1087,6 +1124,44 @@ class E_Contenidos:
         except:
             return False
         
+    def obtenerDescargasClienteTime(self, idU):
+        """
+        Retorna todas las descargas realizadas por un usuario específico, ordenadas por fecha (de más reciente a más antigua),
+        incluyendo información del contenido y su puntuación promedio.
+        """
+        query = """
+            SELECT 
+                c.id,
+                c.nombre_contenido,
+                c.tipo_contenido,
+                c.autor,
+                d.fecha,
+                IFNULL(AVG(p.puntuacion), 0) as puntuacion_promedio
+            FROM descarga d
+            JOIN contenidos c ON d.id_contenido = c.id
+            LEFT JOIN puntuaciones p ON p.id_contenido = c.id
+            WHERE d.id_usuario = ?
+            GROUP BY c.id, d.fecha
+            ORDER BY d.fecha DESC
+        """
+        self.cursor.execute(query, (idU,))
+        resultados = self.cursor.fetchall()
+
+        lista = []
+        for fila in resultados:
+            id_contenido, titulo, tipo, autor, fecha, puntuacion = fila
+            lista.append({
+                "id": id_contenido,
+                "title": titulo,
+                "type": tipo,
+                "author": autor,
+                "fecha_descarga": fecha,
+                "rating": round(puntuacion, 2)
+            })
+
+        return lista
+
+
 class C_Puntuacion:
     def __init__(self):
         pass
@@ -1912,20 +1987,23 @@ class C_Usuario:
         return us.validarDatos(user)
 
     # [RF-0099] Envia a la clase de entidad usuarios, el registro de un nuevo usuario.
-    def registrarUsuario(self, user,ps,em):
+    def registrarUsuario(self, data):
         """
         Controlador: Registra un nuevo usuario en el sistema.
 
         Parámetros:
-            user (str): Nombre de usuario.
-            ps (str): Contraseña.
-            em (str): Correo electrónico.
-
+            un diccionario que contiene:
+                username (str): Nombre de usuario.
+                password (str): Contraseña.
+                email (str): Correo electrónico.
+                nombre (str): nombre del usuario.
+                apellido_paterno (str): apelledio paterno del usuario.
+                apellido_materno (str): apelledio materno del usuario.
         Retorna:
             None
         """        
         us = E_Usuarios()
-        us.registrarUsuario(user,ps,em)
+        us.registrarUsuario(data)
 
     # [RF-0100] Solicita a la clases controlador transacciones y contenidos, verificar si fue comprado por cierto usuario y si fue puntuado.
     def verificarContenido(self, idU, idC):
@@ -1958,7 +2036,21 @@ class C_Usuario:
         """        
         uscont = E_Compras()
         return uscont.obtenerDescargasCliente(idU)
-    
+
+    # [RF-00101] Solicita a la clase de entidad compras, la lista de compras realizadas por cierto cliente.
+    def obtenerDescargasClienteTime(self, idU):
+        """
+        Controlador: Solicita la lista de contenidos descargados por un usuario.
+
+        Parámetros:
+            idU (int): ID del usuario.
+
+        Retorna:
+            list: Lista de contenidos descargados.
+        """        
+        uscont = E_Contenidos()
+        return uscont.obtenerDescargasClienteTime(idU)
+        
     # [RF-00102] Solicita a la clase controlador transacciones, la lista de recargas de cierto cliente.
     def obtenerRecargasCliente(self, idU):
         """
@@ -2464,21 +2556,25 @@ class Usuario:
         return self.controller.getContentView()
 
     # [RF-0126] Envía datos a su controlador Usuario: Validar y registrar un nuevo usuario
-    def validarRegistro(self, us, ps, em):
+    def validarRegistro(self, data):
         """
         Usuario: Valida y registra un nuevo usuario.
 
         Parámetros:
-            us (str): Nombre de usuario.
-            ps (str): Contraseña.
-            em (str): Correo electrónico.
+            Un diccionario que contiene:
+                username (str): Nombre de usuario.
+                password (str): Contraseña.
+                email (str): Correo electrónico.
+                nombre (str): nombre del usuario.
+                apellido_paterno (str): apelledio paterno del usuario.
+                apellido_materno (str): apelledio materno del usuario.
 
         Retorna:
             int: 1 si el registro es exitoso, 0 si el usuario ya existe.
         """        
-        if not self.controller.validarRegistro(us):
+        if not self.controller.validarRegistro(data.get("username")):
             return 0
-        self.controller.registrarUsuario(us, ps, em)
+        self.controller.registrarUsuario(data)
         return 1
 
     # [RF-0127] Verifica existencia a su controlador Usuario: Verificar si el usuario ya tiene un contenido
@@ -2749,7 +2845,20 @@ class Administrador(Usuario):
             list: Lista de descargas.
         """    
         return self.controller.obtenerDescargasCliente(idU)
+    
+    # [RF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
+    def obtenerDescargasClienteTime(self, idU):
+        """
+        Administrador: Obtiene descargas realizadas por un cliente.
 
+        Parámetros:
+            idU (int): ID del cliente.
+
+        Retorna:
+            list: Lista de descargas.
+        """    
+        return self.controller.obtenerDescargasClienteTime(idU)
+    
     # [RF-0147] Solicita datos a su controlador Administrador: Obtener recargas realizadas por un cliente
     def obtenerRecargasCliente(self, idU):
         """

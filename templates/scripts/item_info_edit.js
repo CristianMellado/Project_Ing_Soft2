@@ -307,6 +307,9 @@ function designar_promocion(id){
     .catch(err => {
         console.error("Error:", err);
         alert("Error al comunicar con el servidor.");
+    })
+    .finally(() => {
+        location.reload();
     });    
 }
 

@@ -108,7 +108,7 @@ function itemGen(current_role, id, hasRated){
                     });
                     Div.appendChild(rateButton);
                 }                
-                
+            
             } else {
                 itemDetails.innerHTML = "<p>No se encontró el item.</p>";
             }
@@ -151,6 +151,9 @@ function descargarContenido(id,name) {
     .catch(error => {
         console.error("Error:", error);
         alert("Error al descargar el archivo");
+    })
+    .finally(() => {
+        location.reload();
     });
 }
 

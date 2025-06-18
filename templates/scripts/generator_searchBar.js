@@ -25,7 +25,8 @@ export function realizarBusqueda(textoBusqueda, resultsContainer,filterContainer
                 html += `
                 <div class="result-card">
                     <a href="${itemUrl}"><h4>${item.title}</a> (${item.type})</h4>
-                    <p><strong>Autor:</strong> ${item.author}</p>
+                    <p><strong>Autor:</strong> ${item.author} - 
+                    <strong>Category:</strong> ${item.category}</p>
                 </div>`;
             });
             html += '</div>';
@@ -83,7 +84,7 @@ export function gen_searchBar(){
     var filterContainer = document.createElement('div');
     filterContainer.classList.add('filter-checkboxes');
 
-    var filtros = ['video', 'audio', 'imagen','author'];
+    var filtros = ['video', 'audio', 'imagen','autor', 'categorias'];
     filtros.forEach(tipo => {
         var label = document.createElement('label');
         label.classList.add('filter-label');

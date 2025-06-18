@@ -41,7 +41,7 @@
 
 /* Estilos para los botones */
 #send-button, #send-promocion, #send-eliminar, 
-#send-guardar, #send-category, #btn-agregar-category {
+#send-guardar, #send-category {
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
@@ -156,8 +156,7 @@ select {
 
 
 /*PROMOCIONES*/
-#promocion-container button,#category-container button,
-#form-agregar-category button, #form-agregar-promo button {
+#promocion-container button,#category-container button, #form-agregar-promo button {
     background-color: #4CAF50; /* Verde */
     border: none;
     color: white;
