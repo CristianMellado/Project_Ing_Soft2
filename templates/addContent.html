@@ -40,12 +40,15 @@
         <select id="category-select" name="content-category">
             <option value="">Selecciona una Categoría</option>
         </select>
-        <button type="button" id="btn-agregar-category">Agregar Categoría</button>
+        
+        <div id="category-container">
+            <button type="button" id="btn-agregar-category">Agregar Categoría</button>
             <div id="form-agregar-category" style="display: none; margin-top: 10px;">
                 <label for="content-category">Si no seleciona ninguna categoria, se creará como categoria raiz.</label><br>
                 <input type="text" id="category-title" placeholder="Título de Categoria"><br>
                 <button type="button" id="btn-guardar-category">Guardar Categoría</button>
             </div>
+        </div>
         <br>
         <label for="content-description">Description:</label><br>
         <textarea id="content-description" name="content-description"></textarea><br>

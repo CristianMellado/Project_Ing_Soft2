@@ -1627,20 +1627,30 @@ class C_Contenidos:
         top_audios = []
         top_videos = []
 
+        counter = {'imagen':[1,[]],'video':[1,[]],'audio':[1,[]]}
+
         for item in todos:
             tipo = item['type']
-            if tipo == 'imagen' and len(top_imagenes) < 10:
-                top_imagenes.append(item)
-            elif tipo == 'audio' and len(top_audios) < 10:
-                top_audios.append(item)
-            elif tipo == 'video' and len(top_videos) < 10:
-                top_videos.append(item)
+            if counter[tipo][0]<11:
+                item['title'] =  str(counter[tipo][0]) + ". "+ item['title']
+                counter[tipo][0] += 1
+                counter[tipo][1].append(item)
+                
+            # if tipo == 'imagen' and len(top_imagenes) < 10:
+            #     item['title'] =  str(len(top_imagenes)) + ". "+ item['title']
+            #     top_imagenes.append(item)
+            # elif tipo == 'audio' and len(top_audios) < 10:
+            #     item['title'] =  str(len(top_audios)+1) + ". "+ item['title']
+            #     top_audios.append(item)
+            # elif tipo == 'video' and len(top_videos) < 10:
+            #     item['title'] =  str(len(top_videos)+1) + ". "+ item['title']
+            #     top_videos.append(item)
 
             # Si ya tienes 10 de cada tipo, puedes salir del bucle
-            if len(top_imagenes) == 10 and len(top_audios) == 10 and len(top_videos) == 10:
+            if counter["imagen"][0] == 11 and counter["video"][0]  == 11 and counter["audio"][0]  == 11:
                 break
 
-        return top_imagenes + top_audios + top_videos
+        return counter["imagen"][1] + counter["video"][1] + counter["audio"][1]
     
     # [RF-0087] Envia a la clase de entidad contenidos obtener cierto contenido por su id.
     def getContent(self, content_id):
