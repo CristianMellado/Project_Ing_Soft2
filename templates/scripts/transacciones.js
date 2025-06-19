@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const actionButton = document.getElementById('option-action');
     const selectOption = document.getElementById("content-filter");
 
-    // [RF-0197] Solicita y renderiza datos genéricos de tablas según tipo seleccionado
+    // [RF-0212] Solicita y renderiza datos genéricos de tablas según tipo seleccionado de tabla.
     actionButton.addEventListener('click', () => {
         const selected = selectOption.value;
 
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // [RF-0198] Renderiza una tabla genérica usando encabezados y datos en filas
+    // [RF-0212] Renderiza los datos en grillas en el frotend.
     function renderizarGenerico(data) {
         searchResults.innerHTML = '';
 
@@ -34,9 +34,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const labels = data.labels;
         const rows = data.rows;
 
+        // Define un ancho fijo para cada columna (puedes ajustarlo)
+        const columnWidth = '150px';
+        const columnStyle = `repeat(${labels.length}, ${columnWidth})`;
+
         // Encabezados
         const header = document.createElement('div');
         header.className = 'result-header';
+        header.style.display = 'grid';
+        header.style.gridTemplateColumns = columnStyle;
         header.innerHTML = labels.map(label => `<span><strong>${label}</strong></span>`).join('');
         searchResults.appendChild(header);
 
@@ -44,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function () {
         rows.forEach(fila => {
             const row = document.createElement('div');
             row.className = 'result-row';
+            row.style.display = 'grid';
+            row.style.gridTemplateColumns = columnStyle;
             row.innerHTML = fila.map(cell => `<span>${cell}</span>`).join('');
             searchResults.appendChild(row);
         });

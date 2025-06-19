@@ -606,7 +606,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             parameter = data.get("parameter")
             self.wfile.write(json.dumps(C_Contenidos.getTopContent(parameter)).encode("utf-8"))   
 
-        # [RF-02012] retorna los contenidos más descargados
+        # [RF-0212] Solicita y renderiza datos genéricos de tablas según tipo seleccionado de tabla.
         elif parsed_path.path == "/get_transacciones_generales":
             self._set_headers()
             self.wfile.write(json.dumps(current_usuario.getTable(data.get("tipo"))).encode("utf-8"))    

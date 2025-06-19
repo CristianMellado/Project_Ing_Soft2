@@ -3,7 +3,7 @@ import sqlite3
 import base64
 
 DB_PATH = 'templates/static/db/downez.db'
-NECESARIO = 100.0
+NECESARIO = 100.0 # Treshold o mural a superar de creditos acumulados para descuento por creditos consumidos.
 ACUMULADO_DESCUENTO = 0.20 # descuento del 20%
 
 
@@ -16,6 +16,7 @@ def get_connection():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     return conn
 
+# [RF-0215] Función que retorna los registros según el tipo de tabla.
 def getTable(tipo):
     """
     Retorna todos los registros de la tabla indicada por 'tipo' y sus etiquetas de columnas.
@@ -2683,7 +2684,14 @@ class C_Administrador(C_Usuario):
         man_us = E_Usuarios()
         return man_us.obtenerRankingUsuariosPorDescargas()
     
+    # [RF-0214] El Controlador Administrador solicita la función de obtener la tabla de cierto tipo.
     def getTable(self, tipo):
+        """
+        Administrador: Solicita obtener cierta tabla de un tipo, pueden ser de usuarios, recargas, etc, según el tipo.
+
+        Retorna:
+            list: Lista de resultados de cierta tabla.
+        """           
         return getTable(tipo)
         
 class Usuario:
@@ -3189,5 +3197,12 @@ class Administrador(Usuario):
         """            
         return self.controller.obtenerRankingUsuariosPorDescargas()
     
+    # [RF-0213] El Administrador solicita a su controlador Administrador la función de obtener la tabla de cierto tipo.
     def getTable(self, tipo):
+        """
+        Administrador: Solicita obtener cierta tabla de un tipo, pueden ser de usuarios, recargas, etc, según el tipo.
+
+        Retorna:
+            list: Lista de resultados de cierta tabla.
+        """           
         return self.controller.getTable(tipo)
