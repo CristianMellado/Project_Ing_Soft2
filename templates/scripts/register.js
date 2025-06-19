@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const errorMessage = document.getElementById('error-message');
     const submitButton = document.querySelector('button[type="submit"]');
     submitButton.disabled = true;
-
+    
+    // [RF-0211] Valida los campos de registro para ver si no estan vacios.
     function checkEmptyFields() {
         if (
             usernameInput.value === "" ||
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // [RF-0210] Valida el fullname para ver si es valido en la parte del registro.
     function validateNameCampo(input) {
         const namePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
         if (!namePattern.test(input.value)) {
@@ -36,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
             checkEmptyFields();
         }
     }
-
+    
+    // [RF-0209] Valida el email con regex para ver si es valido en la parte del registro.
     function validateEmail() {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(emailInput.value)) {
@@ -48,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // [RF-0208] Valida la password y la confirmacion de esta, ingresada para el registro.
     function validatePasswords() {
         if (password.value !== repeatPassword.value) {
             errorMessage.textContent = "Las contraseñas no coinciden";

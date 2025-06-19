@@ -3,6 +3,8 @@ import sqlite3
 import base64
 
 DB_PATH = 'templates/static/db/downez.db'
+NECESARIO = 100.0
+ACUMULADO_DESCUENTO = 0.20 # descuento del 20%
 
 # [RF-0148] Función para retornar el conector de sql para cada clase entidad.
 def get_connection():
@@ -90,16 +92,21 @@ class E_Usuarios:
         return None
 
     # [RF-0041] Actualiza el saldo de un usuario por id de la tabla usuarios.
-    def actualizarSaldo(self,id, cantidad):
+    def actualizarSaldo(self,id, cantidad, recarga=False):
         """
         Suma una cantidad al saldo actual del usuario.
 
         Parámetros:
             id (int): ID del usuario.
             cantidad (float): Monto a sumar.
-        """        
-        query = "UPDATE usuarios SET saldo = saldo + ? WHERE id = ?"
-        self.cursor.execute(query, (cantidad, id))
+            recarga (bool): define si es una recarga o compra.
+        """   
+        if not recarga:
+            query = "UPDATE usuarios SET saldo = saldo + ?, acumulado = acumulado + ? WHERE id = ?"
+            self.cursor.execute(query, (cantidad, -cantidad, id))
+        else:
+            query = "UPDATE usuarios SET saldo = saldo + ? WHERE id = ?"
+            self.cursor.execute(query, (cantidad, id))
         self.conn.commit()
 
     # [RF-0042] Valida los datos un usuario por id de la tabla usuarios, para verificar si existe y sea una cuenta activa.
@@ -149,9 +156,9 @@ class E_Usuarios:
         apellido1 = data.get("apellido_paterno")
         apellido2 = data.get("apellido_materno")
         query = "INSERT INTO usuarios (username, pswd, email,nombre, apellido1,apellido2) VALUES (?,?,?,?,?,?)"
-        print("A")
         self.cursor.execute(query, (username, password, email,nombre,apellido1,apellido2))
         self.conn.commit()
+        return self.cursor.lastrowid
     
     # [RF-0045] Retorna información de varios usuarios por coincidencia de id's o usernames, solo para administradores.
     def buscar_info_usuarios(self, query):
@@ -178,6 +185,65 @@ class E_Usuarios:
                 "type": row[3],
             })
         return lista
+    
+    # [RF-0198] Verifica si un cliente tiene suficiente acumulado para poder aprobar el descuento de creditos consumidos, en la tabla usuarios.
+    def verificarAcumulado(self,idU):
+        """
+       Verifica si el acumulado actual del usuario cumple con las condiciones.
+
+        Parámetros:
+            idU (int): ID del usuario.
+        """           
+        query = "SELECT acumulado FROM usuarios WHERE id = ? AND estado_cuenta = 'cliente'"
+        self.cursor.execute(query, (idU,))
+        result = self.cursor.fetchone()
+        if result is None:
+            return False
+        return result[0] > NECESARIO
+    
+    # [RF-0199] Reinicia el acumulado de un cliente, en la tabla usuarios.
+    def consumirAcumulado(self,idU):
+        """
+        Consume el acumulado de saldo actual del usuario.
+
+        Parámetros:
+            idU (int): ID del usuario.
+        """   
+        query = "UPDATE usuarios SET acumulado = 0.0 WHERE id = ?"
+        self.cursor.execute(query, (idU,))
+        self.conn.commit()
+    
+    # [RF-0200] Consulta a la tabla usuarios y las descargas para hacer una lista de los clientes con más descargas.
+    def obtenerRankingUsuariosPorDescargas(self):
+        """
+        Retorna una lista de usuarios ordenados por la cantidad total de descargas (de mayor a menor).
+        Incluye: id del usuario, username, total de descargas y estado de cuenta.
+        """
+        query = """
+            SELECT 
+                u.id,
+                u.username,
+                u.estado_cuenta,
+                SUM(d.downloaded) as total_descargas
+            FROM descarga d
+            JOIN usuarios u ON d.id_usuario = u.id
+            GROUP BY u.id
+            ORDER BY total_descargas DESC
+        """
+        self.cursor.execute(query)
+        resultados = self.cursor.fetchall()
+
+        ranking = []
+        for fila in resultados:
+            id_usuario, username, estado, total = fila
+            ranking.append({
+                "id": id_usuario,
+                "username": username,
+                "estado_cuenta": estado,
+                "total_descargas": total
+            })
+
+        return ranking
 
 class E_Compras:
     def __init__(self):
@@ -652,7 +718,31 @@ class E_Promociones:
             return True
         except:
             return False
+        
+    def limpiarPromocionesVencidas(self):
+        """
+        Elimina promociones cuya fecha de fin ya pasó y actualiza los contenidos asociados
+        para que no tengan esa promoción (id_promocion = NULL).
 
+        Retorna: None
+        """
+        try:
+            hoy = datetime.now().strftime("%Y-%m-%d")
+            # Obtener promociones vencidas
+            self.cursor.execute("SELECT id FROM promociones WHERE fecha_fin < ?", (hoy,))
+            promos_vencidas = self.cursor.fetchall()
+
+            for (id_prom,) in promos_vencidas:
+                # Quitar la promoción de los contenidos
+                self.cursor.execute("UPDATE contenidos SET id_promocion = NULL WHERE id_promocion = ?", (id_prom,))
+                # Eliminar la promoción vencida
+                self.cursor.execute("DELETE FROM promociones WHERE id = ?", (id_prom,))
+
+            self.conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error al limpiar promociones vencidas: {e}")
+            return False
 
 class E_Contenidos:
     def __init__(self):
@@ -742,7 +832,7 @@ class E_Contenidos:
         self.conn.commit()
 
     # [RF-0063] Obtiene contenidos con toda su información y con la opcion de retornar en orden del mas descargado al menos decargador.
-    def obtenerContenidos(self, top=False):
+    def obtenerContenidos(self, top=None):
         """
         Retorna todos los contenidos activos, con detalles y precio ajustado si tiene promoción.
 
@@ -761,8 +851,11 @@ class E_Contenidos:
             LEFT JOIN categorias cat ON c.categoria_id = cat.id
             WHERE c.estado = 'activo'
         """
-        if top:
+        if top == 'descargas':
             query += " ORDER BY c.downloaded DESC"
+        elif top == 'puntuaciones':
+            query += " ORDER BY c.rating DESC"
+    
 
         self.cursor.execute(query)
         result = self.cursor.fetchall()
@@ -1123,7 +1216,8 @@ class E_Contenidos:
             return True
         except:
             return False
-        
+    
+    # [RF-0201] Consulta a las tablas contenidos,puntuaciones, descargas, para obtener las ultimas descargas de ciento cliente.
     def obtenerDescargasClienteTime(self, idU):
         """
         Retorna todas las descargas realizadas por un usuario específico, ordenadas por fecha (de más reciente a más antigua),
@@ -1142,7 +1236,8 @@ class E_Contenidos:
             LEFT JOIN puntuaciones p ON p.id_contenido = c.id
             WHERE d.id_usuario = ?
             GROUP BY c.id, d.fecha
-            ORDER BY d.fecha DESC
+            ORDER BY d.fecha DESC 
+            LIMIT 10
         """
         self.cursor.execute(query, (idU,))
         resultados = self.cursor.fetchall()
@@ -1348,7 +1443,16 @@ class C_Promociones:
             bool: True si se insertó correctamente, False si hubo error.
         """
         man_prom = E_Promociones()
-        return man_prom.agregarPromocion(data)   
+        return man_prom.agregarPromocion(data)
+    
+    # [RF-0202] El controlador promociones limpia las promociones pasadas de la clase E_Promociones.
+    def limpiarPromocionesVencidas(self):
+        """
+        Controlador: Solicita eliminar las promociones de E_Promociones.
+        Retorna: None
+        """
+        man_prom = E_Promociones()
+        man_prom.limpiarPromocionesVencidas()
 
 class C_Transacciones:
     def __init__(self):
@@ -1454,16 +1558,17 @@ class C_Transacciones:
         return round(precio_final, 2)
 
     # [RF-0078] Solicita a la clase usuarios la actualizacion del saldo de cierto cliente.
-    def actualizarSaldo(self, idU, precio):
+    def actualizarSaldo(self, idU, precio, recarga=False):
         """
         Controlador: Solicita a E_Usuarios actualizar el saldo del cliente.
 
         Parámetros:
             idU (int): ID del usuario.
             precio (float): Monto a descontar del saldo.
+            recarga (bool): Determina si fue una recarga, caso contrario es retiro, regalo, o compra.
         """        
         controller = E_Usuarios()
-        controller.actualizarSaldo(idU, precio)
+        controller.actualizarSaldo(idU, precio, recarga)
 
     # [RF-0079] Envia a las clases compras o regalos cierto contenido para ser registrado.
     def registrarCompra(self, idU, idC, precio, id_des=None):
@@ -1613,7 +1718,7 @@ class C_Contenidos:
     
     # [RF-0086] Envia a la clase de entidad contenidos obtener una lista de los top 10 más descargados de cada tipo de contenido.
     @staticmethod
-    def getTopContent():
+    def getTopContent(parameter):
         """
         Controlador: Solicita los 10 contenidos más descargados de cada tipo.
 
@@ -1621,7 +1726,7 @@ class C_Contenidos:
             list: Lista de contenidos top (imágenes, audios, videos).
         """        
         contenidos = E_Contenidos()
-        todos = contenidos.obtenerContenidos(top=True)
+        todos = contenidos.obtenerContenidos(top=parameter)
 
         top_imagenes = []
         top_audios = []
@@ -1901,7 +2006,16 @@ class C_Contenidos:
         """        
         man_cat = C_Categorias()
         return man_cat.obtener_categorias()
-            
+    
+    # [RF-0203] El controlador Contenidos envia a su controlador promociones la accion de limpiar las promociones pasadas.
+    def limpiarPromocionesVencidas(self):
+        """
+        Controlador: Envia el mensaje a su controlador promociones de limpiar las promociones vencidas.
+        Retorna: None
+        """   
+        man_prom = C_Promociones()
+        man_prom.limpiarPromocionesVencidas()
+
 class C_Usuario:
     def __init__(self):
         """
@@ -2013,7 +2127,11 @@ class C_Usuario:
             None
         """        
         us = E_Usuarios()
-        us.registrarUsuario(data)
+        id = us.registrarUsuario(data)
+        man_not = E_Notificaciones()
+        msg = f"Si llegas a consumir más de {NECESARIO} creditos, obtienes un descuento del {ACUMULADO_DESCUENTO*100}% en cualquier contenido."
+        man_not.registrarNotificacionRecarga(id, msg)
+
 
     # [RF-0100] Solicita a la clases controlador transacciones y contenidos, verificar si fue comprado por cierto usuario y si fue puntuado.
     def verificarContenido(self, idU, idC):
@@ -2133,6 +2251,26 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.obtenerSaldo(id_user)
     
+    # [RF-0204] El controlador cliente solicita a su clase E_Usuarios la accion de verificar el acumulado de cierto cliente.
+    def verificarAcumulado(self, idU):
+        """
+        Contrador: Verifica para cierto cliente su acumulado, para ver si le permite el descuento por creditos consumidos.
+
+        Retorna: (bool) True si cumple, caso contrario False.
+        """
+        usuarios = E_Usuarios()
+        return usuarios.verificarAcumulado(idU)
+    
+    # [RF-0205] El controlador cliente solicita a su clase E_Usuarios la accion de reiniciar el acumulado de cierto cliente.
+    def consumirAcumulado(self, idU):
+        """
+        Contrador: Solicita para cierto cliente reiniciar su acumulado.
+
+        Retorna: None
+        """        
+        usuarios = E_Usuarios()
+        return usuarios.consumirAcumulado(idU)
+    
     # [RF-00106] Solicita a la clase controlador transacciones y contenidos, el pago de cierto contenido.
     def pagarContenido(self, idU, idC, id_des=None):
         """
@@ -2149,17 +2287,27 @@ class C_Cliente(C_Usuario):
         controller_trans = C_Transacciones()
         controller_cont = C_Contenidos()
         saldo = self.obtenerSaldo(idU) 
+        acumulado = self.verificarAcumulado(idU)
 
         if controller_cont.verificarPromocion(idC):
             precioFinal = controller_trans.ProcesarPrecioFinal(idC)
         else:
             precioFinal = controller_cont.obtenerPrecio(idC)
+            if acumulado:
+                precioFinal = precioFinal * (1 - ACUMULADO_DESCUENTO)
             print(precioFinal)
 
         if saldo > precioFinal:
+            if acumulado:
+                self.consumirAcumulado(idU)
             controller_trans.actualizarSaldo(idU, -precioFinal)
+            if self.verificarAcumulado(idU):
+                msg = f"Tiene un {ACUMULADO_DESCUENTO*100}% en tu siguiente compra."
+                E_Notificaciones().registrarNotificacionRecarga(idU, msg)
+                
         else:
             return False
+        
         if id_des == None:
             controller_trans.registrarCompra(idU, idC, precioFinal)
         else:
@@ -2287,7 +2435,7 @@ class C_Cliente(C_Usuario):
         """        
         usuarios = E_Usuarios()
         monto = usuarios.obtenerSaldo(idU)
-        controller_trans = C_Transacciones()
+        #controller_trans = C_Transacciones()
         #controller_trans.RegistrarRetiro(card, cardType, idU, monto)
         usuarios.actualizarSaldo(idU, -monto)
         return True
@@ -2317,7 +2465,7 @@ class C_Administrador(C_Usuario):
         """        
         controller = C_Transacciones()
         id_user,cantidad = controller.aprobarRecarga(id_recarga)
-        controller.actualizarSaldo(id_user,cantidad)
+        controller.actualizarSaldo(id_user,cantidad, recarga=True)
         print(id_user,cantidad)
         # usuarios = E_Usuarios()
         # usuarios.actualizarSaldo(id_user, cantidad)
@@ -2475,6 +2623,17 @@ class C_Administrador(C_Usuario):
         """        
         man_content = C_Contenidos()
         return man_content.obtener_categorias()
+    
+    # [RF-0206] Controlador administrador solcita obtener el ranking de descargas de clientes a la clase E_Usuarios.
+    def obtenerRankingUsuariosPorDescargas(self):
+        """
+        Administrador: Solicita obtener el ranking de descargas de clientes a la clase E_Usuarios.
+
+        Retorna:
+            list: Lista de clientes ordenado por el número de descargas.
+        """           
+        man_us = E_Usuarios()
+        return man_us.obtenerRankingUsuariosPorDescargas()
         
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
@@ -2968,3 +3127,13 @@ class Administrador(Usuario):
             bool: True si la categoría fue agregada exitosamente.
         """        
         return self.controller.agregarCategoria(data)
+    
+    # [RF-0207] El Administrador solcita obtener a su controlador el ranking de descargas de clientes.
+    def obtenerRankingUsuariosPorDescargas(self):
+        """
+        Administrador: Solicita obtener el ranking de descargas de clientes.
+
+        Retorna:
+            list: Lista de clientes ordenado por el número de descargas.
+        """            
+        return self.controller.obtenerRankingUsuariosPorDescargas()

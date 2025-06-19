@@ -28,6 +28,7 @@
 }
 
 .container .search-form button {
+    border-radius: 5px;
     padding: 8px 16px;
     background-color: #04AA6D;
     border: none;

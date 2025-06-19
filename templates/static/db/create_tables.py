@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     estado_cuenta TEXT DEFAULT "cliente",
     nombre TEXT DEFAULT "",
     apellido1 TEXT DEFAULT "",
-    apellido2 TEXT DEFAULT ""
+    apellido2 TEXT DEFAULT "",
+    acumulado DOUBLE DEFAULT 0.0
 );
 ''')
 

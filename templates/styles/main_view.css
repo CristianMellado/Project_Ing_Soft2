@@ -3,6 +3,7 @@
 }
 
 .content-buttons button, .buy-button, .gift-button, .send-gift, .rate-button {
+    border-radius: 5px;
     padding: 10px 20px;
     margin: 0 10px;
     border: none;
@@ -45,4 +46,38 @@
 .media-item.linked:hover {
   box-shadow: 0 0 10px 3px limegreen;
   display: block;
+}
+
+
+
+/* Estilo para el contenedor del filtro */
+label[for="content-filter"] {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+    color: #000000;
+    margin-right: 10px;
+}
+
+/* Estilo del select */
+#content-filter {
+    background-color: #333;
+    color: #ffffff;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 15px;
+    font-family: 'Segoe UI', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#content-filter:hover {
+    border-color: #555;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+}
+
+.search-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 30px;
 }

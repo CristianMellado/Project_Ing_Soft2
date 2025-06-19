@@ -5,6 +5,8 @@ import os
 import cgi
 import uuid
 from templates.scripts.app_classes import Usuario,Cliente,Administrador,C_Contenidos
+import threading
+import time
 
 session_store = {}
 
@@ -135,11 +137,6 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             content_type = mime_types.get(ext, "application/octet-stream")
             self.serve_file(file_path, content_type)
 
-        # [RF-0016] retorna los contenidos más descargados
-        elif parsed_path.path == "/top_content_downloaded":
-            self._set_headers()
-            self.wfile.write(json.dumps(C_Contenidos.getTopContent()).encode("utf-8"))
-
         # [RF-0018] retorna el saldo de cierto cliente.
         elif parsed_path.path == "/get_balance":
             if current_usuario:
@@ -238,7 +235,16 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self._set_headers()
                 self.wfile.write(json.dumps(current_usuario.obtener_categorias()).encode("utf-8"))
             else:
-                self.permises_web_current_user()               
+                self.permises_web_current_user()
+
+        # [RF-0197] Solicita y envia el top ranking de clientes con más descargas.
+        elif parsed_path.path == "/get_downloads_ranking":
+            if current_usuario and isinstance(current_usuario, Administrador):
+                self._set_headers()
+                self.wfile.write(json.dumps(current_usuario.obtenerRankingUsuariosPorDescargas()).encode("utf-8"))
+            else:
+                self.permises_web_current_user()      
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -593,11 +599,26 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(current_usuario.agregarCategoria(data)).encode("utf-8"))
             else:
                 self.permises_web_current_user()
+
+        # [RF-0016] retorna los contenidos más descargados
+        elif parsed_path.path == "/top_content_downloaded":
+            self._set_headers()
+            parameter = data.get("parameter")
+            self.wfile.write(json.dumps(C_Contenidos.getTopContent(parameter)).encode("utf-8"))    
+                        
         else:
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b"Ruta POST no encontrada")
 
+# [RF-0196] Función que utiliza un thread para poder correr en segundo plano el control de tiempo de vigencia de las promociones.
+def limpieza_periodica():
+    while True:
+        print("\nControlador de Promociones, actualizando.\n")
+        gestor = C_Contenidos()
+        gestor.limpiarPromocionesVencidas()
+        time.sleep(10)  # 1 hora
+        #time.sleep(86400)  # 24 horas
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):
     """
@@ -616,4 +637,9 @@ def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):
     httpd.serve_forever()
 
 if __name__ == "__main__":
+    # Iniciar hilo de limpieza automática
+    hilo_limpieza = threading.Thread(target=limpieza_periodica, daemon=True)
+    hilo_limpieza.start()
+
+    #Iniciar servidor    
     run()

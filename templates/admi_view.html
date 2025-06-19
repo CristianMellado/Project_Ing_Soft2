@@ -19,6 +19,16 @@
                 <form class="search-form" id="form-busqueda">
                     <input type="text" id="search-input" placeholder="Buscar por ID o autor...">
                     <button type="submit">Buscar</button>
+
+                    <div class="search-actions">
+                        <select id="content-filter">
+                            <option value="">-- Acciones --</option>
+                            <option value="ranking">Top clientes</option>
+                            <!-- Futuras opciones -->
+                        </select>
+                        <button type="button" id="option-action">Ejecutar</button>
+                    </div>
+                    
                 </form>
                 <div class="filter-checkboxes">
                     <label class="filter-label"><input type="checkbox" class="filtro-tipo" value="imagen"> Imagen</label>
