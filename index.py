@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 paths_ulr = ["/login.html","/register.html", "/user_view.html", 
              "/admi_view.html","/addContent.html","/item_view.html",
              "/user_account.html", "/user_info.html", "/item_info_edit.html",
-             "/item_view_admi.html", "/item_shop.html"]
+             "/item_view_admi.html", "/item_shop.html","/transacciones.html"]
 
 # [RF-0001] parte del loguin, para designar un role.
 def autenticar(username, password):
@@ -604,8 +604,13 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
         elif parsed_path.path == "/top_content_downloaded":
             self._set_headers()
             parameter = data.get("parameter")
-            self.wfile.write(json.dumps(C_Contenidos.getTopContent(parameter)).encode("utf-8"))    
-                        
+            self.wfile.write(json.dumps(C_Contenidos.getTopContent(parameter)).encode("utf-8"))   
+
+        # [RF-02012] retorna los contenidos más descargados
+        elif parsed_path.path == "/get_transacciones_generales":
+            self._set_headers()
+            self.wfile.write(json.dumps(current_usuario.getTable(data.get("tipo"))).encode("utf-8"))    
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -617,7 +622,7 @@ def limpieza_periodica():
         print("\nControlador de Promociones, actualizando.\n")
         gestor = C_Contenidos()
         gestor.limpiarPromocionesVencidas()
-        time.sleep(10)  # 1 hora
+        time.sleep(3600)  # 1 hora
         #time.sleep(86400)  # 24 horas
 
 def run(server_class=HTTPServer, handler_class=SimpleHTTPRequestHandler):

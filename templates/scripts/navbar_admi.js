@@ -48,7 +48,7 @@ function generateNavbarAdministrador() {
     let searchLi = gen_searchBar();
     ul.appendChild(searchLi);
 
-    var options = { "Recargas":"#", "Agregar Contenido":"addContent.html","Sign out": "login.html"};
+    var options = { "Transacciones":"transacciones.html", "Agregar Contenido":"addContent.html","Recargas":"#","Sign out": "login.html"};
     for(var key in options){
         var liOption = document.createElement('li');
 
