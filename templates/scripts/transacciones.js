@@ -2,9 +2,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchResults = document.getElementById('search-results-admi');
     const actionButton = document.getElementById('option-action');
     const selectOption = document.getElementById("content-filter");
-    
-    
-    // [RF-0197] Solicita y envia a renderiza el top ranking de clientes con más descargas.
+
+    // [RF-0197] Solicita y renderiza datos genéricos de tablas según tipo seleccionado
     actionButton.addEventListener('click', () => {
         const selected = selectOption.value;
 
@@ -22,30 +21,31 @@ document.addEventListener('DOMContentLoaded', function () {
             searchResults.innerHTML = "<p>Error al obtener datos.</p>";
         });
     });
-    
+
+    // [RF-0198] Renderiza una tabla genérica usando encabezados y datos en filas
     function renderizarGenerico(data) {
         searchResults.innerHTML = '';
 
-        if (!data || data.length === 0) {
+        if (!data || !data.labels || !data.rows || data.rows.length === 0) {
             searchResults.innerHTML = '<p>No hay datos disponibles.</p>';
             return;
         }
 
-        const keys = Object.keys(data[0]);
+        const labels = data.labels;
+        const rows = data.rows;
 
+        // Encabezados
         const header = document.createElement('div');
         header.className = 'result-header';
-        header.innerHTML = keys.map(k => `<span><strong>${k}</strong></span>`).join('');
+        header.innerHTML = labels.map(label => `<span><strong>${label}</strong></span>`).join('');
         searchResults.appendChild(header);
 
-        data.forEach(item => {
+        // Filas de datos
+        rows.forEach(fila => {
             const row = document.createElement('div');
             row.className = 'result-row';
-            row.innerHTML = keys.map(k => `<span>${item[k]}</span>`).join('');
+            row.innerHTML = fila.map(cell => `<span>${cell}</span>`).join('');
             searchResults.appendChild(row);
         });
     }
-    
 });
-
-

@@ -6,6 +6,7 @@ DB_PATH = 'templates/static/db/downez.db'
 NECESARIO = 100.0
 ACUMULADO_DESCUENTO = 0.20 # descuento del 20%
 
+
 # [RF-0148] Función para retornar el conector de sql para cada clase entidad.
 def get_connection():
     """
@@ -14,6 +15,53 @@ def get_connection():
     """
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     return conn
+
+def getTable(tipo):
+    """
+    Retorna todos los registros de la tabla indicada por 'tipo' y sus etiquetas de columnas.
+
+    - Si el tipo es 'contenidos', excluye el campo Archivo_bytes.
+    - Para las demás tablas, retorna todos los campos (*).
+
+    Retorna:
+        tuple: (labels, rows)
+            - labels: lista de nombres de columnas
+            - rows: lista de tuplas con los datos
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    tipo = tipo.lower()
+
+    if tipo == 'contenidos':
+        query = """
+            SELECT 
+                id,
+                nombre_contenido,
+                autor,
+                precio,
+                extension,
+                categoria_id,
+                rating,
+                descripcion,
+                tipo_contenido,
+                downloaded,
+                estado,
+                id_promocion
+            FROM contenidos
+        """
+    else:
+        query = f"SELECT * FROM {tipo}"
+
+    try:
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        labels = [description[0] for description in cursor.description]
+        return {'labels':labels, 'rows':rows}
+    except sqlite3.Error as e:
+        print(f"Error al obtener tabla '{tipo}':", e)
+        return [], []
+    finally:
+        conn.close()
 
 class E_Usuarios:
     def __init__(self):
@@ -2634,6 +2682,9 @@ class C_Administrador(C_Usuario):
         """           
         man_us = E_Usuarios()
         return man_us.obtenerRankingUsuariosPorDescargas()
+    
+    def getTable(self, tipo):
+        return getTable(tipo)
         
 class Usuario:
     def __init__(self, user=None, id=None, ctr=C_Usuario()):
@@ -3137,3 +3188,6 @@ class Administrador(Usuario):
             list: Lista de clientes ordenado por el número de descargas.
         """            
         return self.controller.obtenerRankingUsuariosPorDescargas()
+    
+    def getTable(self, tipo):
+        return self.controller.getTable(tipo)
