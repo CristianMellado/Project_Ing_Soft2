@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const actionButton = document.getElementById('option-action');
     const selectOption = document.getElementById("content-filter");
     
-    // [RF-0015] envía una cadena de texto para buscarla en los contenidos y usuarios existentes.
+    // [IDF-0015] envía una cadena de texto para buscarla en los contenidos y usuarios existentes.
     formBusqueda.addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
-    // [RF-0197] Solicita y envia a renderiza el top ranking de clientes con más descargas.
+    // [IDF-0197] Solicita y envia a renderiza el top ranking de clientes con más descargas.
     actionButton.addEventListener('click', () => {
         const selected = selectOption.value;
 
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
-    // [RF-0015] Renderiza los contenidos y usuarios existentes.
+    // [IDF-0015] Renderiza los contenidos y usuarios existentes.
     function renderizarResultados(data) {
         searchResults.innerHTML = ''; // Limpiar resultados anteriores
     
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // [RF-0197] Solicita y renderiza el top ranking de clientes con más descargas.
+    // [IDF-0197] Solicita y renderiza el top ranking de clientes con más descargas.
     function renderizarResultadosRanking(data) {
         searchResults.innerHTML = '';
 

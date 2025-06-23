@@ -1,6 +1,6 @@
 import { gen_searchBar } from './generator_searchBar.js';
 
-// [RF-0024] Genera una barra de navegacion para un Cliente.
+// [IDF-0024] Genera una barra de navegacion para un Cliente.
 function generateNavbarCliente() {
     var href_logo="#";
     fetch('/get_user_role')
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(recargasContainer);
     }
 
-    // [RF-0021] Solicita las notificaciones del cliente actualmente logueado, tanto de regalos o recargas.
+    // [IDF-0021] Solicita las notificaciones del cliente actualmente logueado, tanto de regalos o recargas.
     function obtenerNotificaciones() {
         fetch('/get_notificaciones') 
             .then(response => response.json())
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // [RF-0022] Acepta la notificación y la marca como leida.
+    // [IDF-0022] Acepta la notificación y la marca como leida.
     function aceptarNotificacion(id_notificacion) {
         fetch(`/accept_notificacion`, {
             method: 'POST',
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// [RF-0018] solicita el saldo actual del cliente.
+// [IDF-0018] solicita el saldo actual del cliente.
 function obtenerSaldo() {
     fetch('/get_balance')
         .then(response => response.json())

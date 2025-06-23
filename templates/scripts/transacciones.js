@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const actionButton = document.getElementById('option-action');
     const selectOption = document.getElementById("content-filter");
 
-    // [RF-0212] Solicita y renderiza datos genéricos de tablas según tipo seleccionado de tabla.
+    // [IDF-0212] Solicita y renderiza datos genéricos de tablas según tipo seleccionado de tabla.
     actionButton.addEventListener('click', () => {
         const selected = selectOption.value;
 
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // [RF-0212] Renderiza los datos en grillas en el frotend.
+    // [IDF-0212] Renderiza los datos en grillas en el frotend.
     function renderizarGenerico(data) {
         searchResults.innerHTML = '';
 

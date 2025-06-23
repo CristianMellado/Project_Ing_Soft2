@@ -1,4 +1,4 @@
-// [RF-0009] Se envia datos de tipo binario y json de un contenido al servidor.
+// [IDF-0009] Se envia datos de tipo binario y json de un contenido al servidor.
 document.getElementById("content-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// [RF-0193] Ruta que retorna todas las categorias al administrador.
+// [IDF-0193] Ruta que retorna todas las categorias al administrador.
 function mostrar_categorias_disponibles(){
     const promoSelect = document.getElementById("category-select");
 
@@ -124,7 +124,7 @@ function mostrar_categorias_disponibles(){
     });   
 }
 
-// [RF-0195] Ruta que crea una nueva categoria, solo permitida por el administrador.
+// [IDF-0195] Ruta que crea una nueva categoria, solo permitida por el administrador.
 async function enviar_nueva_categoria() {
     const titulo = document.getElementById("category-title").value.trim();
     const promoSelect = document.getElementById("category-select");

@@ -1,5 +1,5 @@
 
-// [RF-0029] Función que renderiza la información de un contenido, ya sea de video, audio, o imagen.
+// [IDF-0029] Función que renderiza la información de un contenido, ya sea de video, audio, o imagen.
 export function createMediaInfo({data=null, Div=null}) {
     var infoDiv = document.createElement('div');
     infoDiv.className = 'info';
@@ -40,7 +40,7 @@ export function createMediaInfo({data=null, Div=null}) {
     Div.appendChild(infoDiv);
 }
 
-// [RF-0030] Renderización el tipo de media de cierto contenido.
+// [IDF-0030] Renderización el tipo de media de cierto contenido.
 export function createContentType({data = null, current_role = null, linked=true}) {
     var Div = document.createElement('div');
     Div.className = 'media-item' + (linked ? ' linked' : '');
@@ -75,7 +75,7 @@ export function createContentType({data = null, current_role = null, linked=true
     if(linked){
         Div.style.cursor = 'pointer';
         Div.addEventListener('click', function () {
-            // [RF-0005] envia al servidor la verificaion si puede decargar cierto contenido.
+            // [IDF-0005] envia al servidor la verificaion si puede decargar cierto contenido.
             fetch('/verificate_downloaded_content', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -14,7 +14,7 @@ function showContent(contentType, current_role) {
     });
 }
 
-// [RF-0016] solicita al servidor los contenidos más descargados.
+// [IDF-0016] solicita al servidor los contenidos más descargados.
 document.addEventListener('DOMContentLoaded', function () {
     var current_role = "usuario";
 

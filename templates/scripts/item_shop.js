@@ -1,6 +1,6 @@
 import {createContentType} from './create_item.js';
 
-// [RF-0031] Crea la parte gráfica del interfaz compra.
+// [IDF-0031] Crea la parte gráfica del interfaz compra.
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 });
 
-// [RF-0007] envia la peticón al server para verificar y enviar un regalo a un cliente existente.
+// [IDF-0007] envia la peticón al server para verificar y enviar un regalo a un cliente existente.
 function genRegaloBar(id){
     const container = document.querySelector('.media-item');
     const label = document.createElement('label');

@@ -1,4 +1,4 @@
-// [RF-0010] Se envia datos editados de un contenido, en forma de tipo binario y json de un contenido al servidor.
+// [IDF-0010] Se envia datos editados de un contenido, en forma de tipo binario y json de un contenido al servidor.
 document.addEventListener("DOMContentLoaded", function () {
     const fileInput = document.getElementById("fileInput");
     const fileNameSpan = document.getElementById("file-name");
@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// [RF-0150] Función que controla el estado del botón eliminar o restaurar contenido.
+// [IDF-0150] Función que controla el estado del botón eliminar o restaurar contenido.
 function del_button(id){
     let isDeleted = false;
 
@@ -254,7 +254,7 @@ function del_button(id){
     });    
 }
 
-// [RF-0156] Funcion que hace un get de todas las promociones disponibles.
+// [IDF-0156] Funcion que hace un get de todas las promociones disponibles.
 function button_info_promos(){
     const promoSelect = document.getElementById("promo-select");
     fetch("/get_promociones")
@@ -275,7 +275,7 @@ function button_info_promos(){
     });
 }
 
-// [RF-0167] Función que asigna cierta promoción a un contenido.
+// [IDF-0167] Función que asigna cierta promoción a un contenido.
 function designar_promocion(id){
     const promoSelect = document.getElementById("promo-select");
     const selectedPromoId = promoSelect.value;
@@ -314,7 +314,7 @@ function designar_promocion(id){
 }
 
 
-// [RF-0172] Función que envia y guarda los datos de una nueva categoria.
+// [IDF-0172] Función que envia y guarda los datos de una nueva categoria.
 function enviar_nueva_promocion(){
     const titulo = document.getElementById("promo-title").value.trim();
     const descuento = parseFloat(document.getElementById("promo-descuento").value);
@@ -353,7 +353,7 @@ function enviar_nueva_promocion(){
 }
 
 
-// [RF-0193] Ruta que retorna todas las categorias al administrador.
+// [IDF-0193] Ruta que retorna todas las categorias al administrador.
 function mostrar_categorias_disponibles(){
     const promoSelect = document.getElementById("category-select");
 
@@ -376,7 +376,7 @@ function mostrar_categorias_disponibles(){
         });    
 }
 
-// [RF-0194] Ruta que asignar una categoria a un contenido, solo permitida por el administrador.
+// [IDF-0194] Ruta que asignar una categoria a un contenido, solo permitida por el administrador.
 function designar_categoria(id){
     const promoSelect = document.getElementById("category-select");
     const selectedPromoId = promoSelect.value;
@@ -413,7 +413,7 @@ function designar_categoria(id){
 }
 
 
-// [RF-0195] Ruta que crea una nueva categoría, solo permitida por el administrador.
+// [IDF-0195] Ruta que crea una nueva categoría, solo permitida por el administrador.
 async function enviar_nueva_categoria() {
     const titulo = document.getElementById("category-title").value.trim();
     const promoSelect = document.getElementById("category-select");

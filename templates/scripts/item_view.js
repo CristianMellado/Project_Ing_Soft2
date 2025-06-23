@@ -1,6 +1,6 @@
 import {createContentType} from './create_item.js';
 
-// [RF-0023] retorna el role del inicio de sesion, si es cliente, administrador, o un usuario.
+// [IDF-0023] retorna el role del inicio de sesion, si es cliente, administrador, o un usuario.
 document.addEventListener('DOMContentLoaded', function () {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// [RF-0028] Solicita información de cierto contenido al servidor.
+// [IDF-0028] Solicita información de cierto contenido al servidor.
 function itemGen(current_role, id, hasRated){
     const itemDetails = document.querySelector('.container');
 
@@ -119,7 +119,7 @@ function itemGen(current_role, id, hasRated){
         });
 }
 
-// [RF-0006] pide el contenido al servidor y descarga el contenido en el dispositivo.
+// [IDF-0006] pide el contenido al servidor y descarga el contenido en el dispositivo.
 function descargarContenido(id,name) {
     fetch('/download_content', {
         method: 'POST',
@@ -157,7 +157,7 @@ function descargarContenido(id,name) {
     });
 }
 
-// [RF-0008] solicita y registra una puntuación para cierto contenido.
+// [IDF-0008] solicita y registra una puntuación para cierto contenido.
 function showRatingPrompt(contentId) {
     const overlay = document.createElement('div');
     overlay.style.position = 'fixed';

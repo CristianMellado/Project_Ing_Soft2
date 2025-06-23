@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.querySelector('form');
 
-    // [RF-0001] : envio de datos para el inicio de sesión.
+    // [IDF-0001] : envio de datos para el inicio de sesión.
     form.addEventListener('submit', function(event) {
         event.preventDefault();
 

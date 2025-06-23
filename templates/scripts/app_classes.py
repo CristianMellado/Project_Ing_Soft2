@@ -7,7 +7,7 @@ NECESARIO = 100.0 # Treshold o mural a superar de creditos acumulados para descu
 ACUMULADO_DESCUENTO = 0.20 # descuento del 20%
 
 
-# [RF-0148] Función para retornar el conector de sql para cada clase entidad.
+# [IDF-0148] Función para retornar el conector de sql para cada clase entidad.
 def get_connection():
     """
     Retorna una conexión SQLite con el parámetro check_same_thread desactivado.
@@ -16,7 +16,7 @@ def get_connection():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     return conn
 
-# [RF-0215] Función que retorna los registros según el tipo de tabla.
+# [IDF-0215] Función que retorna los registros según el tipo de tabla.
 def getTable(tipo):
     """
     Retorna todos los registros de la tabla indicada por 'tipo' y sus etiquetas de columnas.
@@ -70,7 +70,7 @@ class E_Usuarios:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0037] Registrar a un cliente a ex-cliente en la tabla usuarios.
+    # [IDF-0037] Registrar a un cliente a ex-cliente en la tabla usuarios.
     def registrar_Excliente(self, idU):
         """
         Actualiza el estado de cuenta del usuario a 'ex-cliente' dado su ID.
@@ -79,7 +79,7 @@ class E_Usuarios:
         self.cursor.execute(query, (idU,))
         self.conn.commit()
 
-    # [RF-0038] Verifica en la tabla usuarios si el username y password son correctos, siempre y cuando sean clientes o un administrador.
+    # [IDF-0038] Verifica en la tabla usuarios si el username y password son correctos, siempre y cuando sean clientes o un administrador.
     def verificarLogin(self, username, password):
         """
         Verifica credenciales del usuario. Solo permite acceso a cuentas activas (cliente o administrador).
@@ -102,7 +102,7 @@ class E_Usuarios:
             return result[0], result[1]  # tipo (Administrador/Cliente), id_usuario
         return None, None
     
-    # [RF-0039] Obtiene los datos de un usuario por id de la tabla usuarios.
+    # [IDF-0039] Obtiene los datos de un usuario por id de la tabla usuarios.
     def obtenerUser(self, id_usuario):
         """
         Retorna información del usuario dado su ID.
@@ -124,7 +124,7 @@ class E_Usuarios:
             }
         return None
 
-    # [RF-0040] Obtiene el saldo de un usuario por id de la tabla usuarios.
+    # [IDF-0040] Obtiene el saldo de un usuario por id de la tabla usuarios.
     def obtenerSaldo(self, id):
         """
         Consulta y retorna el saldo de un usuario específico.
@@ -140,7 +140,7 @@ class E_Usuarios:
             return result[0]
         return None
 
-    # [RF-0041] Actualiza el saldo de un usuario por id de la tabla usuarios.
+    # [IDF-0041] Actualiza el saldo de un usuario por id de la tabla usuarios.
     def actualizarSaldo(self,id, cantidad, recarga=False):
         """
         Suma una cantidad al saldo actual del usuario.
@@ -158,7 +158,7 @@ class E_Usuarios:
             self.cursor.execute(query, (cantidad, id))
         self.conn.commit()
 
-    # [RF-0042] Valida los datos un usuario por id de la tabla usuarios, para verificar si existe y sea una cuenta activa.
+    # [IDF-0042] Valida los datos un usuario por id de la tabla usuarios, para verificar si existe y sea una cuenta activa.
     def validarDatos(self, username):
         """
         Verifica si un nombre de usuario ya está registrado como cuenta activa.
@@ -171,7 +171,7 @@ class E_Usuarios:
         result = self.cursor.fetchone()
         return result is None # si es none, es porque no se encontro, por ende no existe ese usuario a registrar :D
     
-    # [RF-0043] Verifica en la tabla usuarios si un cliente existe por id y estado de cuenta.
+    # [IDF-0043] Verifica en la tabla usuarios si un cliente existe por id y estado de cuenta.
     def UsuarioExiste(self, username, idU):
         """
         Comprueba si ya existe otro usuario con el mismo username y diferente ID.
@@ -184,7 +184,7 @@ class E_Usuarios:
         result = self.cursor.fetchone()
         return -1 if result is None else result[0]
     
-    # [RF-0044] Registra un usuario a la tabla usuarios.
+    # [IDF-0044] Registra un usuario a la tabla usuarios.
     def registrarUsuario(self, data):
         """
         Inserta un nuevo usuario en la tabla.
@@ -209,7 +209,7 @@ class E_Usuarios:
         self.conn.commit()
         return self.cursor.lastrowid
     
-    # [RF-0045] Retorna información de varios usuarios por coincidencia de id's o usernames, solo para administradores.
+    # [IDF-0045] Retorna información de varios usuarios por coincidencia de id's o usernames, solo para administradores.
     def buscar_info_usuarios(self, query):
         """
         Busca usuarios cuyos IDs o usernames contengan el texto dado.
@@ -235,7 +235,7 @@ class E_Usuarios:
             })
         return lista
     
-    # [RF-0198] Verifica si un cliente tiene suficiente acumulado para poder aprobar el descuento de creditos consumidos, en la tabla usuarios.
+    # [IDF-0198] Verifica si un cliente tiene suficiente acumulado para poder aprobar el descuento de creditos consumidos, en la tabla usuarios.
     def verificarAcumulado(self,idU):
         """
        Verifica si el acumulado actual del usuario cumple con las condiciones.
@@ -250,7 +250,7 @@ class E_Usuarios:
             return False
         return result[0] > NECESARIO
     
-    # [RF-0199] Reinicia el acumulado de un cliente, en la tabla usuarios.
+    # [IDF-0199] Reinicia el acumulado de un cliente, en la tabla usuarios.
     def consumirAcumulado(self,idU):
         """
         Consume el acumulado de saldo actual del usuario.
@@ -262,7 +262,7 @@ class E_Usuarios:
         self.cursor.execute(query, (idU,))
         self.conn.commit()
     
-    # [RF-0200] Consulta a la tabla usuarios y las descargas para hacer una lista de los clientes con más descargas.
+    # [IDF-0200] Consulta a la tabla usuarios y las descargas para hacer una lista de los clientes con más descargas.
     def obtenerRankingUsuariosPorDescargas(self):
         """
         Retorna una lista de usuarios ordenados por la cantidad total de descargas (de mayor a menor).
@@ -300,7 +300,7 @@ class E_Compras:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0046] Verifica su un usuario compro cierto contenido, se valida por id's en la tabla compras.
+    # [IDF-0046] Verifica su un usuario compro cierto contenido, se valida por id's en la tabla compras.
     def verificarContenido(self, idu, idc):
         """
         Verifica si un usuario ya ha comprado cierto contenido.
@@ -319,7 +319,7 @@ class E_Compras:
         if(result is None): return False
         return True
     
-    # [RF-0047] Registra una compra de un cliente y retorna el id de la compra.
+    # [IDF-0047] Registra una compra de un cliente y retorna el id de la compra.
     def registrarCompra(self, idU, idC,precio, type_trans="compra"):
         """
         Registra una nueva compra en la tabla 'compras'.
@@ -340,7 +340,7 @@ class E_Compras:
         self.conn.commit()
         return transaccion_id
 
-    # # [RF-0048] Retorna las compras de un cliente de la tabla compras.
+    # # [IDF-0048] Retorna las compras de un cliente de la tabla compras.
     # def obtenerDescargasCliente(self, id_usuario):
     #     query = """
     #         SELECT 
@@ -374,7 +374,7 @@ class E_Compras:
     #         })
     #     return lista
 
-    # [RF-0048] Retorna las compras de un cliente de la tabla compras, incluyendo el número de descargas.
+    # [IDF-0048] Retorna las compras de un cliente de la tabla compras, incluyendo el número de descargas.
     def obtenerDescargasCliente(self, id_usuario):
         """
         Retorna todas las compras realizadas por un usuario, incluyendo el número de descargas
@@ -412,7 +412,7 @@ class E_Compras:
         for row in results:
             lista.append({
                 "title": row[0],
-                "rating": row[1],
+                "rating": round(row[1],2),
                 "type": row[2],
                 "author": row[3],
                 "id": row[4],
@@ -425,7 +425,7 @@ class E_Regalos(E_Compras):
     def __init__(self):
         super().__init__()
 
-    # [RF-0049] Registra un regalo en tabla compras y el destinatario en la tabla regalos.
+    # [IDF-0049] Registra un regalo en tabla compras y el destinatario en la tabla regalos.
     def registrarRegalo(self, idU, idC, precio, type_trans, id_des):
         """
         Registra una compra con tipo 'regalo' y asigna el contenido a un destinatario.
@@ -442,7 +442,7 @@ class E_Regalos(E_Compras):
         self.cursor.execute(query, (id_trans,id_des))
         self.conn.commit()
 
-    # [RF-0050] Verifica si el destinarario ya tiene el contenido.
+    # [IDF-0050] Verifica si el destinarario ya tiene el contenido.
     def verificarContenidoDestinatario(self, id_des, idc):
         """
         Verifica si el destinatario ya recibió ese contenido previamente como regalo.
@@ -473,7 +473,7 @@ class E_Puntuaciones:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0051] Registra una puntuación en la tabla puntuaciones.
+    # [IDF-0051] Registra una puntuación en la tabla puntuaciones.
     def Registrar_Puntuacion(self, user_id, id_contenido, puntuacion):
         """
         Registra o actualiza la puntuación de un contenido hecha por un usuario.
@@ -503,7 +503,7 @@ class E_Puntuaciones:
         self.cursor.execute(update_query, (promedio, id_contenido))
         self.conn.commit()
     
-    # [RF-0052] Verifica si ya existe una puntuación en la tabla puntuaciones.
+    # [IDF-0052] Verifica si ya existe una puntuación en la tabla puntuaciones.
     def Existe_Puntuacion(self, idU,idC):
         """
         Verifica si un usuario ya ha puntuado un contenido.
@@ -526,7 +526,7 @@ class E_Notificaciones:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0053] Registra una notificación en la tabla notificiones, y retorna un html de un resultado de un contenido como notifiación.
+    # [IDF-0053] Registra una notificación en la tabla notificiones, y retorna un html de un resultado de un contenido como notifiación.
     def registrarNotificacionRegalo(self, idU, idC, msg):
         """
         Registra una notificación de regalo en la tabla 'notificaciones' para un usuario,
@@ -545,7 +545,7 @@ class E_Notificaciones:
         self.cursor.execute(query, (idU, full_msg))
         self.conn.commit()
     
-    # [RF-0054] Registra una notificación en la tabla notificiones de tipo recarga.
+    # [IDF-0054] Registra una notificación en la tabla notificiones de tipo recarga.
     def registrarNotificacionRecarga(self, idU, msg):
         """
         Registra una notificación de recarga en la tabla 'notificaciones'.
@@ -558,7 +558,7 @@ class E_Notificaciones:
         self.cursor.execute(query, (idU, msg))
         self.conn.commit()
 
-    # [RF-0055] Obtiene una lista de todas las notifiaciones para cierto cliente.
+    # [IDF-0055] Obtiene una lista de todas las notifiaciones para cierto cliente.
     def obtenerListaNotificaciones(self, idU):
         """
         Obtiene la lista de todas las notificaciones asociadas a un usuario.
@@ -585,7 +585,7 @@ class E_Notificaciones:
                     "messagge": row[1]} for row in result]
         return lista
     
-    # [RF-0056] Acepta una notifiación y la marca como leída, esta es eliminada de la tabla notificaciones.
+    # [IDF-0056] Acepta una notifiación y la marca como leída, esta es eliminada de la tabla notificaciones.
     def aceptarNotificacion(self, id_noti):
         """
         Acepta o marca como leída una notificación eliminándola de la tabla 'notificaciones'.
@@ -602,7 +602,7 @@ class E_Recargas:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0057] Regista una solicitud de recarga de un cliente.
+    # [IDF-0057] Regista una solicitud de recarga de un cliente.
     def registrarSolicitud(self, monto, user_id):
         """
         Registra una nueva solicitud de recarga por parte de un cliente.
@@ -616,7 +616,7 @@ class E_Recargas:
         self.cursor.execute(query, (user_id, monto, fecha))
         self.conn.commit()
 
-    # [RF-0058] Obtiene una lista de todas las peticiones de recargas de saldo, para el administrador.
+    # [IDF-0058] Obtiene una lista de todas las peticiones de recargas de saldo, para el administrador.
     def obtenerListaPeticiones(self):
         """
         Obtiene la lista de solicitudes de recarga pendientes para revisión del administrador.
@@ -649,7 +649,7 @@ class E_Recargas:
 
         return lista
     
-    # [RF-0059] Retorna información del historial de recargas de un cliente según su id.
+    # [IDF-0059] Retorna información del historial de recargas de un cliente según su id.
     def obtenerRecargasCliente(self, idU):
         """
         Retorna el historial de recargas realizadas por un cliente.
@@ -681,7 +681,7 @@ class E_Recargas:
 
         return lista
     
-    # [RF-0060] El administrador prueba una recarga de un cliente.
+    # [IDF-0060] El administrador prueba una recarga de un cliente.
     def aprobarRecarga(self, id_recarga):
         """
         Aprueba una solicitud de recarga pendiente, cambiando su estado a 'aprobada'.
@@ -708,7 +708,7 @@ class E_Promociones:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0162] Se retornan todas las promociones disponibles de la tabla promociones.
+    # [IDF-0162] Se retornan todas las promociones disponibles de la tabla promociones.
     def obtenerPromociones(self):
         """
         Retorna todas las promociones disponibles desde la tabla 'promociones'.
@@ -732,7 +732,7 @@ class E_Promociones:
 
         return results
     
-    # [RF-0165] Retorna el descuento de la tabla promociones de cierto id de promoción.
+    # [IDF-0165] Retorna el descuento de la tabla promociones de cierto id de promoción.
     def ObtenerPromocion(self, idprom):
         """
         Retorna el descuento asociado a una promoción específica.
@@ -747,7 +747,7 @@ class E_Promociones:
         resultado_promo = self.cursor.fetchone()
         return resultado_promo
 
-    # [RF-0177] Se registra una nueva promocion a la tabla promociones.
+    # [IDF-0177] Se registra una nueva promocion a la tabla promociones.
     def agregarPromocion(self, data):
         """
         Registra una nueva promoción en la base de datos.
@@ -799,7 +799,7 @@ class E_Contenidos:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0061] Registra un contenido en la tabla contenidos.
+    # [IDF-0061] Registra un contenido en la tabla contenidos.
     def registrarContenido(self, data):
         """
         Registra un nuevo contenido en la base de datos.
@@ -837,7 +837,7 @@ class E_Contenidos:
         ))
         self.conn.commit()
 
-    # [RF-0062] Actualiza un contenido existente en la tabla contenidos.
+    # [IDF-0062] Actualiza un contenido existente en la tabla contenidos.
     def actualizarContenido(self, data):
         """
         Actualiza campos específicos de un contenido por su ID.
@@ -881,7 +881,7 @@ class E_Contenidos:
         self.cursor.execute(query, tuple(valores))
         self.conn.commit()
 
-    # [RF-0063] Obtiene contenidos con toda su información y con la opcion de retornar en orden del mas descargado al menos decargador.
+    # [IDF-0063] Obtiene contenidos con toda su información y con la opcion de retornar en orden del mas descargado al menos decargador.
     def obtenerContenidos(self, top=None):
         """
         Retorna todos los contenidos activos, con detalles y precio ajustado si tiene promoción.
@@ -942,7 +942,7 @@ class E_Contenidos:
 
         return lista
 
-    # [RF-0064] Retorna contenidos para cierta coincidencia con un query y con filtros de la tabla contenidos.
+    # [IDF-0064] Retorna contenidos para cierta coincidencia con un query y con filtros de la tabla contenidos.
     def Buscar_info(self, query="", filters=None, admi=False):
         """
         Realiza búsqueda de contenidos con filtros de tipo, autor, id o categoría.
@@ -1022,7 +1022,7 @@ class E_Contenidos:
         return lista
 
 
-    # [RF-0065] Retorna cierto contenido por su Id de la tabla contenidos.
+    # [IDF-0065] Retorna cierto contenido por su Id de la tabla contenidos.
     def getContent(self, content_id):
         """
         Obtiene los detalles completos de un contenido por su ID.
@@ -1070,7 +1070,7 @@ class E_Contenidos:
         else:
             return None
 
-    # [RF-0066] Retorna el precio de cierto contenido por id.
+    # [IDF-0066] Retorna el precio de cierto contenido por id.
     def obtenerPrecio(self, content_id):
         """
         Devuelve el precio de un contenido dado su ID.
@@ -1085,7 +1085,7 @@ class E_Contenidos:
         self.cursor.execute(query, (content_id,))
         return self.cursor.fetchone()[0]
 
-    # [RF-0067] Veritica si un contenido contiene una promoción en la tabla promociones.
+    # [IDF-0067] Veritica si un contenido contiene una promoción en la tabla promociones.
     def verificarPromocion(self, idC):
         """
         Indica si un contenido tiene una promoción asignada.
@@ -1102,7 +1102,7 @@ class E_Contenidos:
         # Retorna True si hay una promoción asociada, False si no
         return resultado is not None and resultado[0] is not None
     
-    # [RF-0068] Retorna el archivo binario de un contenido id para descargarlo.
+    # [IDF-0068] Retorna el archivo binario de un contenido id para descargarlo.
     def obtenerBinarioPorID(self, idC):
         """
         Obtiene el archivo binario, nombre y extensión de un contenido.
@@ -1123,7 +1123,7 @@ class E_Contenidos:
             }
         return None
     
-    # [RF-0149] Verificar si ya existe registro en la tabla descarga.
+    # [IDF-0149] Verificar si ya existe registro en la tabla descarga.
     def downloadedContentVerificate(self, id_contenido, id_usuario):
         """
         Verifica si el usuario ya descargó el contenido.
@@ -1142,7 +1142,7 @@ class E_Contenidos:
         result = self.cursor.fetchone()
         return result
 
-    # [RF-0069] Actualiza el número de descargas hechas de cierto contenido.
+    # [IDF-0069] Actualiza el número de descargas hechas de cierto contenido.
     def downloadCount(self, id_contenido, id_usuario):
         """
         Incrementa el contador de descargas para un contenido y usuario.
@@ -1182,7 +1182,7 @@ class E_Contenidos:
 
         self.conn.commit()
     
-    # [RF-0155] Se actualiza el estado de un contenido en la tabla contenidos.
+    # [IDF-0155] Se actualiza el estado de un contenido en la tabla contenidos.
     def actualizarEstadoContenido(self, idC):
         """
         Alterna el estado del contenido entre activo y desactivado.
@@ -1213,7 +1213,7 @@ class E_Contenidos:
         self.conn.commit()
         return resultado
     
-    # [RF-0163] Retorna de la tabla conteidos, el precio de un contenido y su id de promoción.
+    # [IDF-0163] Retorna de la tabla conteidos, el precio de un contenido y su id de promoción.
     def get_Prom(self, idC):
         """
         Devuelve el precio y la promoción asignada a un contenido.
@@ -1230,7 +1230,7 @@ class E_Contenidos:
             return None
         return resultado
     
-    # [RF-0171] La clase E_Contenidos le asignacion de una promocion a un contenido en su tabla contenidos.
+    # [IDF-0171] La clase E_Contenidos le asignacion de una promocion a un contenido en su tabla contenidos.
     def asignarPromocion(self, idC, idP):
         """
         Asigna una promoción a un contenido.
@@ -1249,7 +1249,7 @@ class E_Contenidos:
         except:
             return False
     
-    # [RF-0186] La clase E_Contenidos asigna una categoria una categoria a un contenido en la tabla contenidos. 
+    # [IDF-0186] La clase E_Contenidos asigna una categoria una categoria a un contenido en la tabla contenidos. 
     def asignarCategoria(self, idC, idcat):
         """
         Asigna una categoría a un contenido específico.
@@ -1268,7 +1268,7 @@ class E_Contenidos:
         except:
             return False
     
-    # [RF-0201] Consulta a las tablas contenidos,puntuaciones, descargas, para obtener las ultimas descargas de ciento cliente.
+    # [IDF-0201] Consulta a las tablas contenidos,puntuaciones, descargas, para obtener las ultimas descargas de ciento cliente.
     def obtenerDescargasClienteTime(self, idU):
         """
         Retorna todas las descargas realizadas por un usuario específico, ordenadas por fecha (de más reciente a más antigua),
@@ -1312,7 +1312,7 @@ class C_Puntuacion:
     def __init__(self):
         pass
     
-    # [RF-0070] Pide a la tabla puntuaciones la puntuación de cierto contenido.
+    # [IDF-0070] Pide a la tabla puntuaciones la puntuación de cierto contenido.
     def Obtener_Puntuacion(self, idU, idC):
         """
         Obtiene la puntuación que un usuario dio a un contenido.
@@ -1327,7 +1327,7 @@ class C_Puntuacion:
         e_pun = E_Puntuaciones()
         return e_pun.Existe_Puntuacion(idU, idC)
     
-    # [RF-0071] Envia una puntuacion para cierto contenido a la tabla puntuaciones.
+    # [IDF-0071] Envia una puntuacion para cierto contenido a la tabla puntuaciones.
     def Enviar_Puntuacion(self, idU, idC, score):
         """
         Registra o actualiza la puntuación dada por un usuario a un contenido.
@@ -1348,7 +1348,7 @@ class E_Categorias:
         self.conn = get_connection()
         self.cursor = self.conn.cursor()
 
-    # [RF-0188] La clase E_Categorias retorna todas las categorias disponibles.
+    # [IDF-0188] La clase E_Categorias retorna todas las categorias disponibles.
     def obtener_categorias(self):
         """
         Retorna una lista con todas las categorías disponibles.
@@ -1362,7 +1362,7 @@ class E_Categorias:
             res.append({'id':id,'category':ruta})
         return res
     
-    # [RF-0187] La clase E_Categorias genera y actualiza la ruta de una categoria segun su id.
+    # [IDF-0187] La clase E_Categorias genera y actualiza la ruta de una categoria segun su id.
     def gen_ruta(self, id):
         """
         Genera la ruta completa de una categoría basada en su jerarquía.
@@ -1383,7 +1383,7 @@ class E_Categorias:
             camino.append(nombre)
         return ">".join(reversed(camino))
     
-    # [RF-0182] La clase E_Categorias añade a la tabla categorias la agregación de una categoria.
+    # [IDF-0182] La clase E_Categorias añade a la tabla categorias la agregación de una categoria.
     def agregarCategoria(self, data):
         """
         Agrega una nueva categoría si no existe en la misma rama y actualiza su ruta jerárquica.
@@ -1428,7 +1428,7 @@ class C_Categorias:
     def __init__(self):
         pass
     
-    # [RF-0189] El Controlador categorias enviar a su clase E_Categorias la petición de optener todas las categorias disponibles.
+    # [IDF-0189] El Controlador categorias enviar a su clase E_Categorias la petición de optener todas las categorias disponibles.
     def obtener_categorias(self):
         """
         Controlador: Obtiene todas las categorías disponibles desde E_Categorias.
@@ -1439,7 +1439,7 @@ class C_Categorias:
         man_cat = E_Categorias()
         return man_cat.obtener_categorias()
     
-    # [RF-0181] El Controlador categorias enviar a su clase E_Categorias la agregación de una categoria.
+    # [IDF-0181] El Controlador categorias enviar a su clase E_Categorias la agregación de una categoria.
     def agregarCategoria(self, data):
         """
         Controlador: Solicita agregar una nueva categoría a través de E_Categorias.
@@ -1457,7 +1457,7 @@ class C_Promociones:
     def __init__(self):
         pass
 
-    # [RF-161] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
+    # [IDF-161] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
     def obtenerPromociones(self):
         """
         Controlador: Obtiene todas las promociones registradas en E_Promociones.
@@ -1468,7 +1468,7 @@ class C_Promociones:
         prom_manager = E_Promociones()
         return prom_manager.obtenerPromociones()
     
-    # [RF-0166] El controlador promociones solicita la promocion de cierto id promocion a la clase E_Promociones.
+    # [IDF-0166] El controlador promociones solicita la promocion de cierto id promocion a la clase E_Promociones.
     def ObtenerPromocion(self, idprom):
         """
         Controlador: Recupera los datos de una promoción específica.
@@ -1482,7 +1482,7 @@ class C_Promociones:
         prom_manager = E_Promociones()
         return prom_manager.ObtenerPromocion(idprom)        
     
-    # [RF-0176] El Controlador promociones enviar a la clase  E_Promociones la agregación de una promocion.
+    # [IDF-0176] El Controlador promociones enviar a la clase  E_Promociones la agregación de una promocion.
     def agregarPromocion(self, data):
         """
         Controlador: Registra una nueva promoción a través de E_Promociones.
@@ -1496,7 +1496,7 @@ class C_Promociones:
         man_prom = E_Promociones()
         return man_prom.agregarPromocion(data)
     
-    # [RF-0202] El controlador promociones limpia las promociones pasadas de la clase E_Promociones.
+    # [IDF-0202] El controlador promociones limpia las promociones pasadas de la clase E_Promociones.
     def limpiarPromocionesVencidas(self):
         """
         Controlador: Solicita eliminar las promociones de E_Promociones.
@@ -1509,7 +1509,7 @@ class C_Transacciones:
     def __init__(self):
         pass
 
-    # [RF-0072] Verifica si el tipo de tarjeta es valido.
+    # [IDF-0072] Verifica si el tipo de tarjeta es valido.
     def verificarMetPago(self, Ncard, cardType):
         """
         Controlador: Verifica si el tipo de tarjeta ingresado está dentro de los bancos soportados.
@@ -1524,7 +1524,7 @@ class C_Transacciones:
         generate_Bancos_disponibles = lambda a: a in ["mastercard","bcp","visa","paypal"]
         return generate_Bancos_disponibles(cardType)
     
-    # [RF-0073] Realizar en envio a la tabla recargas de una solicitud de recargas y verificar si la tarjeta tiene el saldo suficiente.
+    # [IDF-0073] Realizar en envio a la tabla recargas de una solicitud de recargas y verificar si la tarjeta tiene el saldo suficiente.
     def realizarPago(self, user_id, amount, Ncard):
         """
         Controlador: Simula el pago con tarjeta y registra una solicitud de recarga.
@@ -1544,7 +1544,7 @@ class C_Transacciones:
             return 0
         return 1
     
-    # [RF-0074] Pide a la tabla recargas la lista de peticiones de recargas.
+    # [IDF-0074] Pide a la tabla recargas la lista de peticiones de recargas.
     def obtenerListaPeticiones(self):
         """
         Controlador: Solicita a E_Recargas la lista de solicitudes de recarga pendientes.
@@ -1555,7 +1555,7 @@ class C_Transacciones:
         controller = E_Recargas()
         return controller.obtenerListaPeticiones()
     
-    # [RF-0075] Pide a la clase de recargas el historial de descargas de cierto usuario.
+    # [IDF-0075] Pide a la clase de recargas el historial de descargas de cierto usuario.
     def obtenerRecargasCliente(self, idU):
         """
         Controlador: Solicita a E_Recargas el historial de recargas de un usuario.
@@ -1569,7 +1569,7 @@ class C_Transacciones:
         controller = E_Recargas()
         return controller.obtenerRecargasCliente(idU)
     
-    # [RF-0076] Envia a la clase recargas la aprobación de cierta recarga.
+    # [IDF-0076] Envia a la clase recargas la aprobación de cierta recarga.
     def aprobarRecarga(self, id_recarga):
         """
         Controlador: Aprueba una solicitud de recarga.
@@ -1584,7 +1584,7 @@ class C_Transacciones:
         id_user, cantidad = controller.aprobarRecarga(id_recarga)
         return id_user, cantidad
     
-    # [RF-0077] Verifica en las respectivas clases de promociones y contenido para retornar el precio final de cierto contenido que tenga un descuento.
+    # [IDF-0077] Verifica en las respectivas clases de promociones y contenido para retornar el precio final de cierto contenido que tenga un descuento.
     def ProcesarPrecioFinal(self, idC):
         """
         Controlador: Calcula el precio final del contenido con descuento si aplica.
@@ -1608,7 +1608,7 @@ class C_Transacciones:
         precio_final = precio_original * (1 - descuento)
         return round(precio_final, 2)
 
-    # [RF-0078] Solicita a la clase usuarios la actualizacion del saldo de cierto cliente.
+    # [IDF-0078] Solicita a la clase usuarios la actualizacion del saldo de cierto cliente.
     def actualizarSaldo(self, idU, precio, recarga=False):
         """
         Controlador: Solicita a E_Usuarios actualizar el saldo del cliente.
@@ -1621,7 +1621,7 @@ class C_Transacciones:
         controller = E_Usuarios()
         controller.actualizarSaldo(idU, precio, recarga)
 
-    # [RF-0079] Envia a las clases compras o regalos cierto contenido para ser registrado.
+    # [IDF-0079] Envia a las clases compras o regalos cierto contenido para ser registrado.
     def registrarCompra(self, idU, idC, precio, id_des=None):
         """
         Controlador: Registra la compra o regalo de un contenido.
@@ -1639,7 +1639,7 @@ class C_Transacciones:
             uscont = E_Regalos()
             uscont.registrarRegalo(idU,idC,precio,'regalo',id_des)
 
-    # [RF-0080] Verifica en las clases compras y regalos si cierto contenido le pertenece a cierto cliente.
+    # [IDF-0080] Verifica en las clases compras y regalos si cierto contenido le pertenece a cierto cliente.
     def verificarContenido(self, idu, idc):
         """
         Controlador: Verifica si el contenido le pertenece al usuario.
@@ -1661,7 +1661,7 @@ class C_Contenidos:
     def __init__(self):
         pass
 
-    # [RF-0081] Envia a la clase de entidad contenidos el registro de un contenido.
+    # [IDF-0081] Envia a la clase de entidad contenidos el registro de un contenido.
     def registrarContenido(self, data):
         """
         Controlador: Registra un nuevo contenido multimedia.
@@ -1672,7 +1672,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         contenidos.registrarContenido(data)
     
-    # [RF-0082] Envia a la clase de entidad contenidos actulizar un cierto contenido.
+    # [IDF-0082] Envia a la clase de entidad contenidos actulizar un cierto contenido.
     def actualizarContenido(self, data):
         """
         Controlador: Actualiza la información de un contenido existente.
@@ -1683,7 +1683,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         contenidos.actualizarContenido(data)
 
-    # [RF-0083] Envia a la clase de entidad contenidos la consulta de cierto contenido por un query y filtros.
+    # [IDF-0083] Envia a la clase de entidad contenidos la consulta de cierto contenido por un query y filtros.
     def consultarDatos(self, query, filters):
         """
         Controlador: Consulta contenidos por título o autor, aplicando filtros por tipo.
@@ -1721,7 +1721,7 @@ class C_Contenidos:
 
         return resultados
     
-    # [RF-0084] Envia a la clase de entidad contenidos la busqueda de cierto contenido por query y filtros pero tambien por id, para la busqueda de informacion de un administrador.
+    # [IDF-0084] Envia a la clase de entidad contenidos la busqueda de cierto contenido por query y filtros pero tambien por id, para la busqueda de informacion de un administrador.
     def solicitar_info_contenido(self, query, filters, admi=False):
         """
         Controlador: Solicita información de contenido específico a E_Contenidos.
@@ -1737,7 +1737,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         return contenidos.Buscar_info(query,filters, admi)
     
-    # [RF-0085] Funcion que conbierte el contenido binario a Base64, leible para el frontend.
+    # [IDF-0085] Funcion que conbierte el contenido binario a Base64, leible para el frontend.
     @staticmethod
     def _generar_data_url(bin_data, tipo, extension):
         """
@@ -1767,7 +1767,7 @@ class C_Contenidos:
         encoded = base64.b64encode(bin_data).decode("utf-8")
         return f"data:{mime_type};base64,{encoded}"
     
-    # [RF-0086] Envia a la clase de entidad contenidos obtener una lista de los top 10 más descargados de cada tipo de contenido.
+    # [IDF-0086] Envia a la clase de entidad contenidos obtener una lista de los top 10 más descargados de cada tipo de contenido.
     @staticmethod
     def getTopContent(parameter):
         """
@@ -1808,7 +1808,7 @@ class C_Contenidos:
 
         return counter["imagen"][1] + counter["video"][1] + counter["audio"][1]
     
-    # [RF-0087] Envia a la clase de entidad contenidos obtener cierto contenido por su id.
+    # [IDF-0087] Envia a la clase de entidad contenidos obtener cierto contenido por su id.
     def getContent(self, content_id):
         """
         Controlador: Obtiene los datos de un contenido por su ID.
@@ -1822,7 +1822,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         return contenidos.getContent(content_id)
     
-    # [RF-0088] Envia a la clase de entidad contenidos, obtener el precio de cierto contenido por su id.
+    # [IDF-0088] Envia a la clase de entidad contenidos, obtener el precio de cierto contenido por su id.
     def obtenerPrecio(self, content_id):
         """
         Controlador: Solicita el precio de un contenido.
@@ -1836,7 +1836,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         return contenidos.obtenerPrecio(content_id)
     
-    # [RF-0089] Envia a la clase de entidad contenidos, la verificación de promocion de cierto contenido.
+    # [IDF-0089] Envia a la clase de entidad contenidos, la verificación de promocion de cierto contenido.
     def verificarPromocion(self, idC):
         """
         Controlador: Verifica si un contenido tiene promoción.
@@ -1850,7 +1850,7 @@ class C_Contenidos:
         contenidos = E_Contenidos()
         return contenidos.verificarPromocion(idC)
     
-    # [RF-0090] Solicita a la clase controlador promociones  la puntuación a registrar pra cierto contenido.
+    # [IDF-0090] Solicita a la clase controlador promociones  la puntuación a registrar pra cierto contenido.
     def Obtener_Puntuacion(self, idU, idC):
         """
         Controlador: Obtiene la puntuación de un contenido para un usuario.
@@ -1865,7 +1865,7 @@ class C_Contenidos:
         c_pun = C_Puntuacion()
         return c_pun.Obtener_Puntuacion(idU, idC)
     
-    # [RF-0091] Envia a la clase controlador promociones  la puntuación a registrar pra cierto contenido.
+    # [IDF-0091] Envia a la clase controlador promociones  la puntuación a registrar pra cierto contenido.
     def Enviar_Puntuacion(self, idU, idC, score):
         """
         Controlador: Registra una puntuación para un contenido.
@@ -1878,7 +1878,7 @@ class C_Contenidos:
         ctr = C_Puntuacion()
         ctr.Enviar_Puntuacion(idU,idC,score)
     
-    # [RF-0092] Envia a la clase de entidad contenidos, la solicitud de obtener toda la información de cierto contenido para ser descargado
+    # [IDF-0092] Envia a la clase de entidad contenidos, la solicitud de obtener toda la información de cierto contenido para ser descargado
     def obtenerContenidoBinarios(self, idC, idU):
         """
         Controlador: Obtiene el binario del contenido y aumenta contador de descarga.
@@ -1935,7 +1935,7 @@ class C_Contenidos:
             return mime_type, bin_data, filename
         return None,None,None
     
-    # [RF-153] El controlador contenidos solicita a la tabla E_Contenidos, si cierto contenido fue descargado.
+    # [IDF-153] El controlador contenidos solicita a la tabla E_Contenidos, si cierto contenido fue descargado.
     def downloadedContentVerificate(self, idc, idu):
         """
         Controlador: Verifica si el usuario ya descargó un contenido.
@@ -1950,7 +1950,7 @@ class C_Contenidos:
         e_con = E_Contenidos()
         return e_con.downloadedContentVerificate(idc,idu) is not None
     
-    # [RF-154] El controlador contenidos solicita actualizar el estado de un contenido en su tabla de E_Contenidos.
+    # [IDF-154] El controlador contenidos solicita actualizar el estado de un contenido en su tabla de E_Contenidos.
     def actualizarEstadoContenido(self, idC):
         """
         Controlador: Actualiza el estado (activo/inactivo) del contenido.
@@ -1964,7 +1964,7 @@ class C_Contenidos:
         e_con = E_Contenidos()
         return e_con.actualizarEstadoContenido(idC)
     
-    # [RF-160] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
+    # [IDF-160] El Controlador contenidos solicita al controlador Promociones todas las promociones actuales.
     def obtenerPromociones(self):
         """
         Controlador: Solicita la lista de promociones actuales.
@@ -1975,7 +1975,7 @@ class C_Contenidos:
         prom_manager = C_Promociones()
         return prom_manager.obtenerPromociones()   
 
-    # [RF-0164] el controlador conteidos solicita a la clase E_Contenidos cierto promocion por su id.
+    # [IDF-0164] el controlador conteidos solicita a la clase E_Contenidos cierto promocion por su id.
     def get_Prom(self, idC):
         """
         Controlador: Obtiene promoción asociada a un contenido.
@@ -1989,7 +1989,7 @@ class C_Contenidos:
         e_con = E_Contenidos()
         return e_con.get_Prom(idC)
     
-    # [RF-0170] El controlador contenidos envia la clase E_Contenidos la asignacion de una promocion.
+    # [IDF-0170] El controlador contenidos envia la clase E_Contenidos la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
         """
         Controlador: Asigna promoción a un contenido.
@@ -2004,7 +2004,7 @@ class C_Contenidos:
         e_con = E_Contenidos()
         return e_con.asignarPromocion(idC,idP)
     
-    # [RF-0175] El Controlador contenidos enviar a su controlador promociones la agregación de una promocion.
+    # [IDF-0175] El Controlador contenidos enviar a su controlador promociones la agregación de una promocion.
     def agregarPromocion(self, data):
         """
         Controlador: Registra nueva promoción.
@@ -2018,7 +2018,7 @@ class C_Contenidos:
         man_prom = C_Promociones()
         return man_prom.agregarPromocion(data)   
         
-    # [RF-0180] El Controlador contenidos enviar a su controlador categorias la agregación de una categoria.
+    # [IDF-0180] El Controlador contenidos enviar a su controlador categorias la agregación de una categoria.
     def agregarCategoria(self, data):
         """
         Controlador: Registra nueva categoría.
@@ -2032,7 +2032,7 @@ class C_Contenidos:
         man_cat = C_Categorias()
         return man_cat.agregarCategoria(data)
 
-    # [RF-0185] El Controlador contenidos enviar a su clase  E_Contenidos la asignacion de una categoria.
+    # [IDF-0185] El Controlador contenidos enviar a su clase  E_Contenidos la asignacion de una categoria.
     def asignarCategoria(self, idC,idcat):
         """
         Controlador: Asigna categoría a un contenido.
@@ -2047,7 +2047,7 @@ class C_Contenidos:
         man_content = E_Contenidos()
         return man_content.asignarCategoria(idC,idcat)
 
-    # [RF-0192] El Controlador contenidos enviar a su controlador categorias la obtencion de todas las categorías.
+    # [IDF-0192] El Controlador contenidos enviar a su controlador categorias la obtencion de todas las categorías.
     def obtener_categorias(self):
         """
         Controlador: Solicita todas las categorías registradas.
@@ -2058,7 +2058,7 @@ class C_Contenidos:
         man_cat = C_Categorias()
         return man_cat.obtener_categorias()
     
-    # [RF-0203] El controlador Contenidos envia a su controlador promociones la accion de limpiar las promociones pasadas.
+    # [IDF-0203] El controlador Contenidos envia a su controlador promociones la accion de limpiar las promociones pasadas.
     def limpiarPromocionesVencidas(self):
         """
         Controlador: Envia el mensaje a su controlador promociones de limpiar las promociones vencidas.
@@ -2075,7 +2075,7 @@ class C_Usuario:
         """        
         self.id = None
     
-    # [RF-0093] Solicita a la clase de entidad usuarios, obtener los datos de cierto usuario por su id.
+    # [IDF-0093] Solicita a la clase de entidad usuarios, obtener los datos de cierto usuario por su id.
     def getDataUser(self, id_user):
         """
         Controlador: Solicita los datos del usuario según su ID.
@@ -2089,7 +2089,7 @@ class C_Usuario:
         usuarios = E_Usuarios()
         return usuarios.obtenerUser(id_user)
     
-    # [RF-0094] Solicita a la clase controlador contenidos, buscar contenidos con cierto query y filtro.
+    # [IDF-0094] Solicita a la clase controlador contenidos, buscar contenidos con cierto query y filtro.
     def Buscar(self, query,filters):
         """
         Controlador: Realiza la búsqueda de contenidos usando un query y filtros.
@@ -2107,7 +2107,7 @@ class C_Usuario:
         resultados = content_manager.solicitar_info_contenido(query, filters)
         return resultados
     
-    # [RF-0095] Solicita a la controlador contenidos, obtener cierto contenido por su id.
+    # [IDF-0095] Solicita a la controlador contenidos, obtener cierto contenido por su id.
     def seleccionarContent(self, content_id):
         """
         Controlador: Solicita un contenido por su ID.
@@ -2121,7 +2121,7 @@ class C_Usuario:
         content_manager = C_Contenidos()
         return content_manager.getContent(content_id)
     
-    # [RF-0096] Solicita a la clase de entidad usuarios, verificar los datos de cierto usuario por su id.
+    # [IDF-0096] Solicita a la clase de entidad usuarios, verificar los datos de cierto usuario por su id.
     def loginVerificar(self, username, password):
         """
         Controlador: Verifica las credenciales de inicio de sesión del usuario.
@@ -2136,7 +2136,7 @@ class C_Usuario:
         usuarios = E_Usuarios()
         return usuarios.verificarLogin(username,password)
     
-    # [RF-0097] Solicita a la clase controlador Contenidos, los top contenidos a mostrar.
+    # [IDF-0097] Solicita a la clase controlador Contenidos, los top contenidos a mostrar.
     def getContentView(self):
         """
         Controlador: Solicita los contenidos más populares (Top 10 por tipo).
@@ -2147,7 +2147,7 @@ class C_Usuario:
         content_manager = C_Contenidos()
         return content_manager.getTopContent()
 
-    # [RF-0098] Solicita a la clase de entidad usuarios, verificar si cierto username esta en uso.
+    # [IDF-0098] Solicita a la clase de entidad usuarios, verificar si cierto username esta en uso.
     def validarRegistro(self, user):
         """
         Controlador: Verifica si el nombre de usuario ya está registrado.
@@ -2161,7 +2161,7 @@ class C_Usuario:
         us = E_Usuarios()
         return us.validarDatos(user)
 
-    # [RF-0099] Envia a la clase de entidad usuarios, el registro de un nuevo usuario.
+    # [IDF-0099] Envia a la clase de entidad usuarios, el registro de un nuevo usuario.
     def registrarUsuario(self, data):
         """
         Controlador: Registra un nuevo usuario en el sistema.
@@ -2184,7 +2184,7 @@ class C_Usuario:
         man_not.registrarNotificacionRecarga(id, msg)
 
 
-    # [RF-0100] Solicita a la clases controlador transacciones y contenidos, verificar si fue comprado por cierto usuario y si fue puntuado.
+    # [IDF-0100] Solicita a la clases controlador transacciones y contenidos, verificar si fue comprado por cierto usuario y si fue puntuado.
     def verificarContenido(self, idU, idC):
         """
         Controlador: Verifica si el usuario compró y puntuó el contenido.
@@ -2202,7 +2202,7 @@ class C_Usuario:
                'hasRated':content_manager.downloadedContentVerificate(idC, idU)}
         return res
     
-    # [RF-00101] Solicita a la clase de entidad compras, la lista de compras realizadas por cierto cliente.
+    # [IDF-00101] Solicita a la clase de entidad compras, la lista de compras realizadas por cierto cliente.
     def obtenerDescargasCliente(self, idU):
         """
         Controlador: Solicita la lista de contenidos descargados por un usuario.
@@ -2216,7 +2216,7 @@ class C_Usuario:
         uscont = E_Compras()
         return uscont.obtenerDescargasCliente(idU)
 
-    # [RF-00101] Solicita a la clase de entidad compras, la lista de compras realizadas por cierto cliente.
+    # [IDF-00101] Solicita a la clase de entidad compras, la lista de compras realizadas por cierto cliente.
     def obtenerDescargasClienteTime(self, idU):
         """
         Controlador: Solicita la lista de contenidos descargados por un usuario.
@@ -2230,7 +2230,7 @@ class C_Usuario:
         uscont = E_Contenidos()
         return uscont.obtenerDescargasClienteTime(idU)
         
-    # [RF-00102] Solicita a la clase controlador transacciones, la lista de recargas de cierto cliente.
+    # [IDF-00102] Solicita a la clase controlador transacciones, la lista de recargas de cierto cliente.
     def obtenerRecargasCliente(self, idU):
         """
         Controlador: Solicita la lista de recargas realizadas por un usuario.
@@ -2244,7 +2244,7 @@ class C_Usuario:
         controller_trans = C_Transacciones()
         return controller_trans.obtenerRecargasCliente(idU)
     
-    # [RF-00103] Solicita a la clase controlador contenidos, cierto contenido, para ser descargado.
+    # [IDF-00103] Solicita a la clase controlador contenidos, cierto contenido, para ser descargado.
     def obtenerContenidoDescarga(self,content_id,idU):
         """
         Controlador: Solicita el contenido en formato binario para su descarga.
@@ -2267,7 +2267,7 @@ class C_Cliente(C_Usuario):
         """        
         super().__init__()
 
-    # [RF-00104] Solicita a la clase controlador transacciones, el metodo de pago de tarjeta  y si tiene saldo suficiente en la tarjeta.
+    # [IDF-00104] Solicita a la clase controlador transacciones, el metodo de pago de tarjeta  y si tiene saldo suficiente en la tarjeta.
     def enviarSolicitud(self, Ncard, amount, cardType, id_user):
         """
         Controlador: Verifica el método de pago y realiza el pago si hay saldo suficiente.
@@ -2288,7 +2288,7 @@ class C_Cliente(C_Usuario):
             return {"success": False, "message":"Saldo insuficiente"}
         return {"success": True}
     
-    # [RF-00105] Solicita a la clase entidad usuarios, el saldo actual del cliente.
+    # [IDF-00105] Solicita a la clase entidad usuarios, el saldo actual del cliente.
     def obtenerSaldo(self, id_user):
         """
         Controlador: Solicita el saldo actual del usuario.
@@ -2302,7 +2302,7 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.obtenerSaldo(id_user)
     
-    # [RF-0204] El controlador cliente solicita a su clase E_Usuarios la accion de verificar el acumulado de cierto cliente.
+    # [IDF-0204] El controlador cliente solicita a su clase E_Usuarios la accion de verificar el acumulado de cierto cliente.
     def verificarAcumulado(self, idU):
         """
         Contrador: Verifica para cierto cliente su acumulado, para ver si le permite el descuento por creditos consumidos.
@@ -2312,7 +2312,7 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.verificarAcumulado(idU)
     
-    # [RF-0205] El controlador cliente solicita a su clase E_Usuarios la accion de reiniciar el acumulado de cierto cliente.
+    # [IDF-0205] El controlador cliente solicita a su clase E_Usuarios la accion de reiniciar el acumulado de cierto cliente.
     def consumirAcumulado(self, idU):
         """
         Contrador: Solicita para cierto cliente reiniciar su acumulado.
@@ -2322,7 +2322,7 @@ class C_Cliente(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.consumirAcumulado(idU)
     
-    # [RF-00106] Solicita a la clase controlador transacciones y contenidos, el pago de cierto contenido.
+    # [IDF-00106] Solicita a la clase controlador transacciones y contenidos, el pago de cierto contenido.
     def pagarContenido(self, idU, idC, id_des=None):
         """
         Controlador: Procesa el pago de un contenido, con o sin promoción.
@@ -2365,7 +2365,7 @@ class C_Cliente(C_Usuario):
             controller_trans.registrarCompra(idU, idC, precioFinal, id_des=id_des)
         return True
     
-    # [RF-00107] Solicita a la clase controlador contenidos, obtener la puntuación de cierto conteido.
+    # [IDF-00107] Solicita a la clase controlador contenidos, obtener la puntuación de cierto conteido.
     def Obtener_Puntuacion(self, idU):
         """
         Controlador: Solicita la puntuación dada por el usuario a un contenido.
@@ -2379,7 +2379,7 @@ class C_Cliente(C_Usuario):
         ctr = C_Contenidos()
         return ctr.Obtener_Puntuacion(idU)
     
-    # [RF-00108] Envia a la clase controlador contenidos, la puntuación de cierto conteido.
+    # [IDF-00108] Envia a la clase controlador contenidos, la puntuación de cierto conteido.
     def Enviar_Puntuacion(self, idU, idC, score):
         """
         Controlador: Envía la puntuación de un contenido.
@@ -2392,7 +2392,7 @@ class C_Cliente(C_Usuario):
         ctr = C_Contenidos()
         ctr.Enviar_Puntuacion(idU,idC,score)
 
-    # [RF-0109] Envia a la clase entiedad usuarios, controlador transacciones, y a entidad notificaciones, la compra de un regalo de cierto cliente a otro.
+    # [IDF-0109] Envia a la clase entiedad usuarios, controlador transacciones, y a entidad notificaciones, la compra de un regalo de cierto cliente a otro.
     def Enviar_destinatario(self, idU, idC, destinatario):
         """
         Controlador: Envía un contenido como regalo a otro usuario.
@@ -2424,7 +2424,7 @@ class C_Cliente(C_Usuario):
                     e_notifi.registrarNotificacionRegalo(id_des, idC, f"Regalo de parte de {from_user}.")
         return res
     
-    # [RF-0110] Solicita a la clase entidad usuarios, validar el saldo de cierto cliente para ver si es posible registrarlo como ex-cliente.
+    # [IDF-0110] Solicita a la clase entidad usuarios, validar el saldo de cierto cliente para ver si es posible registrarlo como ex-cliente.
     def SolicitarValidarSaldo(self, idU):
         """
         Controlador: Verifica si el saldo del usuario es cero para registrarlo como ex-cliente.
@@ -2441,7 +2441,7 @@ class C_Cliente(C_Usuario):
             return True
         return False
     
-    # [RF-0111] Solicita a la clase entidad notificaciones, obtener la lista de notifaciones para cierto usuario.
+    # [IDF-0111] Solicita a la clase entidad notificaciones, obtener la lista de notifaciones para cierto usuario.
     def obtenerNotificaciones(self, idU):
         """
         Controlador: Solicita la lista de notificaciones del usuario.
@@ -2457,7 +2457,7 @@ class C_Cliente(C_Usuario):
         #res.extend(e_notifi.obtenerListaNotificacionesRecargas(idU))
         return res
     
-    # [RF-0112] Envia a la clase entidad notificaciones, aceptar cierta notifacion para marcar como leida.
+    # [IDF-0112] Envia a la clase entidad notificaciones, aceptar cierta notifacion para marcar como leida.
     def aceptarNotificacion(self, idN):
         """
         Controlador: Marca una notificación como leída.
@@ -2471,7 +2471,7 @@ class C_Cliente(C_Usuario):
         e_notifi = E_Notificaciones()
         e_notifi.aceptarNotificacion(idN)
     
-    # [RF-0113] Solicita a la clase entidad usuarios y controlador transacciones, retirar el saldo de cierto usuario.
+    # [IDF-0113] Solicita a la clase entidad usuarios y controlador transacciones, retirar el saldo de cierto usuario.
     def Retirar_Saldo(self, card, cardType, idU):
         """
         Controlador: Retira el saldo total del usuario hacia una tarjeta.
@@ -2495,7 +2495,7 @@ class C_Administrador(C_Usuario):
     def __init__(self):
         super().__init__()
     
-    # [RF-0114] Solicita a la clase controlador transacciones, obtener la lista de recargas.
+    # [IDF-0114] Solicita a la clase controlador transacciones, obtener la lista de recargas.
     def getRecargas(self):
         """
         Administrador: Solicita todas las peticiones de recarga pendientes.
@@ -2506,7 +2506,7 @@ class C_Administrador(C_Usuario):
         controller = C_Transacciones()
         return controller.obtenerListaPeticiones()
     
-    # [RF-0115] Envia a la clase controlador transacciones y entidad notifaciones, la aprobación de cierta recarga.
+    # [IDF-0115] Envia a la clase controlador transacciones y entidad notifaciones, la aprobación de cierta recarga.
     def aprobarRecarga(self, id_recarga):
         """
         Administrador: Aprueba una recarga y actualiza el saldo del usuario correspondiente.
@@ -2523,7 +2523,7 @@ class C_Administrador(C_Usuario):
         e_noti = E_Notificaciones()
         e_noti.registrarNotificacionRecarga(id_user,f"Recarga de ${cantidad} aprobada.")
 
-    # [RF-0116] Envia a la clase controlador contenidos, un contenido nuevo a registrar.
+    # [IDF-0116] Envia a la clase controlador contenidos, un contenido nuevo a registrar.
     def ingresarAgregarContenido(self, datos):
         """
         Administrador: Envía los datos necesarios para registrar un nuevo contenido.
@@ -2534,7 +2534,7 @@ class C_Administrador(C_Usuario):
         content_manager = C_Contenidos()
         content_manager.registrarContenido(datos)
 
-    # [RF-0117] Envia a la clase controlador contenidos, actualizar un contenido existente.
+    # [IDF-0117] Envia a la clase controlador contenidos, actualizar un contenido existente.
     def actualizarContenido(self, datos):
         """
         Administrador: Envía la actualización de datos para un contenido existente.
@@ -2545,7 +2545,7 @@ class C_Administrador(C_Usuario):
         content_manager = C_Contenidos()
         content_manager.actualizarContenido(datos)
 
-    # [RF-0118] Solicita a la clase controlador contenidos y entidad usuarios, buscar información sobre estos.
+    # [IDF-0118] Solicita a la clase controlador contenidos y entidad usuarios, buscar información sobre estos.
     def buscar_info(self, data):
         """
         Administrador: Realiza una búsqueda combinada en contenidos y usuarios según filtros.
@@ -2567,7 +2567,7 @@ class C_Administrador(C_Usuario):
 
         return resultados
     
-    # [RF-0119] Solicita a la clase entidad usuarios, obtener datos de cierto usuario según su id.
+    # [IDF-0119] Solicita a la clase entidad usuarios, obtener datos de cierto usuario según su id.
     def seleccionarUser(self, id):
         """
         Administrador: Solicita los datos de un usuario según su ID.
@@ -2581,7 +2581,7 @@ class C_Administrador(C_Usuario):
         usuarios = E_Usuarios()
         return usuarios.obtenerUser(id)
 
-    # [RF-0152] Envia al controlador Contenidos la actualización de estado de un contenido.
+    # [IDF-0152] Envia al controlador Contenidos la actualización de estado de un contenido.
     def actualizarEstadoContenido(self, idC):
         """
         Administrador: Cambia el estado de un contenido (activo/inactivo).
@@ -2595,7 +2595,7 @@ class C_Administrador(C_Usuario):
         content_manager = C_Contenidos()
         return {"success": True, "estado": content_manager.actualizarEstadoContenido(idC)}
     
-    # [RF-159] El Controlador Administrador solicita al controlador Contenidos todas las promociones actuales.
+    # [IDF-159] El Controlador Administrador solicita al controlador Contenidos todas las promociones actuales.
     def obtenerPromociones(self):
         """
         Administrador: Solicita todas las promociones registradas.
@@ -2606,7 +2606,7 @@ class C_Administrador(C_Usuario):
         content_manager = C_Contenidos()
         return content_manager.obtenerPromociones()
 
-    # [RF-0169] El controlador administrador envia al controlador contenidos la asignacion de una promocion.
+    # [IDF-0169] El controlador administrador envia al controlador contenidos la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
         """
         Administrador: Asigna una promoción a un contenido específico.
@@ -2621,7 +2621,7 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.asignarPromocion(idC,idP)    
     
-    # [RF-0174] El Controlador administrador enviar a su controlador contenidos la agregación de una promocion.
+    # [IDF-0174] El Controlador administrador enviar a su controlador contenidos la agregación de una promocion.
     def agregarPromocion(self, data):
         """
         Administrador: Agrega una nueva promoción con los datos proporcionados.
@@ -2635,7 +2635,7 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.agregarPromocion(data)   
     
-    # [RF-0179] El Controlador administrador enviar a su controlador contenidos la agregación de una categoria.
+    # [IDF-0179] El Controlador administrador enviar a su controlador contenidos la agregación de una categoria.
     def agregarCategoria(self, data):
         """
         Administrador: Agrega una nueva categoría al sistema.
@@ -2649,7 +2649,7 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.agregarCategoria(data)
     
-    # [RF-0184] El Controlador administrador enviar a su controlador contenidos la asignacion de una categoria.
+    # [IDF-0184] El Controlador administrador enviar a su controlador contenidos la asignacion de una categoria.
     def asignarCategoria(self, idC,idcat):
         """
         Administrador: Asigna una categoría a un contenido.
@@ -2664,7 +2664,7 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.asignarCategoria(idC,idcat)
 
-    # [RF-0191] El Controlador administrador enviar a su controlador contenidos la obtencion de todas las categorías.
+    # [IDF-0191] El Controlador administrador enviar a su controlador contenidos la obtencion de todas las categorías.
     def obtener_categorias(self):
         """
         Administrador: Solicita todas las categorías registradas.
@@ -2675,7 +2675,7 @@ class C_Administrador(C_Usuario):
         man_content = C_Contenidos()
         return man_content.obtener_categorias()
     
-    # [RF-0206] Controlador administrador solcita obtener el ranking de descargas de clientes a la clase E_Usuarios.
+    # [IDF-0206] Controlador administrador solcita obtener el ranking de descargas de clientes a la clase E_Usuarios.
     def obtenerRankingUsuariosPorDescargas(self):
         """
         Administrador: Solicita obtener el ranking de descargas de clientes a la clase E_Usuarios.
@@ -2686,7 +2686,7 @@ class C_Administrador(C_Usuario):
         man_us = E_Usuarios()
         return man_us.obtenerRankingUsuariosPorDescargas()
     
-    # [RF-0214] El Controlador Administrador solicita la función de obtener la tabla de cierto tipo.
+    # [IDF-0214] El Controlador Administrador solicita la función de obtener la tabla de cierto tipo.
     def getTable(self, tipo):
         """
         Administrador: Solicita obtener cierta tabla de un tipo, pueden ser de usuarios, recargas, etc, según el tipo.
@@ -2710,7 +2710,7 @@ class Usuario:
         self.id = id
         self.controller = ctr
 
-    # [RF-0120] Envía credenciales a su controlador Usuario: Iniciar sesión del usuario
+    # [IDF-0120] Envía credenciales a su controlador Usuario: Iniciar sesión del usuario
     def iniciar_sesion(self, username, password):
         """
         Usuario: Inicia sesión con nombre de usuario y contraseña.
@@ -2725,7 +2725,7 @@ class Usuario:
         auth, self.id = self.controller.loginVerificar(username, password)
         return auth
 
-    # [RF-0121] Solicita datos a su controlador Usuario: Buscar contenidos con filtros
+    # [IDF-0121] Solicita datos a su controlador Usuario: Buscar contenidos con filtros
     def Buscar(self, query, filters):
         """
         Usuario: Busca contenidos con filtros específicos.
@@ -2740,7 +2740,7 @@ class Usuario:
         print(self.user, self.id)
         return self.controller.Buscar(query, filters)
 
-    # [RF-0122] Envía solicitud a su controlador Usuario: Seleccionar un contenido específico
+    # [IDF-0122] Envía solicitud a su controlador Usuario: Seleccionar un contenido específico
     def seleccionar(self, content_id):
         """
         Usuario: Selecciona un contenido específico.
@@ -2752,7 +2752,7 @@ class Usuario:
         """        
         return self.controller.seleccionarContent(content_id)
 
-    # [RF-0123] Solicita información a su controlador Usuario: Obtener los datos del usuario
+    # [IDF-0123] Solicita información a su controlador Usuario: Obtener los datos del usuario
     def getDataUser(self):
         """
         Usuario: Obtiene los datos del usuario.
@@ -2762,7 +2762,7 @@ class Usuario:
         """        
         return self.controller.getDataUser(self.id)
 
-    # [RF-0124] Envía datos a su controlador Usuario: Registrar un nuevo usuario (placeholder)
+    # [IDF-0124] Envía datos a su controlador Usuario: Registrar un nuevo usuario (placeholder)
     def registrarU(self, data):
         """
         Usuario: Placeholder para registrar un nuevo usuario.
@@ -2775,7 +2775,7 @@ class Usuario:
         """
         return 1
 
-    # [RF-0125] Solicita información a su controlador Usuario: Obtener contenidos destacados o generales
+    # [IDF-0125] Solicita información a su controlador Usuario: Obtener contenidos destacados o generales
     def getContentView(self):
         """
         Usuario: Obtiene los contenidos destacados o generales.
@@ -2785,7 +2785,7 @@ class Usuario:
         """        
         return self.controller.getContentView()
 
-    # [RF-0126] Envía datos a su controlador Usuario: Validar y registrar un nuevo usuario
+    # [IDF-0126] Envía datos a su controlador Usuario: Validar y registrar un nuevo usuario
     def validarRegistro(self, data):
         """
         Usuario: Valida y registra un nuevo usuario.
@@ -2807,7 +2807,7 @@ class Usuario:
         self.controller.registrarUsuario(data)
         return 1
 
-    # [RF-0127] Verifica existencia a su controlador Usuario: Verificar si el usuario ya tiene un contenido
+    # [IDF-0127] Verifica existencia a su controlador Usuario: Verificar si el usuario ya tiene un contenido
     def verificarContenido(self, idC):
         """
         Usuario: Verifica si ya posee cierto contenido.
@@ -2820,7 +2820,7 @@ class Usuario:
         """        
         return self.controller.verificarContenido(self.id, idC)
 
-    # [RF-0128] Envía respuesta a su controlador Usuario: Aceptar una notificación
+    # [IDF-0128] Envía respuesta a su controlador Usuario: Aceptar una notificación
     def aceptarNotificacion(self, idN):
         """
         Usuario: Acepta una notificación.
@@ -2830,7 +2830,7 @@ class Usuario:
         """        
         self.controller.aceptarNotificacion(idN)
 
-    # [RF-0129] Solicita contenido a su controlador Usuario: Obtener contenido para descargar
+    # [IDF-0129] Solicita contenido a su controlador Usuario: Obtener contenido para descargar
     def obtenerContenidoDescarga(self, content_id):
         """
         Usuario: Solicita el contenido para descarga.
@@ -2857,7 +2857,7 @@ class Cliente(Usuario):
         self.saldo = None
         self.estado_cuenta = None
 
-    # [RF-0130] Envía solicitud a su controlador Cliente: Solicitar recarga de saldo con tarjeta
+    # [IDF-0130] Envía solicitud a su controlador Cliente: Solicitar recarga de saldo con tarjeta
     def ingresarMontoSolicitar(self, Ncard, amount, cardType):
         """
         Cliente: Solicita una recarga con tarjeta.
@@ -2872,7 +2872,7 @@ class Cliente(Usuario):
         """        
         return self.controller.enviarSolicitud(Ncard, amount, cardType, self.id)
 
-    # [RF-0131] Solicita información a su controlador Cliente: Obtener el saldo actual del cliente
+    # [IDF-0131] Solicita información a su controlador Cliente: Obtener el saldo actual del cliente
     def getSaldo(self):
         """
         Cliente: Obtiene el saldo actual.
@@ -2882,7 +2882,7 @@ class Cliente(Usuario):
         """        
         return self.controller.obtenerSaldo(self.id)
 
-    # [RF-0132] Envía pago a su controlador Cliente: Realizar el pago de un contenido
+    # [IDF-0132] Envía pago a su controlador Cliente: Realizar el pago de un contenido
     def pagarContenido(self, idC):
         """
         Cliente: Realiza el pago por un contenido.
@@ -2895,7 +2895,7 @@ class Cliente(Usuario):
         """        
         return self.controller.pagarContenido(self.id, idC)
 
-    # [RF-0133] Solicita información a su controlador Cliente: Obtener descargas realizadas por el cliente
+    # [IDF-0133] Solicita información a su controlador Cliente: Obtener descargas realizadas por el cliente
     def obtenerDescargasCliente(self):
         """
         Cliente: Obtiene la lista de descargas realizadas.
@@ -2905,7 +2905,7 @@ class Cliente(Usuario):
         """        
         return self.controller.obtenerDescargasCliente(self.id)
 
-    # [RF-0134] Solicita puntuación a su controlador Cliente: Obtener puntuación de contenido dada por un cliente
+    # [IDF-0134] Solicita puntuación a su controlador Cliente: Obtener puntuación de contenido dada por un cliente
     def Obtener_Puntuacion(self, idU):
         """
         Cliente: Obtiene la puntuación que dio a un contenido.
@@ -2918,7 +2918,7 @@ class Cliente(Usuario):
         """        
         return self.controller.Obtener_Puntuacion(idU)
 
-    # [RF-0135] Envía puntuación a su controlador Cliente: Enviar una puntuación para un contenido
+    # [IDF-0135] Envía puntuación a su controlador Cliente: Enviar una puntuación para un contenido
     def Enviar_Puntuacion(self, idC, score):
         """
         Cliente: Envía una puntuación para un contenido.
@@ -2937,7 +2937,7 @@ class Cliente(Usuario):
             return False
         return True
 
-    # [RF-0136] Envía regalo a su controlador Cliente: Enviar un contenido a otro usuario como regalo
+    # [IDF-0136] Envía regalo a su controlador Cliente: Enviar un contenido a otro usuario como regalo
     def Enviar_destinatario(self, idC, destinatario):
         """
         Cliente: Envía un contenido como regalo a otro usuario.
@@ -2951,7 +2951,7 @@ class Cliente(Usuario):
         """        
         return self.controller.Enviar_destinatario(self.id, idC, destinatario)
 
-    # [RF-0137] Solicita notificaciones a su controlador Cliente: Obtener notificaciones del cliente
+    # [IDF-0137] Solicita notificaciones a su controlador Cliente: Obtener notificaciones del cliente
     def obtenerNotificaciones(self):
         """
         Cliente: Obtiene notificaciones pendientes.
@@ -2961,7 +2961,7 @@ class Cliente(Usuario):
         """        
         return self.controller.obtenerNotificaciones(self.id)
 
-    # [RF-0138] Solicita validación a su controlador Cliente: Solicitar validación del saldo disponible
+    # [IDF-0138] Solicita validación a su controlador Cliente: Solicitar validación del saldo disponible
     def SolicitarValidarSaldo(self):
         """
         Cliente: Solicita validación de saldo disponible.
@@ -2971,7 +2971,7 @@ class Cliente(Usuario):
         """        
         return self.controller.SolicitarValidarSaldo(self.id)
 
-    # [RF-0139] Envía solicitud a su controlador Cliente: Retirar saldo a una tarjeta del cliente
+    # [IDF-0139] Envía solicitud a su controlador Cliente: Retirar saldo a una tarjeta del cliente
     def Retirar_Saldo(self, card, cardType):
         """
         Cliente: Retira saldo hacia una tarjeta.
@@ -2997,7 +2997,7 @@ class Administrador(Usuario):
         """        
         super().__init__(user=username, id=id, ctr=C_Administrador())
 
-    # [RF-0140] Solicita lista a su controlador Administrador: Obtener lista de solicitudes de recargas pendientes
+    # [IDF-0140] Solicita lista a su controlador Administrador: Obtener lista de solicitudes de recargas pendientes
     def obtenerRecargas(self):
         """
         Administrador: Obtiene las solicitudes de recarga pendientes.
@@ -3007,7 +3007,7 @@ class Administrador(Usuario):
         """        
         return self.controller.getRecargas()
 
-    # [RF-0141] Envía aprobación a su controlador Administrador: Aprobar la recarga de saldo de un cliente
+    # [IDF-0141] Envía aprobación a su controlador Administrador: Aprobar la recarga de saldo de un cliente
     def aprobarSaldoCliente(self, id_recarga):
         """
         Administrador: Aprueba la recarga de saldo.
@@ -3017,7 +3017,7 @@ class Administrador(Usuario):
         """        
         self.controller.aprobarRecarga(id_recarga)
 
-    # [RF-0142] Envía datos a su controlador Administrador: Registrar nuevo contenido en el sistema
+    # [IDF-0142] Envía datos a su controlador Administrador: Registrar nuevo contenido en el sistema
     def ingresarAgregarContenido(self, datos):
         """
         Administrador: Agrega un nuevo contenido al sistema.
@@ -3027,7 +3027,7 @@ class Administrador(Usuario):
         """        
         self.controller.ingresarAgregarContenido(datos)
 
-    # [RF-0143] Envía datos a su controlador Administrador: Actualizar información de contenido existente
+    # [IDF-0143] Envía datos a su controlador Administrador: Actualizar información de contenido existente
     def actualizarContenido(self, datos):
         """
         Administrador: Actualiza un contenido existente.
@@ -3037,7 +3037,7 @@ class Administrador(Usuario):
         """        
         self.controller.actualizarContenido(datos)
 
-    # [RF-0144] Solicita información a su controlador Administrador: Buscar información general sobre contenidos
+    # [IDF-0144] Solicita información a su controlador Administrador: Buscar información general sobre contenidos
     def buscar_info(self, data):
         """
         Administrador: Busca información sobre contenidos.
@@ -3050,7 +3050,7 @@ class Administrador(Usuario):
         """        
         return self.controller.buscar_info(data)
 
-    # [RF-0145] Solicita selección a su controlador Administrador: Seleccionar un usuario específico por ID
+    # [IDF-0145] Solicita selección a su controlador Administrador: Seleccionar un usuario específico por ID
     def seleccionar_user(self, id):
         """
         Administrador: Selecciona un usuario por ID.
@@ -3063,7 +3063,7 @@ class Administrador(Usuario):
         """     
         return self.controller.seleccionarUser(id)
 
-    # [RF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
+    # [IDF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
     def obtenerDescargasCliente(self, idU):
         """
         Administrador: Obtiene descargas realizadas por un cliente.
@@ -3076,7 +3076,7 @@ class Administrador(Usuario):
         """    
         return self.controller.obtenerDescargasCliente(idU)
     
-    # [RF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
+    # [IDF-0146] Solicita datos a su controlador Administrador: Obtener descargas realizadas por un cliente
     def obtenerDescargasClienteTime(self, idU):
         """
         Administrador: Obtiene descargas realizadas por un cliente.
@@ -3089,7 +3089,7 @@ class Administrador(Usuario):
         """    
         return self.controller.obtenerDescargasClienteTime(idU)
     
-    # [RF-0147] Solicita datos a su controlador Administrador: Obtener recargas realizadas por un cliente
+    # [IDF-0147] Solicita datos a su controlador Administrador: Obtener recargas realizadas por un cliente
     def obtenerRecargasCliente(self, idU):
         """
         Administrador: Obtiene recargas realizadas por un cliente.
@@ -3102,7 +3102,7 @@ class Administrador(Usuario):
         """ 
         return self.controller.obtenerRecargasCliente(idU)
     
-    # [RF-151] Envia id de un contenido para actulizar el estado de este al controlador Administrador.
+    # [IDF-151] Envia id de un contenido para actulizar el estado de este al controlador Administrador.
     def actualizarEstadoContenido(self, idC):
         """
         Administrador: Actualiza el estado de un contenido.
@@ -3115,7 +3115,7 @@ class Administrador(Usuario):
         """   
         return self.controller.actualizarEstadoContenido(idC)
     
-    # [RF-158] Solicita al controlador Administrador todas las promociones actuales.
+    # [IDF-158] Solicita al controlador Administrador todas las promociones actuales.
     def obtenerPromociones(self):
         """
         Administrador: Obtiene todas las promociones disponibles.
@@ -3125,7 +3125,7 @@ class Administrador(Usuario):
         """
         return self.controller.obtenerPromociones()
     
-    # [RF-0168] El administrador enviar a su controlador administrador la asignacion de una promocion.
+    # [IDF-0168] El administrador enviar a su controlador administrador la asignacion de una promocion.
     def asignarPromocion(self, idC, idP):
         """
         Administrador: Asigna una promoción a un contenido.
@@ -3139,7 +3139,7 @@ class Administrador(Usuario):
         """        
         return self.controller.asignarPromocion(idC,idP)
     
-    # [RF-0173] El administrador enviar a su controlador administrador la agregación de una promocion.
+    # [IDF-0173] El administrador enviar a su controlador administrador la agregación de una promocion.
     def agregarPromocion(self, data):
         """
         Administrador: Agrega una nueva promoción.
@@ -3152,7 +3152,7 @@ class Administrador(Usuario):
         """        
         return self.controller.agregarPromocion(data)
     
-    # [RF-0190] El administrador enviar a su controlador administrador obtencion de todas las categorías.
+    # [IDF-0190] El administrador enviar a su controlador administrador obtencion de todas las categorías.
     def obtener_categorias(self):
         """
         Administrador: Obtiene todas las categorías existentes.
@@ -3162,7 +3162,7 @@ class Administrador(Usuario):
         """        
         return self.controller.obtener_categorias()
     
-    # [RF-0183] El administrador enviar a su controlador administrador la agreasignacion de una categoría.
+    # [IDF-0183] El administrador enviar a su controlador administrador la agreasignacion de una categoría.
     def asignarCategoria(self, idC,idcat):
         """
         Administrador: Asigna una categoría a un contenido.
@@ -3176,7 +3176,7 @@ class Administrador(Usuario):
         """        
         return self.controller.asignarCategoria(idC,idcat)
     
-    # [RF-0178] El administrador enviar a su controlador administrador la agregación de una categoría.
+    # [IDF-0178] El administrador enviar a su controlador administrador la agregación de una categoría.
     def agregarCategoria(self, data):
         """
         Administrador: Agrega una nueva categoría al sistema.
@@ -3189,7 +3189,7 @@ class Administrador(Usuario):
         """        
         return self.controller.agregarCategoria(data)
     
-    # [RF-0207] El Administrador solcita obtener a su controlador el ranking de descargas de clientes.
+    # [IDF-0207] El Administrador solcita obtener a su controlador el ranking de descargas de clientes.
     def obtenerRankingUsuariosPorDescargas(self):
         """
         Administrador: Solicita obtener el ranking de descargas de clientes.
@@ -3199,7 +3199,7 @@ class Administrador(Usuario):
         """            
         return self.controller.obtenerRankingUsuariosPorDescargas()
     
-    # [RF-0213] El Administrador solicita a su controlador Administrador la función de obtener la tabla de cierto tipo.
+    # [IDF-0213] El Administrador solicita a su controlador Administrador la función de obtener la tabla de cierto tipo.
     def getTable(self, tipo):
         """
         Administrador: Solicita obtener cierta tabla de un tipo, pueden ser de usuarios, recargas, etc, según el tipo.

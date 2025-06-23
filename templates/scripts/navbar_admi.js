@@ -1,6 +1,6 @@
 import { gen_searchBar } from './generator_searchBar.js';
 
-// [RF-0025] Genera una barra de navegacion para un Administrador.
+// [IDF-0025] Genera una barra de navegacion para un Administrador.
 function generateNavbarAdministrador() {
     var href_logo="#";
     fetch('/get_user_role')
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.appendChild(recargasContainer);
     }
 
-    // [RF-0013] obtiene del servidor las solicitudes de saldo pendientes de los clientes.
+    // [IDF-0013] obtiene del servidor las solicitudes de saldo pendientes de los clientes.
     function obtenerRecargas() {
         fetch('/get_recargas') 
             .then(response => response.json())
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // [RF-0012] El Administrador aprueba la solicitud de saldo de un cliente.
+    // [IDF-0012] El Administrador aprueba la solicitud de saldo de un cliente.
     function aceptarRecarga(id_recarga) {
         fetch(`/accept_recarga`, {
             method: 'POST',

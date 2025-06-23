@@ -1,5 +1,5 @@
 
-// [RF-0014] envia una cadena de texto para buscarla en los contenidos existentes.
+// [IDF-0014] envia una cadena de texto para buscarla en los contenidos existentes.
 export function realizarBusqueda(textoBusqueda, resultsContainer,filterContainer) {
     const query = textoBusqueda.trim().toLowerCase();
     const selectedFilters = Array.from(filterContainer.querySelectorAll('.filter-checkbox'))
@@ -41,7 +41,7 @@ export function realizarBusqueda(textoBusqueda, resultsContainer,filterContainer
     });
 }
 
-// [RF-0036] Renderiza la barra de busqueda para los clientes y administrador, una busqueda de contenidos.
+// [IDF-0036] Renderiza la barra de busqueda para los clientes y administrador, una busqueda de contenidos.
 export function gen_searchBar(){
     var resultsContainer =  document.getElementById("search-results");
     // var resultsContainer = document.createElement('div');

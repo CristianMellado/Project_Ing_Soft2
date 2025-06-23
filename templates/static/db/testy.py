@@ -5,8 +5,8 @@ cursor = conn.cursor()
 
 cursor.execute('''
     UPDATE promociones
-    SET descuento = 10.00,
-        titulo_de_descuento = 'Año dragon 10%'
+    SET descuento = 0.1,
+        titulo_de_descuento = 'Año del Dragon'
     WHERE id = 5
 ''')
 

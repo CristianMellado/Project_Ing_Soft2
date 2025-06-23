@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeforms = document.getElementById("withdraw-form");
     const submitcloseBtn = document.getElementById("submit-withdraw");
 
-    // [RF-0019] solicita la información del cliente actualmente logueado.
+    // [IDF-0019] solicita la información del cliente actualmente logueado.
     fetch("/user_data")
         .then(res => res.json())
         .then(data => {
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
         balanceForm.style.display = balanceForm.style.display === "none" ? "block" : "none";
     });
 
-    // [RF-0004] envia la peticion al servidor de enviar todo el credito del cliente a cierta tarjeta.
+    // [IDF-0004] envia la peticion al servidor de enviar todo el credito del cliente a cierta tarjeta.
     submitcloseBtn.addEventListener("click", () => {
         const tarjeta = document.getElementById("withdraw_card").value;
         const cardType = document.getElementById("withdraw_card_type").value;
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
-    // [RF-0011] solicita saldo al servidor.
+    // [IDF-0011] solicita saldo al servidor.
     submitBalanceBtn.addEventListener("click", () => {
         const tarjeta = document.getElementById("tarjeta").value;
         const cantidad = parseFloat(document.getElementById("cantidad").value);
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
-    // [RF-0003] verifica si es posible cerrar la cuenta de un cliente.
+    // [IDF-0003] verifica si es posible cerrar la cuenta de un cliente.
     closeAccountBtn.addEventListener("click", () => {
         if (confirm("¿Estás seguro de cerrar tu cuenta?")) {
             fetch("/close_account", { method: "GET" })
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const downloadsList = document.getElementById("downloads-list");
-    // [RF-0020] solicita las compras del cliente actualmente logueado.
+    // [IDF-0020] solicita las compras del cliente actualmente logueado.
     fetch("/get_user_downloads")
     .then(res => res.json())
     .then(data => {

@@ -1,4 +1,4 @@
-// [RF-0026] Genera una barra de navegacion para un usuario sin cuenta.
+// [IDF-0026] Genera una barra de navegacion para un usuario sin cuenta.
 function generateNavbar() {
     var header = document.createElement('header');
     var stylevar = document.createElement('link');
