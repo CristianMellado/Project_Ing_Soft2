@@ -14,16 +14,16 @@ encoding_t = 'latin-1'
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT,
-    username TEXT,
-    pswd TEXT,
-    saldo DOUBLE DEFAULT 0.0,
-    role INTEGER DEFAULT 0,
-    estado_cuenta TEXT DEFAULT "cliente",
-    nombre TEXT DEFAULT "",
-    apellido1 TEXT DEFAULT "",
-    apellido2 TEXT DEFAULT "",
-    acumulado DOUBLE DEFAULT 0.0
+    email VARCHAR(50),
+    username VARCHAR(50),
+    pswd VARCHAR(50),
+    saldo DECIMAL(10,2) DEFAULT 0.0,
+    role TINYINT DEFAULT 0,
+    estado_cuenta VARCHAR(50) DEFAULT "cliente",
+    nombre VARCHAR(50) DEFAULT "",
+    apellido1 VARCHAR(50) DEFAULT "",
+    apellido2 VARCHAR(50) DEFAULT "",
+    acumulado DECIMAL(10,2) DEFAULT 0.0
 );
 ''')
 
@@ -49,7 +49,7 @@ for user in db:
 cursor.execute('''
 CREATE TABLE categorias (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
     id_padre INTEGER DEFAULT NULL,
     ruta TEXT DEFAULT NULL,
     FOREIGN KEY (id_padre) REFERENCES categorias(id)
@@ -79,9 +79,9 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS recargas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     id_user INTEGER,
-    monto DOUBLE,
-    fecha TEXT,
-    estado TEXT DEFAULT 'pendiente',    
+    monto DECIMAL(10,2),
+    fecha VARCHAR(50),
+    estado VARCHAR(50) DEFAULT 'pendiente',    
     FOREIGN KEY (id_user) REFERENCES usuarios(id)
 );
 ''')
@@ -111,9 +111,9 @@ CREATE TABLE IF NOT EXISTS puntuaciones (
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS promociones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    descuento DOUBLE,
-    titulo_de_descuento TEXT,
-    fecha_fin TEXT
+    descuento DECIMAL(10,2),
+    titulo_de_descuento VARCHAR(50),
+    fecha_fin VARCHAR(50)
 );
 ''')
 fecha_futura = datetime.now() + timedelta(days=7)
@@ -129,9 +129,9 @@ CREATE TABLE IF NOT EXISTS compras (
     id INTEGER PRIMARY KEY,
     id_usuario INTEGER,
     id_contenido INTEGER,
-    fecha TEXT,
-    precio DOUBLE,
-    tipo_compra TEXT DEFAULT 'compra'
+    fecha VARCHAR(50),
+    precio DECIMAL(10,2),
+    tipo_compra VARCHAR(50) DEFAULT 'compra'
 );
 ''')
 
@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS descarga (
     id_contenido INTEGER,
     id_usuario INTEGER,
     downloaded INTEGER DEFAULT 0,
-    fecha TEXT,
+    fecha VARCHAR(50),
     FOREIGN KEY (id_usuario) REFERENCES usuarios (id)    
 );
 ''')
@@ -166,16 +166,16 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS contenidos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     Archivo_bytes BLOB,
-    nombre_contenido TEXT,
-    autor TEXT,
-    precio DOUBLE,
-    extension TEXT,
+    nombre_contenido VARCHAR(50),
+    autor VARCHAR(50),
+    precio DECIMAL(10,2),
+    extension VARCHAR(50),
     categoria_id INTEGER,
-    rating DOUBLE DEFAULT 0.0,
+    rating DECIMAL(10,2) DEFAULT 0.0,
     descripcion TEXT,
-    tipo_contenido TEXT,
+    tipo_contenido VARCHAR(50),
     downloaded INTEGER DEFAULT 0,
-    estado TEXT DEFAULT 'activo',
+    estado VARCHAR(50) DEFAULT 'activo',
     id_promocion DEFAULT NULL
 );
 ''')

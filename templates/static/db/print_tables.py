@@ -20,7 +20,7 @@ def imprimir_tabla(nombre_tabla, columnas=None):
 imprimir_tabla('usuarios')
 imprimir_tabla('contenidos',columnas=['nombre_contenido',
                                       'tipo_contenido','id',
-                                      'downloaded','estado'])  # sin data_contenido
+                                      'downloaded','estado','id_promocion'])  # sin data_contenido
 imprimir_tabla('categorias')
 imprimir_tabla('recargas')
 imprimir_tabla('regalos')

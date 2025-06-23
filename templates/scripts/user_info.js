@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => res.json())
     .then(data => {
         if (data.length === 0) {
-            downloadsList.innerHTML = '<li>No hay contenidos descargados.</li>';
+            downloadsList.innerHTML = '<li>No hay contenidos Comprados.</li>';
             return;
         }
 

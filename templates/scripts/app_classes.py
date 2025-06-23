@@ -273,9 +273,10 @@ class E_Usuarios:
                 u.id,
                 u.username,
                 u.estado_cuenta,
-                SUM(d.downloaded) as total_descargas
+                SUM(d.downloaded) AS total_descargas
             FROM descarga d
             JOIN usuarios u ON d.id_usuario = u.id
+            WHERE u.estado_cuenta != 'administrador'
             GROUP BY u.id
             ORDER BY total_descargas DESC
         """
@@ -933,7 +934,7 @@ class E_Contenidos:
                 "author": author,
                 "price": price,
                 "description": desc,
-                "rating": rating,
+                "rating": round(rating,2),
                 "type": tipo,
                 "category": ruta_categoria,
                 "downloaded": down
@@ -1053,6 +1054,7 @@ class E_Contenidos:
             content_dict["src"] = C_Contenidos._generar_data_url(
                 content_dict["src"], content_dict["type"], content_dict["extension"]
             )
+            content_dict["rating"] = round(content_dict["rating"],2)
 
             # Verificar si tiene promoción
             id_prom = content_dict.get("id_promocion")

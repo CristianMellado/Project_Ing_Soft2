@@ -17,18 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p><strong>Usuario:</strong> ${data.username}</p>
                 <p><strong>Nombre Completo:</strong> ${data.fullname}</p>
                 <p><strong>Email:</strong> ${data.email}</p>
-                <p><strong>ID:</strong> ${data.id}</p>
             `;
 
     
-            const items = ["Contenido A", "Contenido B", "Contenido C"];
-            items.forEach(item => {
-                const li = document.createElement("li");
-                li.textContent = item;
-                li.style.cursor = "pointer";
-                li.addEventListener("click", () => alert(`Has seleccionado: ${item}`));
-                userList.appendChild(li);
-            });
+            // const items = ["Contenido A", "Contenido B", "Contenido C"];
+            // items.forEach(item => {
+            //     const li = document.createElement("li");
+            //     li.textContent = item;
+            //     li.style.cursor = "pointer";
+            //     li.addEventListener("click", () => alert(`Has seleccionado: ${item}`));
+            //     userList.appendChild(li);
+            // });
         })
         .catch(err => {
             userInfoDiv.innerHTML = "<p style='color:red'>Error al cargar datos del usuario.</p>";
